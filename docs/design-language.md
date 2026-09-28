@@ -1,8 +1,10 @@
-# Design language: proposed workflow
+# OpenSP design language
 
-Research date: 2026-09-28. No visual direction or tool has been selected yet.
+Tool: **Penpot**, selected for setup on 2026-09-28. The browser is at the
+account login screen; the OpenSP project/file has not been created yet.
+Visual direction remains open.
 
-## Recommendation: Penpot and repository-owned tokens
+## Penpot and repository-owned tokens
 
 [Penpot design tokens](https://help.penpot.app/user-guide/design-systems/design-tokens/)
 support named colors, typography, spacing, dimensions, borders and shadows,
@@ -16,7 +18,22 @@ guide here: swatches, type specimens, spacing, buttons, cards and article
 examples. The owner reviews the real rendered design, and agreed changes
 become versioned tokens and CSS.
 
-## Alternative: Figma with Tokens Studio
+## Workspace to create after sign-in
+
+Create an **OpenSP** project with one file, **OpenSP Design Language**.
+Organize the file into four pages:
+
+- **Direction**: references, moodboards and agreed principles.
+- **Foundations**: color, typography, spacing, layout and motion decisions.
+- **Components**: navigation, article cards, buttons and evidence labels.
+- **Page studies**: homepage and a journey entry at desktop/mobile sizes.
+
+Record the Penpot file link here once created. Keep agreed design values as
+exported JSON in `design/tokens.json` when we have actual tokens to export;
+retain this document for rationale and usage rules. Build the browser style
+guide after choosing the first direction. No palette or font is approved yet.
+
+## Previously considered alternative: Figma with Tokens Studio
 
 [Tokens Studio](https://docs.tokens.studio/token-storage/remote/) supports
 remote token storage, including GitHub, alongside a visual Figma workflow.
