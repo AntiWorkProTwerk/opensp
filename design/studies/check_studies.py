@@ -43,6 +43,32 @@ with sync_playwright() as p:
     page.locator('#pad-16').click()
     assert page.locator('#screen-value').text_content()=='PAD 16'
     assert not errors,errors
+    page.goto((root/'mobile.html').as_uri())
+    for width in [320,390,430,768,1280]:
+        page.set_viewport_size({'width':width,'height':900})
+        for direction in ['field','journal','walkthrough']:
+            page.locator(f'[data-layout="{direction}"]').click()
+            for theme in ['light','dark']:
+                page.locator('[data-theme-picker]').select_option(theme)
+                assert page.locator('html').get_attribute('data-theme')==theme
+                assert page.evaluate('document.documentElement.scrollWidth <= innerWidth'),(width,direction,theme)
+    page.set_viewport_size({'width':390,'height':844})
+    page.locator('#reset').click()
+    page.locator('#next').click()
+    assert page.locator('#screen-value').text_content()=='PAD 01'
+    assert page.locator('.step:visible').count()==1
+    page.locator('#pad-picker').select_option('16')
+    assert page.locator('#screen-value').text_content()=='PAD 16'
+    assert page.locator('#pad-picker').bounding_box()['height']>=44
+    page.reload()
+    assert page.locator('html').get_attribute('data-theme')=='dark'
+    page.locator('[data-theme-picker]').select_option('system')
+    page.emulate_media(color_scheme='light')
+    assert page.locator('html').get_attribute('data-theme')=='light'
+    page.emulate_media(color_scheme='dark')
+    page.wait_for_timeout(100)
+    assert page.locator('html').get_attribute('data-theme')=='dark'
+    assert not errors,errors
     browser.close()
-print('PASS: SVG unique IDs; 16 pads; bezel; 4 right-side controls; pointer/keyboard; knob/screen; reset/play/pause; mobile width; no JS errors.')
+print('PASS: SVG IDs, interaction controls, 30 width/layout/theme combinations, touch selector, single-step view, persistent/system theme, no JS errors.')
 

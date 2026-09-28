@@ -6,6 +6,8 @@ three proposed editorial layouts, a component/state sheet and a modular panel
 sheet. The owner expanded the blank-start request to design exploration.
 The corrected diagrams were visually checked in Penpot and persisted through
 reload. They are imported vector groups, not a published native component library.
+The second page, **Mobile - light and dark**, adds six mobile compositions.
+Native snapshots are committed in [design/penpot](../design/penpot/README.md).
 
 [Open the OpenSP canvas](https://design.penpot.app/#/workspace?team-id=a5ac146a-5787-80fa-8008-b51846f04474&file-id=24d9d841-759d-81bc-8008-b518bc70d8b3&page-id=24d9d841-759d-81bc-8008-b518bc70d8b4).
 Access requires the owner's Penpot account; this is not a public sharing link.
@@ -59,6 +61,26 @@ hardware connection or sound. Pointer/keyboard, mobile width, SVG IDs and
 JavaScript smoke checks pass with [check_studies.py](../design/studies/check_studies.py).
 Generate with `python design/studies/build_studies.py`. Fonts are preliminary
 system-font studies. SVG import is manual; there is no automatic Penpot sync.
+
+## Mobile and themes
+
+The [responsive article review](../design/studies/mobile.html) provides three
+switchable layouts with actual reflow, not scaled-down desktop screenshots.
+On mobile, contents collapse, captions replace margin notes, columns stack,
+and the guided direction presents one explanation at a time. Full-size pad
+selection, previous/next, and knob controls supplement the small panel targets.
+All three [390px compositions](../design/studies/mobile-concepts.svg) have light
+and dark variants in Penpot. Desktop illustrations also have dark SVG variants.
+
+[theme.css](../design/studies/theme.css) uses semantic paper/surface/ink/muted/line
+values; dark paper is charcoal, text is off-white, and the OLED stays dark.
+Light/Dark/System selection is keyboard-accessible, persists locally, and reacts
+to OS changes in System mode. Motion is opt-in and honors reduced motion.
+The values are implementation proposals, not exported Penpot design tokens.
+
+Smoke checks cover 30 width/layout/theme combinations at 320, 390, 430, 768 and
+1280px, overflow, pad selection, step navigation, theme persistence and system
+changes. The public `site/` remains unchanged; these are repository review files.
 
 ## Previously considered alternative: Figma with Tokens Studio
 

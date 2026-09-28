@@ -1,0 +1,12 @@
+:root{color-scheme:light;--paper:#f4f4f2;--surface:#fff;--ink:#171717;--muted:#5b5b58;--line:#999;--soft:#e7e7e3}
+:root[data-theme=dark]{color-scheme:dark;--paper:#151617;--surface:#202224;--ink:#eeefec;--muted:#b9bcb7;--line:#686d70;--soft:#292c2e}
+body{background:var(--paper);color:var(--ink)}button,select{background:var(--surface);color:var(--ink);border:1px solid var(--line);min-height:44px}button:hover,button[aria-pressed=true]{background:var(--ink);color:var(--paper)}input{accent-color:var(--ink)}button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{outline:3px double var(--ink);outline-offset:4px}.theme-control{display:flex;gap:10px;align-items:center;font:12px Consolas,monospace}.theme-control select{font:inherit;padding:8px;max-width:105px}.step{border-color:var(--line)}.concepts img{border-color:var(--line)}
+[data-theme=dark] .instrument [fill="white"]{fill:var(--surface)}
+[data-theme=dark] .instrument [fill="#111"]{fill:var(--ink)}
+[data-theme=dark] .instrument [stroke="#111"]{stroke:var(--ink)}
+[data-theme=dark] .instrument .pad[aria-pressed=true] text{fill:var(--paper)}
+[data-theme=dark] .instrument #screen-content [fill="#111"]{fill:#080909}
+[data-theme=dark] .instrument #screen-content [fill="white"]{fill:#eeefec}
+.instrument #ctrl-1-indicator{transition:transform .2s linear}
+@media(prefers-reduced-motion:reduce){.instrument #ctrl-1-indicator{transition:none}}
+@media(max-width:760px){header{gap:16px;flex-wrap:wrap}.theme-control{margin-left:auto}p{font-size:18px;line-height:1.65}.controls button{flex:1;min-height:48px}.step button{min-height:48px;min-width:48px}input[type=range]{min-height:44px}.note{overflow-wrap:anywhere}h2{font-size:28px}.concepts{gap:24px}}

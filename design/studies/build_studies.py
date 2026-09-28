@@ -3,6 +3,7 @@ from pathlib import Path
 from html import escape
 import re
 from panel import device, parts_sheet
+from mobile import compositions, dark_svg
 
 ROOT = Path(__file__).parent
 def text(x,y,s,size=20,font='Arial',fill='#111',weight='normal'):
@@ -86,5 +87,23 @@ sheet=''.join(f'<g id="{name}" transform="translate({i*1260} 0)">{body}</g>' for
 (ROOT/'concepts.svg').write_text(svg(sheet,6240,1500),encoding='utf-8')
 (ROOT/'instrument.svg').write_text(svg(device(active=0),400,570),encoding='utf-8')
 template=(ROOT/'preview.template.html').read_text(encoding='utf-8')
+template=re.sub(r'src="([a-e]-[^\"]+)\.svg"',r'src="\1.svg" data-light="\1.svg" data-dark="\1-dark.svg"',template)
 (ROOT/'index.html').write_text(template.replace('{{INSTRUMENT}}',svg(device(active=0),400,570)),encoding='utf-8')
-print('Generated seven original SVG files and the review page.')
+mobile=compositions(text,rect,line,lines,label)
+mobile_sheet=''
+for i,(name,body) in enumerate(mobile):
+    light=svg(body,390,1320)
+    (ROOT/f'{name}.svg').write_text(light,encoding='utf-8')
+    (ROOT/f'{name}-dark.svg').write_text(dark_svg(light),encoding='utf-8')
+    mobile_sheet+=f'<g transform="translate({i*430} 0)">{body}</g>'
+    # Keep all shapes native to the composed SVG rather than embed bitmap previews.
+    dark_body=dark_svg(svg(body,390,1320)).split('>',1)[1].rsplit('</svg>',1)[0]
+    mobile_sheet+=f'<g transform="translate({i*430} 1400)">{dark_body}</g>'
+(ROOT/'mobile-concepts.svg').write_text(svg(mobile_sheet,1250,2720),encoding='utf-8')
+for name in ['a-field-manual','b-lab-journal','c-walkthrough','d-components','e-panel-parts']:
+    (ROOT/f'{name}-dark.svg').write_text(dark_svg((ROOT/f'{name}.svg').read_text(encoding='utf-8')),encoding='utf-8')
+mobile_template=(ROOT/'mobile.template.html').read_text(encoding='utf-8')
+interaction=template.split('<script>')[-1].split('</script>')[0]
+options=''.join(f'<option value="{n}">Pad {n:02}</option>' for n in range(1,17))
+(ROOT/'mobile.html').write_text(mobile_template.replace('{{INSTRUMENT}}',svg(device(active=0),400,570)).replace('{{INTERACTION}}',interaction).replace('{{PAD_OPTIONS}}',options),encoding='utf-8')
+print('Generated desktop/mobile light and dark SVGs, contact sheets and interactive review pages.')
