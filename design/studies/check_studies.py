@@ -21,6 +21,11 @@ with sync_playwright() as p:
     assert page.locator('.pad').count()==16
     assert page.locator('#display-bezel').count()==1
     assert page.locator('#performance-buttons > g').count()==4
+    assert page.locator('#effect-buttons > g').count()==6
+    assert page.locator('#fx-filter-drive > path').get_attribute('d')=='M83 121h43L116 149H73Z'
+    assert page.locator('#fx-isolator > path').get_attribute('d')=='M274 121h43L327 149H284Z'
+    assert page.locator('#fx-delay > path').get_attribute('d')=='M73 191h43L126 219H83Z'
+    assert page.locator('#fx-mfx > path').get_attribute('d')=='M284 191h43L317 219H274Z'
     page.locator('#pad-7').click()
     assert page.locator('#screen-value').text_content()=='PAD 07'
     page.locator('#pad-2').focus()
@@ -79,6 +84,36 @@ with sync_playwright() as p:
             assert page.locator('#study').get_attribute('src')==expected
             page.wait_for_function('document.querySelector("#study").complete && document.querySelector("#study").naturalWidth === 1200')
     assert not errors,errors
+    page.goto((root/'home.html').as_uri())
+    for width in [320,390,768,1440]:
+        page.set_viewport_size({'width':width,'height':900})
+        for theme in ['light','dark']:
+            page.locator('[data-theme-picker]').select_option(theme)
+            assert page.evaluate('document.documentElement.scrollWidth <= innerWidth')
+            nav=page.locator('nav[aria-label="Main navigation"]')
+            assert nav.locator('a').all_text_contents()==['Releases','Guides']
+            bounds=nav.bounding_box()
+            assert abs(bounds['x']+bounds['width']/2-width/2)<2,(width,bounds)
+    page.locator('nav a[href="#releases"]').click()
+    for section in ['releases','guides']:
+        summary=page.locator(f'#{section} summary')
+        summary.click()
+        assert not page.locator(f'#{section}').evaluate('(el)=>el.open')
+        assert not page.locator(f'#{section} .section-body').is_visible()
+        summary.focus()
+        page.keyboard.press('Enter')
+        assert page.locator(f'#{section}').evaluate('(el)=>el.open')
+        page.keyboard.press('Space')
+        assert not page.locator(f'#{section}').evaluate('(el)=>el.open')
+        page.locator(f'nav a[href="#{section}"]').click()
+        assert page.locator(f'#{section}').evaluate('(el)=>el.open')
+    assert page.locator('.cta,.method,figcaption').count()==0
+    page.locator('nav a[href="#releases"]').click()
+    assert page.url.endswith('#releases')
+    page.locator('nav a[href="#guides"]').click()
+    assert page.url.endswith('#guides')
+    assert page.locator('.instrument [tabindex]').count()==0
+    assert not errors,errors
     browser.close()
-print('PASS: SVG IDs, interactions, 30 responsive combinations, 10 desktop theme views, persistence/system theme, no JS errors.')
+print('PASS: SVG IDs, interactions, 30 responsive combinations, 10 desktop theme views, 8 homepage/theme widths with centered navigation, persistence/system theme, no JS errors.')
 

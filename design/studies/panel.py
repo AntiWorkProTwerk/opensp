@@ -39,7 +39,16 @@ def effects():
     body=''
     for side,x,names in [('left',73,[('filter-drive',['FILTER +','DRIVE']),('resonator',['RESONATOR']),('delay',['DELAY'])]),('right',284,[('isolator',['ISOLATOR']),('djfx-looper',['DJFX','LOOPER']),('mfx',['MFX'])])]:
         for i,(name,labels) in enumerate(names):
-            body+=button('fx-'+name,x,121+i*35,43,28,labels,6)
+            # Roland panel p.6: outer rows tuck toward the circular display;
+            # their slanted sides mirror each other, not straight columns.
+            y=121+i*35
+            direction=1 if side=='left' else -1
+            top=direction*(10 if i==0 else 0)
+            bottom=direction*(10 if i==2 else 0)
+            shape=f'<path d="M{x+top} {y}h43L{x+43+bottom} {y+28}H{x+bottom}Z" fill="white" stroke="#111"/>'
+            for j,label in enumerate(labels):
+                shape+=caption(x+21.5+(top+bottom)/2,y+16+(j-(len(labels)-1)/2)*7,label,6)
+            body+=group('fx-'+name,shape)
     return group('effect-buttons',body)
 
 def control_buttons():
