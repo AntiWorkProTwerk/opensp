@@ -75,9 +75,14 @@ d+=footer('PROPOSAL ONLY / SCREEN CONTENT AND MOTION ARE ILLUSTRATIVE')
 
 def svg(body,w=1200,h=1500):
     counts={}
+    used=set()
     def unique(match):
-        name=match[1]; counts[name]=counts.get(name,0)+1
-        return ' id="'+name+(f'-instance-{counts[name]}' if counts[name]>1 else '')+'"'
+        name=match[1]; candidate=name
+        while candidate in used:
+            counts[name]=counts.get(name,0)+1
+            candidate=f'{name}-copy-{counts[name]}'
+        used.add(candidate)
+        return ' id="'+candidate+'"'
     body=re.sub(r' id="([^"]+)"',unique,body)
     return f'<svg xmlns="http://www.w3.org/2000/svg" width="{w}" height="{h}" viewBox="0 0 {w} {h}">{body}</svg>'
 e=parts_sheet()
@@ -102,6 +107,25 @@ for i,(name,body) in enumerate(mobile):
 (ROOT/'mobile-concepts.svg').write_text(svg(mobile_sheet,1250,2720),encoding='utf-8')
 for name in ['a-field-manual','b-lab-journal','c-walkthrough','d-components','e-panel-parts']:
     (ROOT/f'{name}-dark.svg').write_text(dark_svg((ROOT/f'{name}.svg').read_text(encoding='utf-8')),encoding='utf-8')
+desktop_themes=''
+for i,(name,body) in enumerate([('manual',a),('journal',b),('walkthrough',c),('components',d),('parts',e)]):
+    desktop_themes+=f'<g id="desktop-{name}-light" transform="translate({i*1260} 0)">{body}</g>'
+    dark_body=dark_svg(svg(body)).split('>',1)[1].rsplit('</svg>',1)[0]
+    desktop_themes+=f'<g id="desktop-{name}-dark" transform="translate({i*1260} 1600)">{dark_body}</g>'
+(ROOT/'desktop-themes.svg').write_text(svg(desktop_themes,6240,3100),encoding='utf-8')
+paired=''
+for row,(name,body) in enumerate([('A / FIELD MANUAL',a),('B / LAB JOURNAL',b),('C / WALKTHROUGH',c),('D / COMPONENTS',d),('E / PANEL PARTS',e)]):
+    offset=row*1640
+    paired+=text(0,offset+33,name+' — LIGHT',23)+text(1740,offset+33,name+' — DARK',23)
+    paired+=f'<g transform="translate(0 {offset+70})">{body}</g>'
+    dark_body=dark_svg(svg(body)).split('>',1)[1].rsplit('</svg>',1)[0]
+    paired+=f'<g transform="translate(1740 {offset+70})">{dark_body}</g>'
+    if row<3:
+        mobile_body=mobile[row][1]
+        paired+=f'<g transform="translate(1260 {offset+70})">{mobile_body}</g>'
+        dark_mobile=dark_svg(svg(mobile_body,390,1320)).split('>',1)[1].rsplit('</svg>',1)[0]
+        paired+=f'<g transform="translate(3000 {offset+70})">{dark_mobile}</g>'
+(ROOT/'responsive-pairs.svg').write_text(svg(paired,3390,8200),encoding='utf-8')
 mobile_template=(ROOT/'mobile.template.html').read_text(encoding='utf-8')
 interaction=template.split('<script>')[-1].split('</script>')[0]
 options=''.join(f'<option value="{n}">Pad {n:02}</option>' for n in range(1,17))

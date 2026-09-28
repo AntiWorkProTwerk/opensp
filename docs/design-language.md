@@ -8,6 +8,10 @@ The corrected diagrams were visually checked in Penpot and persisted through
 reload. They are imported vector groups, not a published native component library.
 The second page, **Mobile - light and dark**, adds six mobile compositions.
 Native snapshots are committed in [design/penpot](../design/penpot/README.md).
+The **Desktop + mobile - themes** page places matching desktop/mobile views
+next to each other for each article direction, with light/dark pairs. Component
+and panel-part sheets follow in both themes. [Desktop review](../design/studies/desktop.html)
+and [paired contact sheet](../design/studies/responsive-pairs.svg).
 
 [Open the OpenSP canvas](https://design.penpot.app/#/workspace?team-id=a5ac146a-5787-80fa-8008-b51846f04474&file-id=24d9d841-759d-81bc-8008-b518bc70d8b3&page-id=24d9d841-759d-81bc-8008-b518bc70d8b4).
 Access requires the owner's Penpot account; this is not a public sharing link.
@@ -81,6 +85,8 @@ The values are implementation proposals, not exported Penpot design tokens.
 Smoke checks cover 30 width/layout/theme combinations at 320, 390, 430, 768 and
 1280px, overflow, pad selection, step navigation, theme persistence and system
 changes. The public `site/` remains unchanged; these are repository review files.
+An additional ten desktop checks verify every study loads its matching light
+and dark SVG at full 1200px source width. All generated SVG IDs are unique.
 
 ## Previously considered alternative: Figma with Tokens Studio
 

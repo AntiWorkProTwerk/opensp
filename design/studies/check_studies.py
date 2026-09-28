@@ -69,6 +69,16 @@ with sync_playwright() as p:
     page.wait_for_timeout(100)
     assert page.locator('html').get_attribute('data-theme')=='dark'
     assert not errors,errors
+    page.goto((root/'desktop.html').as_uri())
+    page.set_viewport_size({'width':1440,'height':1000})
+    for study in ['a-field-manual','b-lab-journal','c-walkthrough','d-components','e-panel-parts']:
+        page.locator(f'[data-study="{study}"]').click()
+        for theme in ['light','dark']:
+            page.locator('[data-theme-picker]').select_option(theme)
+            expected=study+('-dark' if theme=='dark' else '')+'.svg'
+            assert page.locator('#study').get_attribute('src')==expected
+            page.wait_for_function('document.querySelector("#study").complete && document.querySelector("#study").naturalWidth === 1200')
+    assert not errors,errors
     browser.close()
-print('PASS: SVG IDs, interaction controls, 30 width/layout/theme combinations, touch selector, single-step view, persistent/system theme, no JS errors.')
+print('PASS: SVG IDs, interactions, 30 responsive combinations, 10 desktop theme views, persistence/system theme, no JS errors.')
 

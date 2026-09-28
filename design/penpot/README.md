@@ -10,4 +10,8 @@ sources and the browser review are in `../studies/`.
 
 `opensp-mobile-dark.penpot` is the subsequent complete snapshot: desktop studies
 plus a second page, **Mobile - light and dark**, containing all three mobile
-directions in both themes. Use this snapshot for the latest design work.
+directions in both themes.
+
+`opensp-responsive-themes.penpot` is the latest complete snapshot. It retains
+those two pages and adds **Desktop + mobile - themes**: adjacent desktop/mobile
+article layouts in light/dark, followed by component and panel-part theme pairs.
