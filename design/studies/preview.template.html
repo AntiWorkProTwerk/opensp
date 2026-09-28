@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>OpenSP — design studies</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#f4f4f2;color:#111;font-family:Arial,sans-serif}header,main{max-width:1380px;margin:auto;padding:32px 48px}header{display:flex;justify-content:space-between;border-bottom:1px solid}a{color:inherit;text-underline-offset:4px}header b{font-size:25px}small,.eyebrow,button,label{font-family:Consolas,'Courier New',monospace}small,.eyebrow{font-size:12px;letter-spacing:.06em}h1{font-size:clamp(42px,5vw,76px);font-weight:400;letter-spacing:-.05em;margin:38px 0 22px}h2{font-weight:400;font-size:32px;letter-spacing:-.025em}p{font-size:19px;line-height:1.65;max-width:65ch}nav{display:flex;gap:24px;flex-wrap:wrap;margin:32px 0 48px}section{border-top:1px solid;padding:28px 0 64px}.concepts{display:grid;grid-template-columns:1fr 1fr;gap:38px}.concepts figure{margin:0}.concepts img{width:100%;display:block;border:1px solid #bbb;background:white}figcaption{font-size:15px;line-height:1.5;margin:12px 0 24px}.motion{display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:start}.instrument{max-width:400px;margin:24px auto}.instrument svg{display:block;width:100%;height:auto}button{border:1px solid;background:white;color:#111;padding:13px 18px;cursor:pointer;font-size:14px}button:hover,button[aria-pressed=true]{background:#111;color:white}button:focus-visible,a:focus-visible,input:focus-visible{outline:3px double #111;outline-offset:4px}.controls{display:flex;gap:8px;flex-wrap:wrap;margin:26px 0}.step{display:flex;gap:22px;border-top:1px solid #aaa;padding:18px 0;align-items:start}.step button{min-width:48px}.step p{margin:0;font-size:17px}.step strong{font-weight:400;font-size:22px;display:block;margin-bottom:7px}.pad{cursor:pointer}.pad:focus{outline:none}.pad:focus rect{stroke-width:4;stroke-dasharray:3 2}input{width:100%;accent-color:#111;margin:18px 0}output{font-family:Consolas,monospace}.note{border-left:3px solid;padding:0 18px;font-size:15px}footer{border-top:1px solid;padding:32px 0;font:12px Consolas,monospace}#ctrl-1-indicator{transition:transform 200ms linear}@media(prefers-reduced-motion:reduce){#ctrl-1-indicator{transition:none}}@media(max-width:760px){header,main{padding:24px}header small{max-width:160px;text-align:right}.concepts,.motion{grid-template-columns:1fr}.motion{gap:24px}nav{gap:15px}.instrument{max-width:340px}}
+</style>
+<header><b>opensp</b><small>DESIGN STUDIES / 01<br>PROPOSALS, NOT THE LIVE SITE</small></header>
+<main><div class="eyebrow" style="margin-top:35px">A VISUAL LANGUAGE FOR THE JOURNEY</div><h1>An instrument.<br>A readable story.</h1>
+<p>Black and white. Clear hierarchy. Diagrams that explain what changes. Three directions and a small working interaction study to choose from.</p>
+<nav><a href="#directions">01 / Layouts</a><a href="#motion">02 / Live instrument</a><a href="#references">03 / References</a></nav>
+<section id="directions"><div class="eyebrow">01 / CHOOSE THE PARTS, NOT JUST A TEMPLATE</div><h2>Three directions. One shared kit.</h2>
+<div class="concepts">
+<figure><a href="a-field-manual.svg"><img src="a-field-manual.svg" alt="Field manual: indexed sans-serif article with a large annotated instrument"></a><figcaption><b>A / Field manual.</b> Numbered sections, fine rules, margin notes. The closest to the Teenage Engineering guide direction.</figcaption></figure>
+<figure><a href="b-lab-journal.svg"><img src="b-lab-journal.svg" alt="Lab journal: large serif title, readable narrative and instrument illustration"></a><figcaption><b>B / Lab journal.</b> An editorial, serif-led alternative for the project story and milestone essays.</figcaption></figure>
+<figure><a href="c-walkthrough.svg"><img src="c-walkthrough.svg" alt="Guided walkthrough: persistent instrument alongside one active explanation"></a><figcaption><b>C / Guided walkthrough.</b> A persistent diagram paired with short steps. Best for showing cause and effect.</figcaption></figure>
+<figure><a href="d-components.svg"><img src="d-components.svg" alt="Component studies with type hierarchy, evidence labels and four instrument states"></a><figcaption><b>D / Shared parts.</b> Type, evidence labels, control states and the connection between action and response.</figcaption></figure>
+</div><figure style="margin:0;max-width:700px"><a href="e-panel-parts.svg"><img style="width:100%" src="e-panel-parts.svg" alt="Corrected SP-404MKII panel and separate display, knob, pad and performance button parts"></a><figcaption><b>E / Modular instrument.</b> Corrected against Roland's panel reference. Separate bezel, screen, indicators, pads and button groups.</figcaption></figure></section>
+<section id="motion"><div class="eyebrow">02 / INTERACTION STUDY — NOT A DEVICE CONNECTION</div><h2>Make the explanation move.</h2><div class="motion">
+<div><div class="instrument">{{INSTRUMENT}}</div><div class="controls"><button id="play">Play sequence</button><button id="reset">Reset</button></div><output id="status" aria-live="polite">Ready. Select a step or try a pad.</output></div>
+<div><p>Try the pads, or turn the control below. The display and panel share one state. No sound is generated and no hardware is connected.</p>
+<div class="step"><button data-step="0" aria-pressed="true">01</button><p><strong>Start with the surface.</strong>The outlines establish where everything lives.</p></div>
+<div class="step"><button data-step="1" aria-pressed="false">02</button><p><strong>Press a pad.</strong>Its fill inverts; the display names the selected input.</p></div>
+<div class="step"><button data-step="2" aria-pressed="false">03</button><p><strong>Turn a knob.</strong>The indicator rotates and the screen value changes with it.</p></div>
+<div class="step"><button data-step="3" aria-pressed="false">04</button><p><strong>Release.</strong>Return to a neutral state, without moving the surrounding layout.</p></div>
+<div style="margin-top:28px"><label for="knob">CTRL 1 / DEMO VALUE <output id="knob-value">0</output></label><input id="knob" type="range" min="0" max="127" value="0"></div>
+<p class="note">Simplified panel geometry and invented display content. This demonstrates a visual language, not the stock operating procedure or measured firmware behavior. Animation never starts automatically.</p>
+</div></div></section>
+<section id="references"><div class="eyebrow">03 / RESEARCH NOTES</div><h2>What we take from the references.</h2>
+<p><a href="https://teenage.engineering/guides/ep-133">Teenage Engineering / EP–133 guide</a> — numbered sections, technical labels, generous space and a hardware-first explanation.</p>
+<p><a href="https://ciechanow.ski/mechanical-watch/">Bartosz Ciechanowski / Mechanical Watch</a> — the illustration does the teaching; controls reveal cause and effect.</p>
+<p><a href="https://www.redblobgames.com/grids/hexagons/">Red Blob Games / Hexagonal Grids</a> — a readable technical article with explorable diagrams beside the concepts.</p>
+<p>These are original sketches inspired by those principles, not copied artwork or page designs. System fonts keep this first comparison focused on hierarchy: Arial, Georgia and a monospace face.</p></section>
+<footer>OPENSP / REVIEW ONLY / THE PUBLIC HOMEPAGE HAS NOT BEEN CHANGED.</footer></main>
+<script>
+const $=s=>document.querySelector(s), pads=[...document.querySelectorAll('.pad')];
+let state={pad:0,knob:0,step:0}, timer=null;
+function render(message){
+ pads.forEach(p=>{const on=+p.dataset.pad===state.pad;p.querySelector('rect').setAttribute('fill',on?'#111':'white');p.querySelector('text').setAttribute('fill',on?'white':'#111');p.setAttribute('aria-pressed',String(on));});
+ $('#ctrl-1-indicator').setAttribute('transform',`rotate(${-135+state.knob/127*270} 161 68)`);
+ $('#screen-value').textContent=state.step===2?`CTRL 1 ${String(state.knob).padStart(3,'0')}`:state.pad?`PAD ${String(state.pad).padStart(2,'0')}`:'READY';
+ $('#knob').value=state.knob;$('#knob-value').value=state.knob;
+ document.querySelectorAll('[data-step]').forEach(b=>b.setAttribute('aria-pressed',String(+b.dataset.step===state.step)));
+ $('#status').textContent=message;
+}
+function stop(){clearInterval(timer);timer=null;$('#play').textContent='Play sequence';}
+function step(n){state={step:n,pad:n===1||n===2?1:0,knob:n>=2?96:0};render(['01 / Idle','02 / Pad 01 selected','03 / CTRL 1 at 96','04 / Pad released'][n]);}
+document.querySelectorAll('[data-step]').forEach(b=>b.onclick=()=>{stop();step(+b.dataset.step)});
+pads.forEach(p=>{const activate=()=>{stop();state.pad=+p.dataset.pad;state.step=1;render(`Pad ${state.pad} selected (illustrative state).`)};p.onclick=activate;p.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();activate()}}});
+$('#knob').oninput=e=>{stop();state.knob=+e.target.value;state.step=2;render(`CTRL 1: ${state.knob} (demo value).`)};
+$('#play').onclick=()=>{if(timer){stop();return}step(0);$('#play').textContent='Pause';timer=setInterval(()=>{if(state.step===3){stop();return}step(state.step+1)},1500)};
+$('#reset').onclick=()=>{stop();step(0)};
+document.addEventListener('visibilitychange',()=>{if(document.hidden)stop()});
+render('Ready. Select a step or try a pad.');
+</script></html>
+

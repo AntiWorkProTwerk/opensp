@@ -1,9 +1,11 @@
 # OpenSP design language
 
 Tool: **Penpot**, connected through the signed-in Canary UI on 2026-09-28.
-The **OpenSP** file is in Personal Projects / Drafts with a single empty
-**Page 1**. The owner requested a blank starting point; no design elements,
-tokens, templates or additional pages have been added.
+The **OpenSP** file is in Personal Projects / Drafts. **Page 1** now contains
+three proposed editorial layouts, a component/state sheet and a modular panel
+sheet. The owner expanded the blank-start request to design exploration.
+The corrected diagrams were visually checked in Penpot and persisted through
+reload. They are imported vector groups, not a published native component library.
 
 [Open the OpenSP canvas](https://design.penpot.app/#/workspace?team-id=a5ac146a-5787-80fa-8008-b51846f04474&file-id=24d9d841-759d-81bc-8008-b518bc70d8b3&page-id=24d9d841-759d-81bc-8008-b518bc70d8b4).
 Access requires the owner's Penpot account; this is not a public sharing link.
@@ -24,12 +26,39 @@ become versioned tokens and CSS.
 
 ## Next together
 
-Start laying out ideas on the empty page. The earlier four-page structure
-was a proposal, superseded by the owner's single blank-page request.
+Choose parts from the [local review page](../design/studies/index.html):
+A field manual, B lab journal, C guided walkthrough, D shared states, E panel parts.
+The public homepage remains blank. These are proposals, not approved styling.
 Keep agreed design values as
 exported JSON in `design/tokens.json` when we have actual tokens to export;
 retain this document for rationale and usage rules. Build the browser style
 guide after choosing the first direction. No palette or font is approved yet.
+
+## Reference-led studies / September 28
+
+- [Teenage Engineering EP–133 guide](https://teenage.engineering/guides/ep-133):
+  numbered sections, hardware-first diagrams and generous whitespace.
+- [Bartosz Ciechanowski](https://ciechanow.ski/mechanical-watch/): interactive
+  illustrations explaining cause and effect alongside the narrative.
+- [Red Blob Games](https://www.redblobgames.com/grids/hexagons/): readable
+  technical prose combined with explorable diagrams.
+
+The first SP drawing incorrectly rearranged the physical controls. The owner
+flagged this. The replacement follows the panel illustration and control lists
+on pp. 6–11 of [Roland's reference manual](https://static.roland.com/assets/media/pdf/SP-404MK2_v4_reference_eng02_W.pdf).
+It restores the circular display bezel, flanking effect buttons, lower VALUE
+knob and control rows, left four-column pad grid and right performance column.
+Shapes and proportions are simplified, not measured CAD; display content is invented.
+
+The owner requested composition from parts. [panel.py](../design/studies/panel.py)
+provides separate enclosure, knob body/indicator, display bezel/screen, effect
+buttons, record/edit controls, banks, individual pads and performance buttons.
+Named SVG groups allow independent states/animation. The browser study connects
+pad selection, CTRL 1, display, play/pause/reset and manual steps; it has no
+hardware connection or sound. Pointer/keyboard, mobile width, SVG IDs and
+JavaScript smoke checks pass with [check_studies.py](../design/studies/check_studies.py).
+Generate with `python design/studies/build_studies.py`. Fonts are preliminary
+system-font studies. SVG import is manual; there is no automatic Penpot sync.
 
 ## Previously considered alternative: Figma with Tokens Studio
 
