@@ -1,58 +1,79 @@
-"""Homepage proposal, paired desktop/mobile and light/dark Penpot source."""
+"""Homepage review assets. Native linked Penpot layouts are maintained separately."""
 from pathlib import Path
-from build_studies import text, rect, line, lines, label, svg
+from html import escape
+from base64 import b64encode
+import re
 from panel import device
 from mobile import dark_svg
-ROOT=Path(__file__).parent
 
-def panel(x,y,s):
-    return device(x,y,s,0).replace('INPUT / DEMO','OPENSP').replace('READY','HELLO, SP.')
+ROOT = Path(__file__).parent
 
-d=rect(0,0,1440,1440)
-d+=text(64,57,'opensp',27,weight='bold')+text(619,54,'Releases',18)+text(733,54,'Guides',18)+label(1274,54,'LIGHT / ○')+line(64,89,1376,89)
-d+=label(64,208,'AN INDEPENDENT SP-404MKII PROJECT')
-d+=text(64,305,'OpenSP',76)
-d+=lines(68,371,['An open set of firmware and guides','for the Sp-404MKII'],23,leading=36)
-d+=panel(961,143,.70)
-d+='<g transform="translate(0 -150)">'
-d+=line(64,747,1376,747)+label(64,791,'01 / RELEASES')+text(424,802,'A record of what changes.',36)+text(1340,802,'−',28)
-d+=lines(424,853,['Builds, release notes, and compatibility information.','A clear place to see what is ready and what is experimental.'],20,leading=32)
-d+=rect(424,941,952,83,'#f2f2f2','none')+label(448,975,'RELEASE INDEX / PREVIEW')+text(448,1003,'Downloads and verified release details will appear here.',17)
-d+=line(64,1081,1376,1081)+label(64,1125,'02 / GUIDES')+text(424,1136,'Understand it, one step at a time.',36)+text(1340,1136,'−',28)
-for i,(name,desc) in enumerate([('Meet the instrument','A visual map of the surface.'),('From a pad press to an event','Follow an input through the diagram.'),('Reading the project','How to read observations and open questions.')]):
-    yy=1190+i*87
-    d+=line(424,yy,1376,yy)+label(424,yy+35,f'0{i+1}')+text(479,yy+37,name,23)+text(479,yy+64,desc,16)+text(1346,yy+38,'↗',24)
-d+='</g>'+line(64,1380,1376,1380)+label(64,1417,'OPENSP / INDEPENDENT, COMMUNITY-MINDED')+label(1040,1417,'HOMEPAGE DESIGN / PREVIEW')
+def text(x, y, value, size=20, mono=False, weight='400', fill='#111', tracking=0):
+    family='Cousine' if mono else 'Arimo'
+    return f'<text x="{x}" y="{y}" font-family="{family}" font-size="{size}" font-weight="{weight}" letter-spacing="{tracking}" fill="{fill}">{escape(value)}</text>'
 
-m=rect(0,0,390,1600)+text(22,40,'opensp',25,weight='bold')+label(302,37,'LIGHT ○')
-m+=text(105,93,'Releases',18)+text(213,93,'Guides',18)+line(22,118,368,118)
-m+=label(22,151,'AN INDEPENDENT SP-404MKII PROJECT')+text(22,220,'OpenSP',48)
-m+=lines(22,288,['An open set of firmware and guides','for the Sp-404MKII'],18,leading=29)
-m+=panel(92,372,.515)
-m+='<g transform="translate(0 -260)">'
-m+=line(22,968,368,968)+label(22,1005,'01 / RELEASES')+text(342,1015,'−',28)
-m+=lines(22,1130,['Builds, release notes, and','compatibility information.'],18,leading=29)
-m+=rect(22,1208,346,106,'#f2f2f2','none')+label(39,1242,'RELEASE INDEX / PREVIEW')+lines(39,1273,['Verified release details','will appear here.'],16,leading=24)
-m+='</g><g transform="translate(0 -280)">'
-m+=line(22,1360,368,1360)+label(22,1396,'02 / GUIDES')+text(342,1407,'−',28)
-for i,(name,desc) in enumerate([('Meet the instrument','A visual map of the surface.'),('From a pad press to an event','Follow an input through the diagram.'),('Reading the project','Observations and open questions.')]):
-    yy=1445+i*91
-    m+=line(22,yy,368,yy)+text(22,yy+34,name,19)+text(22,yy+61,desc,15)+text(350,yy+35,'↗',18)
-m+='</g>'+line(22,1510,368,1510)+label(22,1545,'OPENSP / INDEPENDENT PROJECT')+label(22,1571,'HOMEPAGE DESIGN / PREVIEW')
+def lines(x,y,values,size=20,leading=32):
+    return ''.join(text(x,y+i*leading,v,size) for i,v in enumerate(values))
+
+def label(x,y,value,size=13):return text(x,y,value,size,True,tracking=.26)
+def rect(x,y,w,h,fill='white'):return f'<rect x="{x}" y="{y}" width="{w}" height="{h}" fill="{fill}"/>'
+def line(x,y,x2,y2):return f'<path d="M{x} {y}L{x2} {y2}" fill="none" stroke="#888"/>'
+def arrow(x,y):return f'<path d="M{x} {y+14}l14 -14m-14 0h14v14" fill="none" stroke="#111" stroke-width="1.25"/>'
+def panel(x,y,s):return device(x,y,s,0).replace('INPUT / DEMO','OPENSP').replace('READY','HELLO, SP.')
+
+fonts=''
+for family,file in [('Arimo','arimo-latin.woff2'),('Cousine','cousine-latin.woff2')]:
+    data=b64encode((ROOT/'fonts'/file).read_bytes()).decode()
+    fonts+=f"@font-face{{font-family:{family};src:url(data:font/woff2;base64,{data}) format('woff2');font-weight:{'400 700' if family=='Arimo' else '400'}}}"
+
+def svg(body,w,h):return f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {w} {h}" width="{w}" height="{h}"><style>{fonts}</style>{body}</svg>'
+
+rows=[('Meet the instrument','A visual map of the surface.'),('From a pad press to an event','Follow an input through the diagram.'),('Reading the project','How to read observations and open questions.')]
+d=rect(0,0,1440,1340)
+d+=text(64,53,'opensp',27,weight='700')+label(625,47,'Releases',14)+label(757,47,'Guides',14)+label(1270,47,'LIGHT / ○')+line(64,79,1376,79)
+d+=label(64,158,'AN INDEPENDENT SP-404MKII PROJECT')+text(62,252,'OpenSP',76,tracking=-1.9)
+d+=lines(64,302,['An open set of firmware and guides','for the Sp-404MKII'],22,32)+panel(1048,112,.60)
+d+=line(64,488,1376,488)+label(64,540,'RELEASES')+text(384,542,'A record of what changes.',32,tracking=-.64)+line(1348,536,1364,536)
+d+=lines(384,612,['Builds, release notes, and compatibility information.','A clear place to see what is ready and what is experimental.'])
+d+=rect(384,688,992,88,'#f2f2f2')+label(408,716,'RELEASE INDEX / PREVIEW')+text(408,747,'Downloads and verified release details will appear here.',16)
+d+=line(64,832,1376,832)+label(64,884,'GUIDES')+text(384,886,'Understand it, one step at a time.',32,tracking=-.64)+line(1348,880,1364,880)
+for i,(title,desc) in enumerate(rows):
+    y=936+i*88
+    d+=line(384,y,1376,y)+label(384,y+37,f'{i+1:02}')+text(440,y+36,title,22)+text(440,y+67,desc,16,fill='#555')+arrow(1350,y+22)
+d+=label(384,1240,'DESIGN PREVIEW / These links open design studies, not finished guides.',12)
+d+=line(64,1268,1376,1268)+label(64,1308,'OPENSP / INDEPENDENT, COMMUNITY-MINDED',12)+label(1114,1308,'HOMEPAGE DESIGN / PREVIEW',12)
+
+m=rect(0,0,390,1484)+text(24,43,'opensp',27,weight='700')+label(286,40,'LIGHT / ○',12)
+m+=label(100,84,'Releases',14)+label(232,84,'Guides',14)+line(24,103,366,103)
+m+=label(24,144,'AN INDEPENDENT SP-404MKII PROJECT',12)+text(23,210,'OpenSP',48,tracking=-1.2)
+m+=lines(24,258,['An open set of firmware and guides','for the Sp-404MKII'],18,29)+panel(105,320,.45)
+m+=line(24,608,366,608)+label(24,650,'RELEASES')+line(342,646,358,646)
+m+=lines(24,704,['Builds, release notes, and compatibility','information. A clear place to see what','is ready and what is experimental.'],18,29)
+m+=rect(24,804,342,104,'#f2f2f2')+label(44,832,'RELEASE INDEX / PREVIEW')+lines(44,865,['Downloads and verified release','details will appear here.'],16,24)
+m+=line(24,932,366,932)+label(24,974,'GUIDES')+line(342,970,358,970)
+for i,(title,desc) in enumerate(rows):
+    y=1008+i*96
+    m+=line(24,y,366,y)+text(24,y+36,title,20)+arrow(344,y+22)
+    ds=[desc] if i<2 else ['How to read observations','and open questions.']
+    m+=lines(24,y+66,ds,16,24)
+m+=label(24,1340,'DESIGN PREVIEW / Links open design studies,',12)+label(24,1360,'not finished guides.',12)
+m+=line(24,1404,366,1404)+label(24,1440,'OPENSP / INDEPENDENT PROJECT',12)+label(24,1464,'HOMEPAGE DESIGN / PREVIEW',12)
 
 sheet=''
-for name,body,w,h,x in [('home-desktop',d,1440,1440,0),('home-mobile',m,390,1600,1500)]:
+for name,body,w,h,x in [('home-desktop',d,1440,1340,0),('home-mobile',m,390,1484,1500)]:
     source=svg(body,w,h)
     (ROOT/f'{name}.svg').write_text(source,encoding='utf-8')
-    dark=dark_svg(source)
+    dark=dark_svg(source).replace('#eeefec','#eef0ec').replace('#292c2e','#242628').replace('fill="#555"','fill="#b6b9b5"').replace('stroke="#888"','stroke="#636763"')
     (ROOT/f'{name}-dark.svg').write_text(dark,encoding='utf-8')
+    # Each instrument has its own local ID namespace in the paired sheet.
     sheet+=f'<g transform="translate({x} 0)">{body}</g>'
-    sheet+=f'<g transform="translate({x+1980} 0)">{dark.split(">",1)[1].rsplit("</svg>",1)[0]}</g>'
-(ROOT/'home-pairs.svg').write_text(svg(sheet,3870,1600),encoding='utf-8')
+    dark_body=dark.split('</style>',1)[1].rsplit('</svg>',1)[0]
+    sheet+=f'<g transform="translate({x+1980} 0)">{dark_body}</g>'
+sheet=re.sub(r' id="[^"]+"','',sheet)
+(ROOT/'home-pairs.svg').write_text(svg(sheet,3870,1484),encoding='utf-8')
+
 template=(ROOT/'home.template.html').read_text(encoding='utf-8')
-illustration=svg(panel(0,0,1),400,570)
-# Homepage illustration is decorative, not an interactive pad grid.
-import re
+illustration=f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 570">{panel(0,0,1)}</svg>'
 illustration=re.sub(r' role="button"| tabindex="0"','',illustration)
 (ROOT/'home.html').write_text(template.replace('{{PANEL}}',illustration),encoding='utf-8')
-print('Generated homepage desktop/mobile light/dark proposals and responsive preview.')
+print('Generated homepage review assets; native Penpot components remain the visual source.')

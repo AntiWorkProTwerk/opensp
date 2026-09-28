@@ -5,6 +5,14 @@ For all OpenSP website work, use the `penpot-design-system` skill and read
 assets, and current design status. The website stack has not been selected;
 these rules apply regardless of the eventual framework.
 
+For design work in Penpot, also use the globally installed `impeccable` skill
+(`<user-profile>/.agents/skills/impeccable/SKILL.md`). Apply its typography,
+layout and review guidance to the native components, then check matching desktop
+and mobile views in both themes. Read the
+[Teenage Engineering reference notes](docs/references/teenage-engineering.md)
+first. The owner's chosen fonts, monochrome palette and monospaced section labels
+take precedence over generic aesthetic defaults in the skill.
+
 - Always use the shared Penpot assets and native reusable components. Build
   layouts with linked instances of named main components, including nested SP
   parts. Do not substitute detached copies, flattened images, or repeated SVG

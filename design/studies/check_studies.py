@@ -85,15 +85,37 @@ with sync_playwright() as p:
             page.wait_for_function('document.querySelector("#study").complete && document.querySelector("#study").naturalWidth === 1200')
     assert not errors,errors
     page.goto((root/'home.html').as_uri())
-    for width in [320,390,768,1440]:
+    for width in [320,390,430,600,768,1000,1440,1920]:
         page.set_viewport_size({'width':width,'height':900})
         for theme in ['light','dark']:
             page.locator('[data-theme-picker]').select_option(theme)
             assert page.evaluate('document.documentElement.scrollWidth <= innerWidth')
             nav=page.locator('nav[aria-label="Main navigation"]')
             assert nav.locator('a').all_text_contents()==['Releases','Guides']
+            assert page.locator('.section-label').all_text_contents()==['RELEASES','GUIDES']
+            assert page.locator('.section-label').first.evaluate("el=>getComputedStyle(el).fontFamily.startsWith('Cousine') && getComputedStyle(el).fontSize==='13px'")
             bounds=nav.bounding_box()
             assert abs(bounds['x']+bounds['width']/2-width/2)<2,(width,bounds)
+            assert nav.locator('a').first.evaluate("el=>getComputedStyle(el).fontFamily.startsWith('Cousine')")
+            assert page.locator('h1').evaluate("el=>getComputedStyle(el).fontFamily.startsWith('Arimo')")
+            assert nav.locator('a').first.bounding_box()['height']>=44
+            if width==1440:
+                assert page.locator('#releases').bounding_box()['y']<500
+                assert page.locator('#guides').bounding_box()['y']<850
+            if width==390:
+                assert page.locator('#releases').bounding_box()['y']<625
+                assert page.locator('#guides').bounding_box()['y']<950
+            title_box=page.locator('.guide .title').first.bounding_box()
+            description_box=page.locator('.guide .description').first.bounding_box()
+            assert description_box['y']>=title_box['y']+title_box['height']
+    assert page.evaluate("document.fonts.check('14px Cousine') && document.fonts.check('20px Arimo')")
+    # A 1440px screen at 200% browser zoom has a 720px CSS viewport.
+    page.set_viewport_size({'width':720,'height':450})
+    assert page.evaluate('document.documentElement.scrollWidth <= innerWidth')
+    page.set_viewport_size({'width':390,'height':844})
+    page.locator('.guide .title').first.evaluate("el=>el.textContent='A longer guide title that wraps naturally onto several lines'")
+    assert page.evaluate('document.documentElement.scrollWidth <= innerWidth')
+    page.reload()
     page.locator('nav a[href="#releases"]').click()
     for section in ['releases','guides']:
         summary=page.locator(f'#{section} summary')
@@ -115,5 +137,5 @@ with sync_playwright() as p:
     assert page.locator('.instrument [tabindex]').count()==0
     assert not errors,errors
     browser.close()
-print('PASS: SVG IDs, interactions, 30 responsive combinations, 10 desktop theme views, 8 homepage/theme widths with centered navigation, persistence/system theme, no JS errors.')
+print('PASS: SVG IDs, interactions, 30 responsive combinations, 10 desktop theme views, 16 homepage/theme widths, shared fonts, touch targets, zoom-equivalent and long-title reflow, centered navigation, persistence/system theme, no JS errors.')
 
