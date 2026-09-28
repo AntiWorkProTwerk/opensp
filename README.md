@@ -2,8 +2,8 @@
 
 A home for documenting the SP-404MKII development journey.
 
-Custom domain: **opensp.fyi**, configured in GitHub Pages. Cloudflare DNS
-records and GitHub's HTTPS certificate are still pending.
+Custom domain: **opensp.fyi**, configured in GitHub Pages and Cloudflare DNS.
+HTTP is verified; GitHub's HTTPS certificate is provisioning.
 
 ## Website
 
@@ -11,7 +11,7 @@ records and GitHub's HTTPS certificate are still pending.
 Open it in a browser to preview. GitHub Pages deploys only `site/` on pushes
 to `main`, using `.github/workflows/pages.yml`.
 
-Domain: https://opensp.fyi/ (not live until DNS and HTTPS finish).
+Domain: http://opensp.fyi/ (HTTPS provisioning is pending).
 
 ## Next: design language
 
