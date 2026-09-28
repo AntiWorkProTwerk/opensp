@@ -2,7 +2,8 @@
 
 A home for documenting the SP-404MKII development journey.
 
-Intended domain: **opensp.fyi** (owner reports registration; DNS is not configured here).
+Custom domain: **opensp.fyi**, configured in GitHub Pages. Cloudflare DNS
+records and GitHub's HTTPS certificate are still pending.
 
 ## Website
 
@@ -10,7 +11,7 @@ Intended domain: **opensp.fyi** (owner reports registration; DNS is not configur
 Open it in a browser to preview. GitHub Pages deploys only `site/` on pushes
 to `main`, using `.github/workflows/pages.yml`.
 
-Preview URL: https://AntiWorkProTwerk.github.io/opensp/
+Domain: https://opensp.fyi/ (not live until DNS and HTTPS finish).
 
 ## Next: design language
 
