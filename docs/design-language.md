@@ -1,8 +1,12 @@
 # OpenSP design language
 
-Tool: **Penpot**, selected for setup on 2026-09-28. The browser is at the
-account login screen; the OpenSP project/file has not been created yet.
-Visual direction remains open.
+Tool: **Penpot**, connected through the signed-in Canary UI on 2026-09-28.
+The **OpenSP** file is in Personal Projects / Drafts with a single empty
+**Page 1**. The owner requested a blank starting point; no design elements,
+tokens, templates or additional pages have been added.
+
+[Open the OpenSP canvas](https://design.penpot.app/#/workspace?team-id=a5ac146a-5787-80fa-8008-b51846f04474&file-id=24d9d841-759d-81bc-8008-b518bc70d8b3&page-id=24d9d841-759d-81bc-8008-b518bc70d8b4).
+Access requires the owner's Penpot account; this is not a public sharing link.
 
 ## Penpot and repository-owned tokens
 
@@ -18,17 +22,11 @@ guide here: swatches, type specimens, spacing, buttons, cards and article
 examples. The owner reviews the real rendered design, and agreed changes
 become versioned tokens and CSS.
 
-## Workspace to create after sign-in
+## Next together
 
-Create an **OpenSP** project with one file, **OpenSP Design Language**.
-Organize the file into four pages:
-
-- **Direction**: references, moodboards and agreed principles.
-- **Foundations**: color, typography, spacing, layout and motion decisions.
-- **Components**: navigation, article cards, buttons and evidence labels.
-- **Page studies**: homepage and a journey entry at desktop/mobile sizes.
-
-Record the Penpot file link here once created. Keep agreed design values as
+Start laying out ideas on the empty page. The earlier four-page structure
+was a proposal, superseded by the owner's single blank-page request.
+Keep agreed design values as
 exported JSON in `design/tokens.json` when we have actual tokens to export;
 retain this document for rationale and usage rules. Build the browser style
 guide after choosing the first direction. No palette or font is approved yet.
