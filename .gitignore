@@ -8,3 +8,10 @@ dist/
 .astro/
 playwright-report/
 test-results/
+*.zone
+*.pem
+*.key
+*.p12
+*.pfx
+*secret-audit*.json
+*privacy-audit*.json

@@ -24,6 +24,12 @@ publishing. GitHub Actions deploys only `dist/` after the `main` checks pass.
 The [launch record](docs/deployment.md) includes live browser checks and mobile/
 desktop Lighthouse reports.
 
+## Deployment
+
+GitHub Actions publishes the tested static build. Infrastructure exports and
+account configuration stay outside this repository. See
+[the deployment workflow](docs/development.md#checks-and-deployment).
+
 ## Shared design
 
 Use the named Penpot assets and linked components. `npm run design:pull` reads

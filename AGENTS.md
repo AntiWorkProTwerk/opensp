@@ -12,7 +12,7 @@ server, database or site-wide hydrated app is planned. Follow the performance
 budgets and measurement requirements in that document.
 
 For design work in Penpot, also use the globally installed `impeccable` skill
-(`<user-profile>/.agents/skills/impeccable/SKILL.md`). Apply its typography,
+(`impeccable/SKILL.md` in the global skills directory). Apply its typography,
 layout and review guidance to the native components, then check matching desktop
 and mobile views in both themes. Read the
 [Teenage Engineering reference notes](docs/references/teenage-engineering.md)
@@ -70,3 +70,16 @@ offscreen or hidden playback. Do not connect the public site to the physical SP.
 - Commit/push/deploy only when authorized. After deployment, verify Actions,
   HTTPS, the live page and `/build-info.json`; a successful build alone is not
   proof that the requested revision is live.
+
+## Publication privacy
+
+- Before committing, verify the effective Git author and committer use the
+  repository owner's pseudonym and GitHub no-reply email. Do not inherit a
+  personal machine identity without checking it.
+- Keep DNS-zone exports, credentials, account configuration and personal local
+  paths outside git. Public DNS records are discoverable but do not belong in
+  the project documentation.
+- Review the exact staged files and run a redacted secret scan before pushing.
+  Never publish an audit report containing secret values or removed identities.
+- After a history rewrite, use the cleaned history. Do not merge or push an old
+  clone, tag or backup into the repository.
