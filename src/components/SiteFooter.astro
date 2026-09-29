@@ -1,0 +1,6 @@
+---
+import copy from '../../design/studies/home-copy.json';
+interface Props {page?:string;}
+const {page=copy.footerPage}=Astro.props;
+---
+<footer class="site-footer"><span>{copy.footerProject}</span><span>{page}</span></footer>

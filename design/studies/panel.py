@@ -27,12 +27,15 @@ def knob(name,cx,cy,r,label,angle=-35):
     body+=group(name+'-indicator',f'<path d="M{cx} {cy}V{cy-r+4}" stroke="#111" stroke-width="2"/>',f'transform="rotate({angle} {cx} {cy})"')
     return group(name,body)
 
-def display(active=0):
+def display(active=0, content=None):
     bezel=group('display-bezel','<circle cx="200" cy="167" r="65" fill="white" stroke="#111" stroke-width="1.5"/>')
     screen=box(145,139,110,62,'#111')
-    screen+=caption(200,153,'INPUT / DEMO',6,'white')
-    screen+=f'<text id="screen-value" x="151" y="177" font-family="Courier New" font-size="13" fill="white">{"PAD %02d" % active if active else "READY"}</text>'
-    screen+='<path id="wave" d="M151 188h12l5 -7 5 14 5 -10 5 3h66" fill="none" stroke="white"/>'
+    if content is None:
+        screen+=caption(200,153,'INPUT / DEMO',6,'white')
+        screen+=f'<text id="screen-value" x="151" y="177" font-family="Courier New" font-size="13" fill="white">{"PAD %02d" % active if active else "READY"}</text>'
+        screen+='<path id="wave" d="M151 188h12l5 -7 5 14 5 -10 5 3h66" fill="none" stroke="white"/>'
+    else:
+        screen+=content
     return group('display',bezel+group('screen-content',screen))
 
 def effects():
@@ -88,10 +91,10 @@ def enclosure():
         for y in [31,541]: body+=f'<circle cx="{x}" cy="{y}" r="4" fill="white" stroke="#111" stroke-width=".8"/>'
     return group('enclosure',body)
 
-def device(x=0,y=0,scale=1,active=1,angle=25):
+def device(x=0,y=0,scale=1,active=1,angle=25,screen_content=None):
     parts=enclosure()
     parts+=group('top-knobs',''.join(knob(name,cx,68,20,label,angle if name=='ctrl-1' else -35) for name,cx,label in [('volume',83,'VOLUME'),('ctrl-1',161,'CTRL 1'),('ctrl-2',239,'CTRL 2'),('ctrl-3',317,'CTRL 3')]))
-    parts+=display(active)+effects()+control_buttons()+pads(active)+performance_buttons()
+    parts+=display(active,screen_content)+effects()+control_buttons()+pads(active)+performance_buttons()
     return group('instrument',parts,f'transform="translate({x} {y}) scale({scale})"')
 
 def parts_sheet():

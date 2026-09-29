@@ -1,0 +1,20 @@
+---
+import '../styles/global.css';
+import theme from '../scripts/theme.js?raw';
+interface Props {title?:string;description?:string;noindex?:boolean;}
+const {title='OpenSP',description='An open set of firmware, tools, and guides for the SP-404MKII.',noindex=false}=Astro.props;
+const canonical=new URL(Astro.url.pathname,Astro.site);
+---
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>{title}</title><meta name="description" content={description}/>
+  <link rel="canonical" href={canonical}/><link rel="icon" type="image/svg+xml" href="/favicon.svg"/>
+  <meta name="color-scheme" content="light dark"/>
+  <meta property="og:type" content="website"/><meta property="og:title" content={title}/><meta property="og:description" content={description}/><meta property="og:url" content={canonical}/>
+  {noindex&&<meta name="robots" content="noindex"/>}
+  <script is:inline set:html={theme}/>
+</head>
+<body><slot/></body>
+</html>

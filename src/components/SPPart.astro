@@ -1,0 +1,21 @@
+---
+import {part,color,type Shape} from '../lib/penpot';
+interface Props {name?:string;node?:Shape;omitScreen?:boolean;label?:string;}
+const {name,node:given,omitScreen=false,label}=Astro.props;
+const node=given||part(name||'Instrument');
+const hidden=omitScreen&&node.name.startsWith('OLED content slot');
+const fill=node.fills?.[0],stroke=node.strokes?.[0];
+const style={fill:color(fill?.ref,fill?.color),'fill-opacity':fill?.opacity,stroke:color(stroke?.ref,stroke?.color),'stroke-width':stroke?.width,'stroke-opacity':stroke?.opacity};
+const transform=`translate(${node.x} ${node.y})`;
+const lines=(label??node.text??'').split('\n');
+const textX=node.align==='center'?node.width/2:node.align==='right'?node.width:0;
+const baseline=(node.fontSize||7)*.92;
+---
+{!hidden&&<g transform={transform} data-part={node.name} data-component={node.componentName}>
+  {node.type==='rectangle'&&<rect width={node.width} height={node.height} {...style}/>}
+  {node.type==='ellipse'&&<ellipse cx={node.width/2} cy={node.height/2} rx={node.width/2} ry={node.height/2} {...style}/>}
+  {node.type==='path'&&<path d={node.d} transform={`translate(${-node.pathOrigin![0]} ${-node.pathOrigin![1]})`} {...style}/>}
+  {node.type==='text'&&<text x={textX} y={baseline} text-anchor={node.align==='center'?'middle':node.align==='right'?'end':'start'} font-family={node.fontFamily} font-size={node.fontSize} font-weight={node.fontWeight} letter-spacing={node.letterSpacing} {...style}>{lines.map((line,i)=><tspan x={textX} dy={i?(node.fontSize||7)*(node.lineHeight||1.2):0}>{line}</tspan>)}</text>}
+  {node.type==='board'&&node.fills?.length&&<rect width={node.width} height={node.height} {...style}/>}
+  {node.children?.map(child=><Astro.self node={child} omitScreen={omitScreen} label={label&&child.type==='text'?label:undefined}/>)}
+</g>}

@@ -2,8 +2,14 @@
 
 For all OpenSP website work, use the `penpot-design-system` skill and read
 [docs/design-language.md](docs/design-language.md) for the shared Penpot file,
-assets, and current design status. The website stack has not been selected;
-these rules apply regardless of the eventual framework.
+assets, and current design status. [docs/website-stack.md](docs/website-stack.md)
+records the owner-approved Astro static-output plan. The production stack is
+implemented; read [docs/development.md](docs/development.md) before changes or
+deployment. Use one responsive template, shared content and semantic
+theme tokens. Keep pages static, with small browser components for interaction;
+add Svelte islands only when their state needs justify them. No application
+server, database or site-wide hydrated app is planned. Follow the performance
+budgets and measurement requirements in that document.
 
 For design work in Penpot, also use the globally installed `impeccable` skill
 (`<user-profile>/.agents/skills/impeccable/SKILL.md`). Apply its typography,
@@ -24,7 +30,7 @@ take precedence over generic aesthetic defaults in the skill.
 - Make shared changes in the main component and propagate them to every
   affected instance. Verify desktop/mobile views and light/dark themes before
   calling the change complete. Do not patch individual copies to hide drift.
-- When the stack is chosen, map Penpot components and tokens to shared code
+- Map Penpot components and tokens to shared code
   components and assets with a documented source mapping. All website uses
   must consume those shared definitions so one update reaches every use.
   Update and verify both Penpot and code; automatic synchronization is not
@@ -32,3 +38,35 @@ take precedence over generic aesthetic defaults in the skill.
 - Existing unlinked studies are migration work. Convert reused parts to linked
   components before extending those studies or using them in production.
   Preserve historical snapshots and record migration status in the design docs.
+
+## SP display content
+
+Keep the display bezel, screen viewport and screen sequence separate reusable
+parts. All sizes and themes consume the same sequence; replace content without
+redrawing the instrument. Follow [docs/sp-display.md](docs/sp-display.md).
+Use original rendered frames or documented device captures, preserve their
+provenance and timing uncertainty, and never label a reconstruction as a capture.
+Penpot holds linked poster components; the browser implements playback. Keep a
+static first frame, keyboard/touch pause, reduced-motion behavior, and pause
+offscreen or hidden playback. Do not connect the public site to the physical SP.
+
+## Production workflow
+
+- `npm run design:pull` reads the live Penpot mains/assets and approved white
+  desktop homepage. Review its snapshot and shared-copy diff before building.
+  Run `npm run design:tokens` after a pull. Do not hand-edit generated geometry
+  or token CSS to hide a mismatch with Penpot.
+- Use the shared Astro components under `src/components/`. `SPPart` renders
+  native exported geometry; `SPDisplay` owns playback. Extend the shared shape
+  renderer and test new Penpot shape types before using them in production.
+- Keep content in the shared homepage JSON and draft-first MDX collection.
+  Never publish design-study links as finished guides or invent release claims.
+- Run `npm run check`, `npm run build` and `npm test`; inspect mobile/desktop in
+  both themes. Honor the 15 KiB gzip script budget and all playback/accessibility
+  checks. Report lab measurements separately from physical-device/field evidence.
+- Deployment is GitHub Actions to GitHub Pages, with Cloudflare DNS-only and
+  enforced HTTPS. Only `dist/` is public output. Do not move hosting, add an app
+  server or expose a design credential as an incidental change.
+- Commit/push/deploy only when authorized. After deployment, verify Actions,
+  HTTPS, the live page and `/build-info.json`; a successful build alone is not
+  proof that the requested revision is live.

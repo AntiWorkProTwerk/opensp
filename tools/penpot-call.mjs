@@ -33,7 +33,12 @@ const result = name === 'list' ? await rpc('tools/list',{},2) : await rpc('tools
   arguments: name === 'execute_code' ? {code:argument.startsWith('=') ? argument.slice(1) : fs.readFileSync(argument,'utf8')} : JSON.parse(argument || '{}')
 },2);
 for (const item of result.content || []) {
-  if (item.type === 'text') console.log(item.text);
+  if (item.type === 'text') {
+    if(args[2]==='--out' && item.text.trimStart().startsWith('<svg')) {
+      fs.writeFileSync(args[3],item.text);
+      console.log('Exported SVG to '+args[3]);
+    } else console.log(item.text);
+  }
   if (item.type === 'image' && args[2]==='--out') {
     fs.writeFileSync(args[3],Buffer.from(item.data,'base64'));
     console.log('Exported image to '+args[3]);

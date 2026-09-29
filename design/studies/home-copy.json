@@ -1,0 +1,13 @@
+{
+  "eyebrow": "AN OPEN-SOURCE SP-404MKII PROJECT",
+  "title": "OpenSP",
+  "intro": "An open set of firmware, tools, and guides for the Sp-404MKII.",
+  "repository": "Everything on this website is available on github.",
+  "releasesHeading": "Custom Firmware and Utilities",
+  "releaseBody": "The project is focused on providing an open set of utilities, community components to build your own features, as well as stock patches and fully custom firmware.",
+  "releaseStatus": "RELEASE INDEX",
+  "releasePlaceholder": "Downloads and verified release details will appear here.",
+  "guidesHeading": "Walkthroughs, Specs, and Breakdowns",
+  "footerProject": "OPENSP / INDEPENDENT, COMMUNITY-MINDED SOFTWARE",
+  "footerPage": "HOMEPAGE"
+}

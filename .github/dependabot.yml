@@ -1,0 +1,16 @@
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 3
+    groups:
+      astro:
+        patterns: ["astro", "@astrojs/*"]
+      browser-tests:
+        patterns: ["@playwright/*", "@axe-core/*"]
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly

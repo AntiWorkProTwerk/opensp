@@ -34,8 +34,9 @@ included in this repository.
   eyebrow, Releases/Guides navigation, section labels and metadata.
   The monospace choice follows the owner's preferred original OpenSP labels;
   it is not a claim that TE uses monospace everywhere.
-- Keep the exact OpenSP title and subtitle. Preserve the independent-project
-  eyebrow. The section labels now read `RELEASES` and `GUIDES`: the owner asked
+- Keep the exact owner-supplied OpenSP wording from `design/studies/home-copy.json`,
+  including the updated open-source eyebrow. The section labels read
+  `RELEASES` and `GUIDES`: the owner asked
   to remove the numeric prefixes while keeping their existing typography.
 - Use regular weight and modest tracking. Hero: 76px desktop, 48px mobile;
   section description: 32px; body: 20px desktop, 18px mobile; labels: 13px;
@@ -46,14 +47,17 @@ included in this repository.
 - Use an 8px spacing rhythm with 4px half-steps: 4px between guide title and caption,
   16–24px within groups, 32px around the hero and above the desktop release preview.
   Avoid position transforms that leave empty layout space behind.
-- Let the hero height follow its content. The SP drawing is 240px wide on
-  desktop and 180px on mobile. Restore 104px desktop disclosure headers and
-  stacked guide descriptions; mobile headers are 76px. The section-only
-  restoration leaves the newer hero and navigation unchanged.
+- Let the hero height follow the dominant SP drawing: 440px wide on desktop,
+  320px on mobile, clamped to available width. Stack the hero at 720px so its
+  copy is not squeezed beside the instrument. Keep 104px desktop disclosure
+  headers and stacked guide descriptions; mobile headers are now 128px to show
+  the owner's full section descriptions. Enlarging
+  the hero moves these sections down without changing their internal spacing.
 - Keep the accurate, sharp-line SP panel. Its display, knobs, pads and control
   sections remain linked parts of the Instrument component. Do not flatten it.
 - Keep both content sections collapsible and the two navigation links centered.
-  Preserve keyboard access, theme selection, and explicit preview notices.
+  Preserve keyboard access and theme selection. The owner hid the homepage
+  preview notice; the repository still identifies sample links as design studies.
 - Dark mode uses the same hierarchy and spacing, with off-white text on charcoal.
   Do not add gradients, shadows, decorative cards or an accent color in this pass.
 

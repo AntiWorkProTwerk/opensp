@@ -1,0 +1,14 @@
+sp-display{display:block;position:relative;aspect-ratio:2/1;background:#000;color:#fff;contain:layout}
+sp-display .screen-poster,sp-display .screen-frames{display:block;position:absolute;inset:0;width:100%;height:100%;image-rendering:pixelated}
+sp-display .screen-frames{visibility:hidden;overflow:hidden}
+sp-display[data-ready=true] .screen-frames{visibility:visible}
+sp-display[data-ready=true] .screen-poster{visibility:hidden}
+sp-display button{position:absolute;inset:50% 0 auto;width:100%;height:100%;min-height:44px;transform:translateY(-50%);padding:0;border:0;border-radius:0;background:transparent;color:#fff;cursor:pointer}
+sp-display button:hover,sp-display button:active{background:transparent;color:#fff}
+sp-display button:focus-visible{outline:2px solid #fff;outline-offset:-3px}
+sp-display button[hidden]{display:none}
+sp-display .playback-symbol{position:absolute;right:3px;bottom:2px;width:12px;height:12px;background:#000}
+sp-display .symbol-play,sp-display[data-state=paused] .symbol-pause{display:none}
+sp-display[data-state=paused] .symbol-play{display:block}
+sp-display .playback-symbol path{fill:none;stroke:#fff;stroke-width:1.5}
+sp-display .screen-frames image{image-rendering:pixelated}

@@ -1,0 +1,17 @@
+---
+import defaultSequence from '../../design/assets/screens/antiworkprotwerk-r3/manifest.json';
+import poster from '../../design/assets/screens/antiworkprotwerk-r3/poster.png';
+import sprite from '../../design/assets/screens/antiworkprotwerk-r3/sprite.png';
+import '../../design/components/sp-display.css';
+interface Sequence {title:string;description:string;width:number;height:number;frameCount:number;columns:number;frameMs:number;loop:boolean;durations?:number[];}
+interface Props {sequence?:Sequence;posterUrl?:string;spriteUrl?:string;style?:string;autoplay?:boolean;}
+const {sequence:provided,posterUrl=poster.src,spriteUrl=sprite.src,style,autoplay=true}=Astro.props;
+const sequence:Sequence=provided??defaultSequence;
+const {width,height,frameCount,columns}=sequence;
+---
+<sp-display role="group" aria-label={`${sequence.title} screen playback`} aria-description={sequence.description} frame-width={width} frame-height={height} frames={frameCount} columns={columns} frame-ms={sequence.frameMs} durations={sequence.durations?JSON.stringify(sequence.durations):undefined} autoplay={autoplay?'':undefined} loop={sequence.loop?'':undefined} style={style}>
+  <img class="screen-poster" src={posterUrl} width={width} height={height} alt={sequence.description} decoding="async"/>
+  <svg class="screen-frames" viewBox={`0 0 ${width} ${height}`} aria-hidden="true"><image data-frames href={spriteUrl} width={width*columns} height={height*Math.ceil(frameCount/columns)} x="0" y="0"/></svg>
+  <button type="button" aria-label="Play SP screen animation" hidden><svg class="playback-symbol" viewBox="0 0 12 12" aria-hidden="true"><path class="symbol-pause" d="M4 2v8M8 2v8"/><path class="symbol-play" d="m3 2 7 4-7 4Z"/></svg></button>
+</sp-display>
+<script>import '../../design/components/sp-display.js';</script>

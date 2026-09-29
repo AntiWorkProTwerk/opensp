@@ -1,0 +1,8 @@
+---
+interface Props {id:string;label:string;description:string;}
+const {id,label,description}=Astro.props;
+---
+<details class="section" id={id} open>
+  <summary><span class="section-label">{label}</span><h2 class="section-description">{description}</h2><span class="disclosure-mark" aria-hidden="true"></span></summary>
+  <div class="section-body"><slot/></div>
+</details>

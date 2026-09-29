@@ -4,3 +4,7 @@ Thumbs.db
 .env.*
 node_modules/
 __pycache__/
+dist/
+.astro/
+playwright-report/
+test-results/

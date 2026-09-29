@@ -2,21 +2,33 @@
 
 A home for documenting the SP-404MKII development journey.
 
-Custom domain: **opensp.fyi**, configured in GitHub Pages and Cloudflare DNS.
-HTTP is verified; GitHub's HTTPS certificate is provisioning.
+Website: [opensp.fyi](https://opensp.fyi/), on GitHub Pages with Cloudflare DNS
+and enforced HTTPS.
 
 ## Website
 
-`site/index.html` is an intentionally blank, dependency-free starting point.
-Open it in a browser to preview. GitHub Pages deploys only `site/` on pushes
-to `main`, using `.github/workflows/pages.yml`.
+The production site uses Astro static output, reusable components derived from
+the shared Penpot design, and the original AntiWorkProTwerk R3 frame animation.
+It has no application server or site-wide framework hydration. Guide topics
+remain unpublished previews; no firmware downloads are offered yet.
 
-Domain: http://opensp.fyi/ (HTTPS provisioning is pending).
+```powershell
+npm ci
+npm run dev
+```
 
-## Next: design language
+See [development.md](docs/development.md) for design pulls, content authoring,
+tests and deployment. `npm run check`, `npm run build` and `npm test` run before
+publishing. GitHub Actions deploys only `dist/` after the `main` checks pass.
+`site/index.html` is the historical blank page, no longer the deployment source.
 
-Choose the visual direction together before adding content or styling.
-See [the design workflow research](docs/design-language.md).
+## Shared design
+
+Use the named Penpot assets and linked components. `npm run design:pull` reads
+the approved native components and white desktop homepage into reviewable
+snapshots; it does not publish them. See [design-language.md](docs/design-language.md)
+and [the screen component contract](docs/sp-display.md).
 
 The firmware project's narrative remains the editorial source; no research
-artifacts or firmware binaries are included in this website skeleton.
+artifacts or firmware binaries are included in the public site build. The R3
+animation uses rendered pixel frames with their provenance recorded separately.

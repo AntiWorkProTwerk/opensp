@@ -1,0 +1,13 @@
+---
+import SPPart from './SPPart.astro';
+import SPDisplay from './SPDisplay.astro';
+import {part,findShape} from '../lib/penpot';
+const instrument=part('Instrument');
+const screen=findShape(instrument,'OLED content slot');
+if(!screen)throw new Error('Exported Penpot instrument has no display content slot');
+const screenStyle=`left:${screen.x/instrument.width*100}%;top:${screen.y/instrument.height*100}%;width:${screen.shape.width/instrument.width*100}%`;
+---
+<div class="instrument">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox={`0 0 ${instrument.width} ${instrument.height}`} width={instrument.width} height={instrument.height} aria-hidden="true"><SPPart node={instrument} omitScreen/></svg>
+  <slot name="screen"><SPDisplay style={screenStyle}/></slot>
+</div>

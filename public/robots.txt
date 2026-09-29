@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://opensp.fyi/sitemap-index.xml

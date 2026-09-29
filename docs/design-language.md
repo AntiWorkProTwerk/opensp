@@ -1,5 +1,18 @@
 # OpenSP design language
 
+## Production homepage
+
+The approved homepage is implemented in Astro using the current Penpot native
+component and library-asset snapshot. The instrument keeps its exported geometry;
+page text uses semantic HTML, shared copy and responsive CSS. Both themes share
+one template. The R3 display plays through the reusable browser component.
+The [development guide](development.md) records the pull, test and deployment
+workflow. Production guide rows are marked as unpublished and do not link to
+the older design studies. The history below records how the design reached this
+point; references to a blank public site describe earlier checkpoints.
+
+## Design history and source
+
 Tool: **Penpot**, connected through the signed-in Canary UI on 2026-09-28.
 The **OpenSP** file is in Personal Projects / Drafts. **Desktop concepts** contains
 three proposed editorial layouts, a component/state sheet and a modular panel
@@ -8,6 +21,10 @@ The corrected diagrams were visually checked in Penpot and persisted through
 reload. They are imported vector groups, not a published native component library.
 The second page, **Mobile layouts**, contains six mobile compositions.
 Native snapshots are saved in [design/penpot](../design/penpot/README.md).
+The [all-page overview](../design/exports/opensp-all-pages.png), captured before
+the owner's later homepage copy edits, combines all six
+visible pages at 8,000×13,314 pixels. Its [export workflow](../design/exports/README.md)
+preserves the original artwork and leaves the Penpot canvas unchanged.
 The **Responsive comparisons** page places matching desktop/mobile views
 next to each other for each article direction, with light/dark pairs. Component
 and panel-part sheets follow in both themes. [Desktop review](../design/studies/desktop.html)
@@ -17,8 +34,9 @@ and [paired contact sheet](../design/studies/responsive-pairs.svg).
 primary navigation links: Releases and Guides. The responsive preview is
 [home.html](../design/studies/home.html); [home-pairs.svg](../design/studies/home-pairs.svg)
 keeps desktop/mobile next to each other in both themes. The owner-selected hero
-title is “OpenSP”, with “An open set of firmware and guides for the Sp-404MKII”
-as its subtitle. Large introductory
+title is “OpenSP”. The owner later expanded the introduction to include tools
+and a sentence about GitHub. Exact current wording is in
+[home-copy.json](../design/studies/home-copy.json). Large introductory
 type, the modular SP illustration, a release-index placeholder and three sample
 guide links establish the structure. Links open design studies, not finished
 guides; no release/version/download claims are invented. Generate with
@@ -39,15 +57,27 @@ desktop sections share the restored 272px label rail plus a 48px gap. The releas
 preview sits below its copy, and guide descriptions sit beneath their titles.
 The owner preferred this earlier grouping to the side-by-side proposal.
 Mobile retains its single reading column.
-The content-driven hero uses a 240px desktop / 180px mobile SP illustration.
-The current native boards are 1440×1340 and 390×1484, with matching theme geometry.
+The owner wants the SP to dominate the hero. Its linked Instrument instance is
+now 440px wide on desktop and 320px on mobile, up from 240px and 180px. The full
+panel keeps its proportions and all nested component links. These are homepage
+scale overrides; the canonical SP component and other pages retain their sizes.
+Sections move down with the taller image but keep their internal layout.
+The browser hero stacks at 720px, with the SP clamped to the available width.
+The current native boards are 1440×1592 and 390×1904, with matching theme geometry.
+The white desktop board supplied the updated copy for all four views. The hero
+uses separate paragraphs, mobile shows both section descriptions, and the longer
+footer wraps. The owner-hidden preview notice is hidden throughout and its gap
+removed. Five shared component mains were updated; section-specific wording
+remains an instance override. All four copy/bounds checks pass. Twenty-four
+browser width/theme checks pass with the updated wording.
 [Reference notes](references/teenage-engineering.md) distinguish TE
 observations from OpenSP choices. Impeccable is installed globally and required
 by this repository's AGENTS.md for Penpot design work.
 
 The first whole-page migration hung before saving. A later attempt used bounded
-steps and skipped hidden archived SVG trees. Each new homepage board now contains
-11 linked top-level instances; its Instrument contains 54 nested component heads.
+steps and skipped hidden archived SVG trees. Each homepage board retains 11 linked
+top-level instances (the preview notice is hidden); its Instrument contains 54
+nested component heads before the screen addition described below.
 The old imported homepage and compatibility sample are hidden archive layers.
 The older article concept pages remain unlinked migration work.
 
@@ -65,6 +95,17 @@ generated by `python design/studies/components.py` from `panel.py`.
 The owner caught the straight effect-button columns: the shared source now
 uses mirrored slanted outer buttons tucked toward the screen, following
 Roland's panel illustration on p.6. This is a simplified drawing, not CAD.
+
+The homepage now uses the [reusable SP display](sp-display.md) for the original
+AntiWorkProTwerk R3 animation. A new `SP/Screens/AntiWorkProTwerk R3` native main
+is nested in the Display's content slot and reaches all four linked homepage
+views. Each instrument now has 55 nested component heads. Penpot shows its
+editable poster; the browser review plays the same 64 original renderer frames.
+The stock caption/UI are absent from that trace and 50 ms timing is a preview
+assumption. Poster, player and provenance are separate from the instrument shell.
+Desktop/mobile content fits are derived from the existing OLED window; no other
+homepage geometry or copy changed. The earlier native archive and overview
+predate this addition.
 
 **Design system** contains 12 additional website components: Wordmark, Primary
 links, Theme selector, Section label, Navigation, Hero copy, Section header,
@@ -89,6 +130,8 @@ repeatable whole-file rebuild commands. `compact-home.js` records the tighter
 hero and the superseded side-by-side sections. `restore-sections.js` restores
 only the earlier section geometry, preserving the hero, navigation and SP.
 Neither `compact-home.js` nor `refine-home.js` should be rerun as the current layout.
+`enlarge-home-sp.js` applies the later hero scale override in bounded batches,
+checking that navigation, hero copy and section internals remain unchanged.
 
 [Open the OpenSP canvas](https://design.penpot.app/#/workspace?team-id=a5ac146a-5787-80fa-8008-b51846f04474&file-id=24d9d841-759d-81bc-8008-b518bc70d8b3&page-id=24d9d841-759d-81bc-8008-b518bc70d8b4).
 Access requires the owner's Penpot account; this is not a public sharing link.
@@ -108,6 +151,11 @@ examples. The owner reviews the real rendered design, and agreed changes
 become versioned tokens and CSS.
 
 ## Next together
+
+The [stack decision](website-stack.md) chooses Astro static output, with Svelte
+only for interactive pieces that need it. No production framework is installed
+or deployed. Shared content should feed one responsive template in both themes;
+Penpot-to-code updates still require review.
 
 Choose parts from the [local review page](../design/studies/index.html):
 A field manual, B lab journal, C guided walkthrough, D shared states, E panel parts.

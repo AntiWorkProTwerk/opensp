@@ -1,0 +1,36 @@
+---
+import {getCollection} from 'astro:content';
+import Base from '../layouts/Base.astro';
+import SiteHeader from '../components/SiteHeader.astro';
+import SiteFooter from '../components/SiteFooter.astro';
+import SPInstrument from '../components/SPInstrument.astro';
+import Section from '../components/Section.astro';
+import GuideRow from '../components/GuideRow.astro';
+import copy from '../../design/studies/home-copy.json';
+import design from '../../design/penpot/homepage.json';
+const published=(await getCollection('guides',g=>!g.data.draft)).sort((a,b)=>a.data.order-b.data.order);
+const guides=published.length?published.map(g=>({...g.data,href:`/guides/${g.id}/`})) : design.guides.map(g=>({...g,href:undefined}));
+const repoParts=copy.repository.split('github');
+---
+<Base description={copy.intro}>
+  <SiteHeader home/>
+  <main id="main">
+    <section class="hero" aria-labelledby="title">
+      <div class="hero-copy"><p class="eyebrow">{copy.eyebrow}</p><h1 id="title">{copy.title}</h1><p class="intro">{design.heroIntroLines.map((line,i)=><span class="intro-line">{line}{i<design.heroIntroLines.length-1?' ':''}</span>)}</p><p class="intro repository-note">{repoParts.length===2?<>{repoParts[0]}<a href="https://github.com/AntiWorkProTwerk/opensp">github</a>{repoParts[1]}</>:<a href="https://github.com/AntiWorkProTwerk/opensp">{copy.repository}</a>}</p></div>
+      <figure><SPInstrument/></figure>
+    </section>
+    <Section id="releases" label="RELEASES" description={copy.releasesHeading}>
+      <p>{copy.releaseBody}</p><div class="release-preview"><div class="status">{copy.releaseStatus}</div><p>{copy.releasePlaceholder}</p></div>
+    </Section>
+    <Section id="guides" label="GUIDES" description={copy.guidesHeading}>
+      {!published.length&&<p class="publication-note">Planned guides. Not published yet.</p>}
+      {guides.map((g,i)=><GuideRow {...g} index={i}/>)}
+    </Section>
+  </main>
+  <SiteFooter/>
+</Base>
+<script>
+  function revealSection(){const target=document.getElementById(location.hash.slice(1));if(target instanceof HTMLDetailsElement)target.open=true;}
+  addEventListener('hashchange',revealSection);revealSection();
+  document.querySelectorAll<HTMLAnchorElement>('nav a[href^="#"]').forEach(a=>a.addEventListener('click',()=>{const target=document.querySelector(a.getAttribute('href')!);if(target instanceof HTMLDetailsElement)target.open=true;}));
+</script>

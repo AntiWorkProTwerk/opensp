@@ -1,5 +1,12 @@
 # Native Penpot snapshots
 
+The production build consumes `production.json` (native SP geometry, colors and
+typography assets) and `homepage.json` (approved copy, line breaks and component
+mapping). These are current read-only API snapshots, refreshed by
+`npm run design:pull`; see [the workflow](../../docs/development.md).
+They do not replace a full importable `.penpot` archive or claim automatic sync.
+The latest native archive below predates the owner's copy edits and R3 screen.
+
 `opensp-desktop.penpot` is the native export downloaded from the OpenSP file
 on 2026-09-28 before mobile/dark studies. It contains the five desktop/vector
 study sheets. ZIP integrity was checked; no linked libraries are required.
@@ -54,7 +61,7 @@ library. Live checks found 54 nested SP component heads per board and no UI text
 overflow. Historical snapshots are unchanged.
 SHA256: `b6d4c7bf31172e16fd801576ea0fa659d57e61eaa6f62018be10e57e9b8701ce`.
 
-`opensp-homepage-stacked.penpot` is the latest snapshot, exported on 2026-09-28.
+`opensp-homepage-stacked.penpot` preserves the section restoration, exported on 2026-09-28.
 At the owner's request, it restores only the earlier sections: preview below
 release copy, guide descriptions below titles, and the wider label rail.
 The compact hero, navigation, SP drawing and typography remain unchanged.
@@ -63,7 +70,26 @@ board sizes passed inspection. All four live boards retain 11 linked roots and
 54 nested SP component heads, with no measured UI text overflow.
 SHA256: `866d1c869e8aacd1b4aec7a348182a12ace08375756f742e8e09f69622794479`.
 
+`opensp-homepage-dominant-sp.penpot` is the latest native snapshot, exported on 2026-09-28.
+It predates the owner's subsequent copy edits and the reusable R3 screen.
+The live boards and browser review now include those refinements;
+this archive has not been overwritten or represented as current.
+The SP is now 440×627 on desktop and 320×456 on mobile. The taller hero pushes
+sections down while preserving their layout, navigation and text styling.
+Desktop boards are 1440×1625; mobile boards are 390×1684. ZIP inspection confirmed
+these dimensions, 11 linked roots per board and 23 active library components.
+Live checks confirmed all 54 nested SP component heads per board remain linked.
+SHA256: `8e26dfa7d7f71181a44b8f233f57c5dbc57106f1022526c92aabfa7f26c0bc51`.
+
 ## Migration scripts
+
+The [SP display guide](../../docs/sp-display.md) maps the new native screen main
+to the browser player and exact frame assets. `setup-screen.js` records its
+one-time creation; `fit-screen-slots.js` reapplies the viewport-derived scale
+after insertion or swapping, and `verify-screen-slots.js` checks the four live
+homepage instances. The current library has 24 components and two OLED colors
+in addition to the existing theme assets. The latest archive above remains a
+historical snapshot; no new `.penpot` export was made for this screen change.
 
 The JavaScript files here record staged operations through Penpot's official
 plugin API. They are experimental session scripts, not an idempotent build or
@@ -85,6 +111,9 @@ The current `restore-sections.js` overrides its sections while protecting the
 hero, navigation and SP. Load it on Homepage before editing the four section
 mains, then apply it to the existing boards. Read the connection notes before
 using these helpers; rerunning the compact script would undo this restoration.
+`enlarge-home-sp.js` records the subsequent homepage-only SP scale override.
+It batches visible part geometry and verifies that all other component internals
+are unchanged. The canonical SP mains keep their original dimensions.
 
 [penpot-call.mjs](../../tools/penpot-call.mjs) now defaults to the official hosted
 MCP connection using a Windows-encrypted credential outside the repository.

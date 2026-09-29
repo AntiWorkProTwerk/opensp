@@ -1,0 +1,13 @@
+---
+import {getCollection,render,type CollectionEntry} from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import SiteHeader from '../../components/SiteHeader.astro';
+import SiteFooter from '../../components/SiteFooter.astro';
+export async function getStaticPaths(){return (await getCollection('guides',g=>!g.data.draft)).map(guide=>({params:{id:guide.id},props:{guide}}));}
+interface Props {guide:CollectionEntry<'guides'>;}
+const {guide}=Astro.props;
+const {Content}=await render(guide);
+---
+<Base title={`${guide.data.title} / OpenSP`} description={guide.data.description}>
+  <SiteHeader/><main id="main" class="article"><a href="/#guides">All guides</a><h1>{guide.data.title}</h1><p class="intro">{guide.data.description}</p><div class="prose"><Content/></div></main><SiteFooter page="GUIDE"/>
+</Base>

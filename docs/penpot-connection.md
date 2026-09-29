@@ -45,6 +45,16 @@ release heading retained its old rendered x coordinate after reload, although
 the shape x was correct. Resizing its width by 1px, then restoring the original
 width in a separate call, refreshed the bounds without changing its typography.
 
+`enlarge-home-sp.js` is the later homepage scale override. Load it on Homepage,
+call `storage.largeSP.plan()` once, drain `batch()` until its queue is empty,
+then call `verify()`. It skips hidden archives, preserves linked SP parts and
+checks the unchanged section internals. The current target is 440px desktop /
+320px mobile. It expects the preceding 240px / 180px instances and refuses a
+blind rerun. Do not reload it or run other geometry helpers during scaling.
+Compare shapes by `.id`, not object identity: repeated `children` access returns
+different proxies for the same shape. The first scaling guard incorrectly
+included the SP itself for this reason; ID comparison fixed the guard.
+
 Use shared typography assets for global type changes. A Navigation asset
 tracking change reached all four homepage boards. Editing the same text property
 only in a component main did not reach dark copies with text-color overrides.
@@ -58,6 +68,50 @@ paragraph field. After editing typography, load `refine-home.js`, then run
 propagates the asset values explicitly, preserving component, font and color
 references. Verify bounds afterward. The four homepage text-overflow checks
 passed after this correction.
+
+## All-page overview
+
+Adding a nested screen component to Display propagated its link but retained
+unscaled insertion geometry in the previously resized homepage instances.
+After screen insertion or swapping, run `design/penpot/fit-screen-slots.js` on
+SP components and Homepage separately. It computes a centered 2:1 content slot
+from each existing OLED background, without detaching components or changing
+the bezel. Use `verify-screen-slots.js` on Homepage to check all four copies.
+See [the screen component contract](sp-display.md).
+
+`sync-owner-home-copy.js` captures the white desktop homepage text before editing
+mains, then applies that copy to each existing linked board with responsive
+geometry. Load it on Homepage, run `mains()` on Design system, then `board(id)`
+on Homepage. It preserves theme references and the SP's internal geometry.
+Hidden mobile heading text was skipped by the earlier dark-theme conversion;
+when revealing it, explicitly apply the shared theme ink asset. Use
+`verify-owner-home-copy.js` and verify one board per call. An all-board bounds
+scan delayed the MCP heartbeat enough to trigger a temporary suspended-tab error;
+the read completed and the following call worked without reconnecting.
+
+Use [the overview workflow](../design/exports/README.md) to export the visible
+top-level shapes and render all six pages into one high-resolution PNG.
+`export_shape` with `shapeId: "page"` returned a zero-size root and a renderer
+timeout in this file. Export explicit shape IDs instead. The client now writes
+SVG responses directly with `--out`, without logging their full contents.
+These exports are read-only and do not rearrange the canvas.
+
+## Production snapshot pull
+
+From the OpenSP repository, `npm run design:pull` reads the current native SP
+component mains and library assets, then the approved white desktop homepage.
+`npm run design:tokens` maps the exported assets into production CSS variables.
+The [development guide](development.md) records review and validation steps.
+These read-only scripts use the existing encrypted hosted connection; CI reads
+the committed snapshots without connecting to Penpot.
+
+Keep the workspace tab active. A suspended or background View-mode tab can
+leave the connector without a heartbeat; focus the editor before reconnecting.
+The plugin API's `currentFile.export("penpot", "all")` and `export("zip")`
+both returned `No matching clause` during this deployment session. The current
+production JSON snapshots were saved successfully, but no new full native
+archive was produced. Use Penpot's Download file UI for a full checkpoint;
+do not describe an older `.penpot` archive as current.
 
 ## Why the local connector was replaced
 

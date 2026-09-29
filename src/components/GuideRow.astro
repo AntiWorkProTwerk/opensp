@@ -1,0 +1,10 @@
+---
+interface Props {title:string;description:string;index:number;href?:string;}
+const {title,description,index,href}=Astro.props;
+const Tag=href?'a':'div';
+---
+<Tag class="guide" href={href} data-astro-prefetch={href?'hover':undefined}>
+  <span class="number" aria-hidden="true">{String(index+1).padStart(2,'0')}</span>
+  <span class="guide-copy"><span class="title">{title}</span><span class="description">{description}</span></span>
+  {href&&<svg class="arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 19 19 5M5 5h14v14"/></svg>}
+</Tag>

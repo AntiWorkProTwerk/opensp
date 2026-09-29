@@ -1,0 +1,28 @@
+{
+  "name": "opensp",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "engines": {"node": ">=22.12.0"},
+  "scripts": {
+    "dev": "node tools/build-design-tokens.mjs && astro dev --host 127.0.0.1",
+    "build": "node tools/build-design-tokens.mjs && astro build && node tools/check-build.mjs",
+    "preview": "astro preview --host 127.0.0.1",
+    "check": "astro check",
+    "test": "playwright test",
+    "test:install": "playwright install chromium",
+    "design:pull": "node tools/pull-penpot.mjs",
+    "design:tokens": "node tools/build-design-tokens.mjs"
+  },
+  "dependencies": {
+    "astro": "7.3.5",
+    "@astrojs/mdx": "8.0.2",
+    "@astrojs/sitemap": "3.7.4"
+  },
+  "devDependencies": {
+    "@astrojs/check": "0.9.10",
+    "@playwright/test": "1.63.0",
+    "@axe-core/playwright": "4.13.0",
+    "typescript": "6.0.3"
+  }
+}

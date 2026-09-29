@@ -3,6 +3,7 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>OpenSP — homepage proposal</title>
 <link rel="stylesheet" href="theme.css"><link rel="stylesheet" href="home.css"><script src="theme.js"></script>
+<link rel="stylesheet" href="../components/sp-display.css"><script src="../components/sp-display.js" defer></script>
 </head><body>
 <header>
   <a class="brand" href="#" aria-label="OpenSP home">opensp</a>
@@ -11,24 +12,23 @@
 </header>
 <main>
   <section class="hero" aria-labelledby="title">
-    <div class="hero-copy"><p class="eyebrow">AN INDEPENDENT SP-404MKII PROJECT</p><h1 id="title">OpenSP</h1><p class="intro">An open set of firmware and guides for the Sp-404MKII</p></div>
-    <figure><div class="instrument" aria-hidden="true">{{PANEL}}</div></figure>
+    <div class="hero-copy"><p class="eyebrow">{{eyebrow}}</p><h1 id="title">{{title}}</h1><p class="intro">{{intro}}</p><p class="intro repository-note">{{repository}}</p></div>
+    <figure><div class="instrument">{{PANEL}}{{SCREEN}}</div></figure>
   </section>
   <details class="section" id="releases" open>
-    <summary><span class="section-label">RELEASES</span><span class="section-description">A record of what changes.</span><span class="disclosure-mark" aria-hidden="true"></span></summary>
-    <div class="section-body release-body"><p>Builds, release notes, and compatibility information. A clear place to see what is ready and what is experimental.</p><div class="release-preview"><div class="status">RELEASE INDEX / PREVIEW</div><p>Downloads and verified release details will appear here.</p></div></div>
+    <summary><span class="section-label">RELEASES</span><span class="section-description">{{releasesHeading}}</span><span class="disclosure-mark" aria-hidden="true"></span></summary>
+    <div class="section-body release-body"><p>{{releaseBody}}</p><div class="release-preview"><div class="status">{{releaseStatus}}</div><p>{{releasePlaceholder}}</p></div></div>
   </details>
   <details class="section" id="guides" open>
-    <summary><span class="section-label">GUIDES</span><span class="section-description">Understand it, one step at a time.</span><span class="disclosure-mark" aria-hidden="true"></span></summary>
+    <summary><span class="section-label">GUIDES</span><span class="section-description">{{guidesHeading}}</span><span class="disclosure-mark" aria-hidden="true"></span></summary>
     <div class="section-body">
       <a class="guide" href="e-panel-parts.svg"><span class="number">01</span><span class="guide-copy"><span class="title">Meet the instrument</span><span class="description">A visual map of the surface.</span></span><svg class="arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 19 19 5M5 5h14v14"/></svg></a>
       <a class="guide" href="mobile.html"><span class="number">02</span><span class="guide-copy"><span class="title">From a pad press to an event</span><span class="description">Follow an input through the diagram.</span></span><svg class="arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 19 19 5M5 5h14v14"/></svg></a>
       <a class="guide" href="d-components.svg"><span class="number">03</span><span class="guide-copy"><span class="title">Reading the project</span><span class="description">How to read observations and open questions.</span></span><svg class="arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 19 19 5M5 5h14v14"/></svg></a>
-      <p class="preview-note">DESIGN PREVIEW / These links open design studies, not finished guides.</p>
     </div>
   </details>
 </main>
-<footer><span>OPENSP / INDEPENDENT, COMMUNITY-MINDED</span><span>HOMEPAGE DESIGN / PREVIEW</span></footer>
+<footer><span>{{footerProject}}</span><span>{{footerPage}}</span></footer>
 <script>
 function revealSection(){const target=document.getElementById(location.hash.slice(1));if(target instanceof HTMLDetailsElement)target.open=true}
 addEventListener('hashchange',revealSection);revealSection();

@@ -1,0 +1,120 @@
+{
+  "source": {
+    "fileId": "24d9d841-759d-81bc-8008-b518bc70d8b3",
+    "pageId": "65e71e3a-a290-8019-8008-b52b1fb87f69",
+    "boardId": "ab2e7837-e348-80fc-8008-b5929c5d499d"
+  },
+  "heroIntroLines": [
+    "An open set of firmware, tools, and guides",
+    "for the Sp-404MKII."
+  ],
+  "copy": {
+    "eyebrow": "AN OPEN-SOURCE SP-404MKII PROJECT",
+    "title": "OpenSP",
+    "intro": "An open set of firmware, tools, and guides for the Sp-404MKII.",
+    "repository": "Everything on this website is available on github.",
+    "releasesHeading": "Custom Firmware and Utilities",
+    "releaseBody": "The project is focused on providing an open set of utilities, community components to build your own features, as well as stock patches and fully custom firmware.",
+    "releaseStatus": "RELEASE INDEX",
+    "releasePlaceholder": "Downloads and verified release details will appear here.",
+    "guidesHeading": "Walkthroughs, Specs, and Breakdowns",
+    "footerProject": "OPENSP / INDEPENDENT, COMMUNITY-MINDED SOFTWARE",
+    "footerPage": "HOMEPAGE"
+  },
+  "guides": [
+    {
+      "title": "Meet the instrument",
+      "description": "A visual map of the surface."
+    },
+    {
+      "title": "From a pad press to an event",
+      "description": "Follow an input through the diagram."
+    },
+    {
+      "title": "Reading the project",
+      "description": "How to read observations and open questions."
+    }
+  ],
+  "websiteComponents": [
+    {
+      "name": "Navigation",
+      "componentId": "d862c4e5-8ca1-80d0-8008-b58b0ccb7468",
+      "x": 64,
+      "y": 0,
+      "width": 1312,
+      "height": 80
+    },
+    {
+      "name": "Hero copy",
+      "componentId": "d862c4e5-8ca1-80d0-8008-b58b0ce15f7c",
+      "x": 64,
+      "y": 144,
+      "width": 760,
+      "height": 300
+    },
+    {
+      "name": "SP instrument",
+      "componentId": "687117da-a825-80bd-8008-b5694305e7b0",
+      "x": 856,
+      "y": 112,
+      "width": 439.9999999999998,
+      "height": 627
+    },
+    {
+      "name": "Releases header",
+      "componentId": "d862c4e5-8ca1-80d0-8008-b58b0cf87935",
+      "x": 64,
+      "y": 773,
+      "width": 1312,
+      "height": 104
+    },
+    {
+      "name": "Release content",
+      "componentId": "d862c4e5-8ca1-80d0-8008-b58b0d190465",
+      "x": 384,
+      "y": 877,
+      "width": 992,
+      "height": 208
+    },
+    {
+      "name": "Guides header",
+      "componentId": "d862c4e5-8ca1-80d0-8008-b58b0cf87935",
+      "x": 64,
+      "y": 1117,
+      "width": 1312,
+      "height": 104
+    },
+    {
+      "name": "Guide / Meet the instrument",
+      "componentId": "d862c4e5-8ca1-80d0-8008-b58b0d3bf88a",
+      "x": 384,
+      "y": 1221,
+      "width": 992,
+      "height": 88
+    },
+    {
+      "name": "Guide / From a pad press to an event",
+      "componentId": "d862c4e5-8ca1-80d0-8008-b58b0d3bf88a",
+      "x": 384,
+      "y": 1309,
+      "width": 992,
+      "height": 88
+    },
+    {
+      "name": "Guide / Reading the project",
+      "componentId": "d862c4e5-8ca1-80d0-8008-b58b0d3bf88a",
+      "x": 384,
+      "y": 1397,
+      "width": 992,
+      "height": 88
+    },
+    {
+      "name": "Footer",
+      "componentId": "d862c4e5-8ca1-80d0-8008-b58b0d52ef3d",
+      "x": 64,
+      "y": 1520,
+      "width": 1312,
+      "height": 72
+    }
+  ]
+}

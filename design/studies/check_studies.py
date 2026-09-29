@@ -1,10 +1,12 @@
 """Review-page smoke checks; use --browser with an installed Chromium binary."""
 from pathlib import Path
 import argparse
+import json
 import xml.etree.ElementTree as ET
 from playwright.sync_api import sync_playwright
 
 root=Path(__file__).parent
+home_copy=json.loads((root/'home-copy.json').read_text(encoding='utf-8'))
 parser=argparse.ArgumentParser()
 parser.add_argument('--browser',required=True)
 args=parser.parse_args()
@@ -85,7 +87,8 @@ with sync_playwright() as p:
             page.wait_for_function('document.querySelector("#study").complete && document.querySelector("#study").naturalWidth === 1200')
     assert not errors,errors
     page.goto((root/'home.html').as_uri())
-    for width in [320,390,430,600,768,1000,1440,1920]:
+    home_widths=[320,390,430,600,601,720,721,768,1000,1001,1440,1920]
+    for width in home_widths:
         page.set_viewport_size({'width':width,'height':900})
         for theme in ['light','dark']:
             page.locator('[data-theme-picker]').select_option(theme)
@@ -93,18 +96,38 @@ with sync_playwright() as p:
             nav=page.locator('nav[aria-label="Main navigation"]')
             assert nav.locator('a').all_text_contents()==['Releases','Guides']
             assert page.locator('.section-label').all_text_contents()==['RELEASES','GUIDES']
+            assert page.locator('.eyebrow').text_content()==home_copy['eyebrow']
+            assert page.locator('.intro').all_text_contents()==[home_copy['intro'],home_copy['repository']]
+            assert page.locator('.release-body>p').text_content()==home_copy['releaseBody']
+            assert page.locator('.section-description').all_text_contents()==[home_copy['releasesHeading'],home_copy['guidesHeading']]
+            assert all(page.locator('.section-description').nth(i).is_visible() for i in range(2))
+            assert page.locator('.status').text_content()==home_copy['releaseStatus']
+            assert page.locator('footer span').all_text_contents()==[home_copy['footerProject'],home_copy['footerPage']]
+            assert page.locator('.preview-note').count()==0
             assert page.locator('.section-label').first.evaluate("el=>getComputedStyle(el).fontFamily.startsWith('Cousine') && getComputedStyle(el).fontSize==='13px'")
             bounds=nav.bounding_box()
             assert abs(bounds['x']+bounds['width']/2-width/2)<2,(width,bounds)
             assert nav.locator('a').first.evaluate("el=>getComputedStyle(el).fontFamily.startsWith('Cousine')")
             assert page.locator('h1').evaluate("el=>getComputedStyle(el).fontFamily.startsWith('Arimo')")
             assert nav.locator('a').first.bounding_box()['height']>=44
+            instrument=page.locator('.instrument').bounding_box()
+            assert abs(instrument['height']/instrument['width']-570/400)<.001
+            assert instrument['x']>=0 and instrument['x']+instrument['width']<=width
+            copy=page.locator('.hero-copy').bounding_box()
+            if width>720:
+                assert copy['width']>=280
+                assert instrument['x']>=copy['x']+copy['width']
+            else:
+                assert instrument['y']>=copy['y']+copy['height']
+            assert page.locator('#releases').bounding_box()['y']>=instrument['y']+instrument['height']+31
             if width==1440:
-                assert page.locator('#releases').bounding_box()['y']<500
-                assert page.locator('#guides').bounding_box()['y']<850
+                assert abs(instrument['width']-440)<.1
+                assert page.locator('#releases').bounding_box()['y']<790
+                assert page.locator('#guides').bounding_box()['y']<1140
             if width==390:
-                assert page.locator('#releases').bounding_box()['y']<625
-                assert page.locator('#guides').bounding_box()['y']<950
+                assert abs(instrument['width']-320)<.1
+                assert page.locator('#releases').bounding_box()['y']<960
+                assert page.locator('#guides').bounding_box()['y']<1400
             title_box=page.locator('.guide .title').first.bounding_box()
             description_box=page.locator('.guide .description').first.bounding_box()
             assert description_box['y']>=title_box['y']+title_box['height']
@@ -137,5 +160,5 @@ with sync_playwright() as p:
     assert page.locator('.instrument [tabindex]').count()==0
     assert not errors,errors
     browser.close()
-print('PASS: SVG IDs, interactions, 30 responsive combinations, 10 desktop theme views, 16 homepage/theme widths, shared fonts, touch targets, zoom-equivalent and long-title reflow, centered navigation, persistence/system theme, no JS errors.')
+print(f'PASS: SVG IDs, interactions, 30 responsive combinations, 10 desktop theme views, {len(home_widths)*2} homepage/theme widths, dominant SP sizing and aspect ratio, shared fonts, touch targets, zoom-equivalent and long-title reflow, centered navigation, persistence/system theme, no JS errors.')
 

@@ -1,0 +1,370 @@
+{
+  "fileId": "24d9d841-759d-81bc-8008-b518bc70d8b3",
+  "pages": [
+    {
+      "id": "24d9d841-759d-81bc-8008-b518bc70d8b4",
+      "name": "Desktop concepts",
+      "shapes": [
+        {
+          "id": "a32d0c6e-efa6-8073-8008-b523a89ca895",
+          "name": "svg",
+          "type": "group",
+          "x": -3645,
+          "y": -2687,
+          "width": 6240,
+          "height": 1500,
+          "asset": "assets/a32d0c6e-efa6-8073-8008-b523a89ca895.svg"
+        }
+      ]
+    },
+    {
+      "id": "a32d0c6e-efa6-8073-8008-b5231a6d7158",
+      "name": "Mobile layouts",
+      "shapes": [
+        {
+          "id": "a32d0c6e-efa6-8073-8008-b5233e12491a",
+          "name": "svg",
+          "type": "group",
+          "x": -151,
+          "y": -1053,
+          "width": 1250,
+          "height": 2720,
+          "asset": "assets/a32d0c6e-efa6-8073-8008-b5233e12491a.svg"
+        }
+      ]
+    },
+    {
+      "id": "1c82abe9-9861-807d-8008-b52735c6b029",
+      "name": "Responsive comparisons",
+      "shapes": [
+        {
+          "id": "1c82abe9-9861-807d-8008-b5275d0f8593",
+          "name": "svg",
+          "type": "group",
+          "x": -1221,
+          "y": -4110,
+          "width": 3390,
+          "height": 8200,
+          "asset": "assets/1c82abe9-9861-807d-8008-b5275d0f8593.svg"
+        }
+      ]
+    },
+    {
+      "id": "65e71e3a-a290-8019-8008-b52b1fb87f69",
+      "name": "Homepage",
+      "shapes": [
+        {
+          "id": "ab2e7837-e348-80fc-8008-b5929c5d499d",
+          "name": "Homepage / Desktop / Light",
+          "type": "board",
+          "x": 0,
+          "y": 0,
+          "width": 1440,
+          "height": 1625,
+          "asset": "assets/ab2e7837-e348-80fc-8008-b5929c5d499d.svg"
+        },
+        {
+          "id": "ab2e7837-e348-80fc-8008-b59583ba981b",
+          "name": "Homepage / Desktop / Dark",
+          "type": "board",
+          "x": 1980,
+          "y": 0,
+          "width": 1440,
+          "height": 1625,
+          "asset": "assets/ab2e7837-e348-80fc-8008-b59583ba981b.svg"
+        },
+        {
+          "id": "ab2e7837-e348-80fc-8008-b59531143ddf",
+          "name": "Homepage / Mobile / Light",
+          "type": "board",
+          "x": 1500,
+          "y": 0,
+          "width": 390,
+          "height": 1683.9999999999998,
+          "asset": "assets/ab2e7837-e348-80fc-8008-b59531143ddf.svg"
+        },
+        {
+          "id": "ab2e7837-e348-80fc-8008-b595b1ded374",
+          "name": "Homepage / Mobile / Dark",
+          "type": "board",
+          "x": 3480,
+          "y": 0,
+          "width": 390,
+          "height": 1683.9999999999998,
+          "asset": "assets/ab2e7837-e348-80fc-8008-b595b1ded374.svg"
+        }
+      ]
+    },
+    {
+      "id": "e630c86e-d742-80d8-8008-b565a285cdc0",
+      "name": "SP components",
+      "shapes": [
+        {
+          "id": "e630c86e-d742-80d8-8008-b565ebd51f17",
+          "name": "SP / Display",
+          "type": "board",
+          "x": 0,
+          "y": 0,
+          "width": 132,
+          "height": 132,
+          "asset": "assets/e630c86e-d742-80d8-8008-b565ebd51f17.svg"
+        },
+        {
+          "id": "e630c86e-d742-80d8-8008-b56610de5ee4",
+          "name": "SP / Knob",
+          "type": "board",
+          "x": 220,
+          "y": 0,
+          "width": 44,
+          "height": 52,
+          "asset": "assets/e630c86e-d742-80d8-8008-b56610de5ee4.svg"
+        },
+        {
+          "id": "e630c86e-d742-80d8-8008-b56615f523ca",
+          "name": "SP / Pad - idle",
+          "type": "board",
+          "x": 360,
+          "y": 0,
+          "width": 46,
+          "height": 39,
+          "asset": "assets/e630c86e-d742-80d8-8008-b56615f523ca.svg"
+        },
+        {
+          "id": "e630c86e-d742-80d8-8008-b5661b38f9d6",
+          "name": "SP / Pad - active",
+          "type": "board",
+          "x": 500,
+          "y": 0,
+          "width": 46,
+          "height": 39,
+          "asset": "assets/e630c86e-d742-80d8-8008-b5661b38f9d6.svg"
+        },
+        {
+          "id": "e630c86e-d742-80d8-8008-b56620830c7b",
+          "name": "SP / Button",
+          "type": "board",
+          "x": 640,
+          "y": 0,
+          "width": 46,
+          "height": 39,
+          "asset": "assets/e630c86e-d742-80d8-8008-b56620830c7b.svg"
+        },
+        {
+          "id": "e630c86e-d742-80d8-8008-b56625a892f2",
+          "name": "SP / Enclosure",
+          "type": "board",
+          "x": 0,
+          "y": 300,
+          "width": 366,
+          "height": 572,
+          "asset": "assets/e630c86e-d742-80d8-8008-b56625a892f2.svg"
+        },
+        {
+          "id": "e630c86e-d742-80d8-8008-b566da15ff2a",
+          "name": "SP / Pad grid",
+          "type": "board",
+          "x": 500,
+          "y": 300,
+          "width": 222,
+          "height": 191,
+          "asset": "assets/e630c86e-d742-80d8-8008-b566da15ff2a.svg"
+        },
+        {
+          "id": "e630c86e-d742-80d8-8008-b567452b3347",
+          "name": "SP / Control section",
+          "type": "board",
+          "x": 500,
+          "y": 830,
+          "width": 287,
+          "height": 105,
+          "asset": "assets/e630c86e-d742-80d8-8008-b567452b3347.svg"
+        },
+        {
+          "id": "e630c86e-d742-80d8-8008-b5674f5f4b28",
+          "name": "SP / Performance buttons",
+          "type": "board",
+          "x": 900,
+          "y": 300,
+          "width": 48,
+          "height": 191,
+          "asset": "assets/e630c86e-d742-80d8-8008-b5674f5f4b28.svg"
+        },
+        {
+          "id": "687117da-a825-80bd-8008-b5693a79aee9",
+          "name": "SP / Effect buttons",
+          "type": "board",
+          "x": 500,
+          "y": 620,
+          "width": 256,
+          "height": 99,
+          "asset": "assets/687117da-a825-80bd-8008-b5693a79aee9.svg"
+        },
+        {
+          "id": "687117da-a825-80bd-8008-b5694304d629",
+          "name": "SP / Instrument",
+          "type": "board",
+          "x": 1105,
+          "y": 15,
+          "width": 400,
+          "height": 570,
+          "asset": "assets/687117da-a825-80bd-8008-b5694304d629.svg"
+        }
+      ]
+    },
+    {
+      "id": "d862c4e5-8ca1-80d0-8008-b5895a86fb82",
+      "name": "Design system",
+      "shapes": [
+        {
+          "id": "d862c4e5-8ca1-80d0-8008-b58b0c7f65fe",
+          "name": "OpenSP / Wordmark",
+          "type": "board",
+          "x": 0,
+          "y": 0,
+          "width": 120,
+          "height": 40,
+          "asset": "assets/d862c4e5-8ca1-80d0-8008-b58b0c7f65fe.svg"
+        },
+        {
+          "id": "d862c4e5-8ca1-80d0-8008-b58b0c8bef2a",
+          "name": "OpenSP / Primary links",
+          "type": "board",
+          "x": 180,
+          "y": 0,
+          "width": 190,
+          "height": 44,
+          "asset": "assets/d862c4e5-8ca1-80d0-8008-b58b0c8bef2a.svg"
+        },
+        {
+          "id": "d862c4e5-8ca1-80d0-8008-b58b0c9a79dd",
+          "name": "OpenSP / Theme selector",
+          "type": "board",
+          "x": 460,
+          "y": 0,
+          "width": 128,
+          "height": 32,
+          "asset": "assets/d862c4e5-8ca1-80d0-8008-b58b0c9a79dd.svg"
+        },
+        {
+          "id": "d862c4e5-8ca1-80d0-8008-b58b0ca74846",
+          "name": "OpenSP / Section label",
+          "type": "board",
+          "x": 650,
+          "y": 0,
+          "width": 220,
+          "height": 28.000000000000004,
+          "asset": "assets/d862c4e5-8ca1-80d0-8008-b58b0ca74846.svg"
+        },
+        {
+          "id": "d862c4e5-8ca1-80d0-8008-b58b0cb6f623",
+          "name": "OpenSP / Navigation",
+          "type": "board",
+          "x": 0,
+          "y": 150,
+          "width": 1312,
+          "height": 80,
+          "asset": "assets/d862c4e5-8ca1-80d0-8008-b58b0cb6f623.svg"
+        },
+        {
+          "id": "d862c4e5-8ca1-80d0-8008-b58b0cccb227",
+          "name": "OpenSP / Hero copy",
+          "type": "board",
+          "x": 0,
+          "y": 330,
+          "width": 760,
+          "height": 224,
+          "asset": "assets/d862c4e5-8ca1-80d0-8008-b58b0cccb227.svg"
+        },
+        {
+          "id": "d862c4e5-8ca1-80d0-8008-b58b0ce2571b",
+          "name": "OpenSP / Section header",
+          "type": "board",
+          "x": 0,
+          "y": 690,
+          "width": 1312,
+          "height": 104,
+          "asset": "assets/d862c4e5-8ca1-80d0-8008-b58b0ce2571b.svg"
+        },
+        {
+          "id": "d862c4e5-8ca1-80d0-8008-b58b0cf9588d",
+          "name": "OpenSP / Release card",
+          "type": "board",
+          "x": 0,
+          "y": 870,
+          "width": 992,
+          "height": 88,
+          "asset": "assets/d862c4e5-8ca1-80d0-8008-b58b0cf9588d.svg"
+        },
+        {
+          "id": "d862c4e5-8ca1-80d0-8008-b58b0d0c4bfd",
+          "name": "OpenSP / Release content",
+          "type": "board",
+          "x": 0,
+          "y": 1050,
+          "width": 992,
+          "height": 208,
+          "asset": "assets/d862c4e5-8ca1-80d0-8008-b58b0d0c4bfd.svg"
+        },
+        {
+          "id": "d862c4e5-8ca1-80d0-8008-b58b0d1a4629",
+          "name": "OpenSP / Guide row",
+          "type": "board",
+          "x": 0,
+          "y": 1360,
+          "width": 992,
+          "height": 88,
+          "asset": "assets/d862c4e5-8ca1-80d0-8008-b58b0d1a4629.svg"
+        },
+        {
+          "id": "d862c4e5-8ca1-80d0-8008-b58b0d3ce596",
+          "name": "OpenSP / Footer",
+          "type": "board",
+          "x": 0,
+          "y": 1530,
+          "width": 1312,
+          "height": 72,
+          "asset": "assets/d862c4e5-8ca1-80d0-8008-b58b0d3ce596.svg"
+        },
+        {
+          "id": "d862c4e5-8ca1-80d0-8008-b58b0d53fffb",
+          "name": "Shared colors",
+          "type": "board",
+          "x": 1510,
+          "y": 0,
+          "width": 600,
+          "height": 760,
+          "asset": "assets/d862c4e5-8ca1-80d0-8008-b58b0d53fffb.svg"
+        },
+        {
+          "id": "d862c4e5-8ca1-80d0-8008-b58b0dda0a8d",
+          "name": "Shared typography",
+          "type": "board",
+          "x": 1510,
+          "y": 860,
+          "width": 800,
+          "height": 1500,
+          "asset": "assets/d862c4e5-8ca1-80d0-8008-b58b0dda0a8d.svg"
+        },
+        {
+          "id": "ab2e7837-e348-80fc-8008-b5951bf53e02",
+          "name": "OpenSP / Preview notice",
+          "type": "board",
+          "x": 1510,
+          "y": 2450,
+          "width": 1096,
+          "height": 40,
+          "asset": "assets/ab2e7837-e348-80fc-8008-b5951bf53e02.svg"
+        }
+      ]
+    }
+  ],
+  "exportedAt": "2026-09-28T21:08:46.364Z",
+  "overview": {
+    "png": "opensp-all-pages.png",
+    "width": 8000,
+    "height": 13314,
+    "pages": 6,
+    "shapes": 32,
+    "source": "Native Penpot SVG exports; hidden archives excluded"
+  }
+}
