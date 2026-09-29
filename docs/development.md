@@ -107,6 +107,12 @@ deploys through GitHub's Pages environment using its short-lived OIDC token.
 The deployment job alone has Pages write permission. Dependabot proposes npm
 and Actions updates; nothing auto-merges.
 
+The first npm Dependabot job reached GitHub's PR-creation service, which returned
+HTTP 500. Its follow-up error-reporting endpoint also failed. GitHub rejected a
+retry of that dynamic run. The [failed maintenance job](https://github.com/AntiWorkProTwerk/opensp/actions/runs/36501312889)
+is separate from the successful build/deployment jobs; the next scheduled update
+check remains enabled. No dependency PR was merged and production is unaffected.
+
 Deployments require a user request or a clearly authorized release task. Commit
 the reviewed source/design snapshot, push `main`, watch the workflow, then check
 the live homepage, screen assets, mobile/theme behavior and HTTPS redirects.

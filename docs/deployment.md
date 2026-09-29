@@ -19,6 +19,10 @@ Commit `historical-revision` deployed successfully in
 [Actions run 36501298477](https://github.com/AntiWorkProTwerk/opensp/actions/runs/36501298477).
 The live `/build-info.json` matched that commit and the local homepage/design
 hashes. All 21 Playwright tests also passed against `https://opensp.fyi/`.
+The documentation/report follow-up, `historical-revision`,
+also [deployed successfully](https://github.com/AntiWorkProTwerk/opensp/actions/runs/36501733019).
+Its live build record matches that revision; homepage and design hashes are
+unchanged. Later documentation-only commits do not change these site artifacts.
 HTTP and `https://www.opensp.fyi/` return 301 redirects to the HTTPS apex.
 The icon, sitemap, animation assets and custom 404 page load successfully.
 
