@@ -28,6 +28,7 @@ than the separate View-mode tab. The connection instructions are in
 
 ```powershell
 npm run design:pull
+npm run design:pull-guide
 npm run design:tokens
 git diff -- design/penpot/production.json design/penpot/homepage.json design/studies/home-copy.json src/styles/tokens.css
 ```
@@ -52,6 +53,8 @@ connection key belongs in git or GitHub Actions secrets for this static build.
 | Footer | `SiteFooter.astro` |
 | SP component mains and nested parts | `SPPart.astro`, `SPInstrument.astro` |
 | Screen content slot and R3 poster | `SPDisplay.astro` and the shared frame player |
+| Guide introduction, paragraph, heading, contents and caption mains | Shared guide template and `guide.css` |
+| Guide figure mains and Menu title screen | `GuideFigure.astro`, `guide-components.json` and `guide-motion.ts` |
 
 Page text is semantic HTML with responsive CSS. The instrument is inline SVG
 rendered from exported native geometry, with named `data-part` and
@@ -72,6 +75,20 @@ unpublished previews until an approved MDX guide is available. Add guides under
 `src/content/guides/`; their schema defaults to `draft: true`. Published guides
 get static routes, shared typography and homepage links. Never populate a
 release download with an unverified firmware artifact.
+
+The first published guide is `/guides/first-change/`. Its narrative lives in
+`src/content/first-change.json`, consumed by the page and Penpot authoring tools.
+`design:pull-guide` reads the actual guide mains and four native layouts into
+`guide-components.json` and `first-guide-layouts.json`. It does not replace the
+article JSON with arbitrary canvas edits. Update shared copy deliberately, then
+check every linked section in Penpot and the browser before publishing.
+
+Guide figures use reader-started playback. The menu demonstration highlights
+SHIFT and pad 13 on the exported instrument; the title screen is a separate
+linked main passed through `SPInstrument`'s `screenPart` prop. Memory and byte
+comparisons have bounded, pausable sequences. Reduced motion goes straight to
+the result on request. All content and static figures remain readable without
+JavaScript. These illustrations are reconstructions, not device recordings.
 
 Normal links and browser history remain native. Cross-document view transitions
 last 120 ms where supported and are disabled for reduced motion. Future guide
@@ -97,9 +114,21 @@ keyboard navigation, disclosures, theme persistence, playback lifecycle,
 JavaScript-disabled and failed-media fallbacks. Axe checks desktop/mobile in
 both themes. Build checks reject private design references and unexpected
 source artifacts, verify asset paths, and cap generated JavaScript plus inline
-homepage scripts at 15 KiB gzip. This conservative launch budget covers all
-built scripts; revisit the accounting when a guide introduces an isolated
-Svelte bundle. These checks do not establish real-user Core Web Vitals.
+scripts from the largest page at 15 KiB gzip. This conservative budget includes
+all generated scripts, even those not used by that page. The first guide build
+measured 3,518 bytes gzip of JavaScript and about 10.8 KiB gzip of guide HTML.
+The 42-test suite passes locally in headless Canary, including actual instrument
+highlights and desktop/mobile contents behavior. These are lab results, not
+physical-device measurements or real-user Core Web Vitals.
+
+Initialize the mobile contents disclosure before parsing the article. Deferring
+that collapse to a module caused a measured 0.238 layout shift on cold load.
+The parser-time setup preserves expanded links without JavaScript and leaves
+the settled layout unchanged. The corrected local mobile Lighthouse run scored
+100 in all four categories, with 1.36 s LCP, 0 ms blocking time and CLS 0.00014.
+See [the curated lab summary](reports/first-guide-mobile-summary.json). Lighthouse
+saved a valid report with no audit warnings, then its Windows temporary-profile
+cleanup failed with `EPERM`; the CLI exit code alone does not describe this run.
 
 `.github/workflows/pages.yml` runs install, type checks, build and browser tests
 on pull requests and pushes. A successful `main` build uploads only `dist/` and
@@ -127,7 +156,8 @@ setting, following GitHub's documented procedure; DNS was unchanged.
 [Certificate provisioning](https://docs.github.com/en/pages/getting-started-with-github-pages/securing-your-github-pages-site-with-https),
 [Astro on GitHub Pages](https://docs.astro.build/en/guides/deploy/github/).
 
-Known build notice: Astro/MDX currently emits a Rolldown warning for
-`use astro:head-inject` while compiling the empty draft. Type checks and the
-static build pass; that draft has no public route. Verify MDX asset propagation
-when adding the first published guide, rather than suppressing the warning.
+Known build notice: Astro/MDX emits a Rolldown warning for
+`use astro:head-inject` on the guide modules. Type checks and the static build
+pass. The first guide's emitted HTML includes its scripts, and playback,
+contents and no-JavaScript tests verify asset propagation. The warning has not
+been suppressed. The older draft still has no public route.

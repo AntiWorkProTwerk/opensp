@@ -7,6 +7,14 @@ The production homepage uses the same player through `SPDisplay.astro`.
 `SPInstrument.astro` positions it from the exported Penpot OLED content slot,
 while `SPPart.astro` renders the bezel and instrument geometry.
 
+The first guide supplies a `screenPart` and accessible `screenLabel` to
+`SPInstrument`. Its `Menu title screen` is a separate native Penpot main with
+the same 128×64 viewport. Passing that part replaces only the screen content;
+omitting it preserves the homepage R3 player. `guide-motion.ts` changes the title
+and temporarily highlights named SHIFT/pad groups for a reader-started menu
+demonstration. It is explicitly a reconstruction of the reported title, not a
+capture or connection to the SP. Keep that distinction when adding guide scenes.
+
 ## The R3 source
 
 The owner confirmed the `ASCII SPIN3!` animation worked in

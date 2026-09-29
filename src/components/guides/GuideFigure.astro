@@ -1,0 +1,37 @@
+---
+import SPInstrument from '../SPInstrument.astro';
+import SPPart from '../SPPart.astro';
+import {part,type Shape} from '../../lib/penpot';
+import article from '../../content/first-change.json';
+import snapshot from '../../../design/penpot/guide-components.json';
+interface Props {kind:string;}
+const {kind}=Astro.props;
+const screen=snapshot.components.find(c=>c.name==='Menu title screen')!.shape as Shape;
+const selections=['System','Pad set','EFX set','Import','Backup','Format'];
+---
+{kind==='hero'&&<guide-motion class="guide-instrument-hero" data-mode="instrument">
+  <div class="guide-instrument"><SPInstrument screenPart={screen} screenLabel="CUSTOM MENU!"/></div>
+  <div class="hero-observation"><p class="observed-title">CUSTOM<br/> MENU!</p><p>A different title.<br/>The stock instrument underneath.</p><div class="figure-controls" hidden><button type="button" data-replay>Replay menu check</button><button type="button" data-pause hidden>Pause</button></div><p class="motion-status" aria-live="polite">SHIFT + PAD 13</p><p class="figure-label reconstruction">Title-only reconstruction<br/>Not a device capture</p></div>
+</guide-motion>}
+{kind==='files'&&<div class="update-files">
+  {[['SP404MKII_APP0.bin','Opaque body. Role still under investigation.'],['SP404MKII_APP1.bin','Readable strings and ARM instructions.']].map(([name,note])=><div><code>{name}</code><p>{note}</p></div>)}
+  <p class="figure-label">Originals preserved / SHA-256 recorded</p>
+</div>}
+{kind==='memory'&&<guide-motion class="runtime-diagram" data-mode="memory">
+  <ol class="map-stages">{[['Update file','Stored bytes'],['Startup','Copy · decompress · zero'],['Runtime memory','Code and data in place']].map(([label,body],i)=><li data-stage={i}><span class="figure-label">{label}</span><p>{body}</p><span class="flow-marker" aria-hidden="true"></span></li>)}</ol>
+  <div class="figure-controls" hidden><button type="button" data-replay>Follow the bytes</button><button type="button" data-pause hidden>Pause</button></div><p class="motion-status" aria-live="polite">The same bytes need the right locations.</p>
+</guide-motion>}
+{kind==='code'&&<guide-motion class="ida-excerpt" data-mode="code">
+  <div class="code-heading"><span class="figure-label">IDA / pseudocode excerpt</span><button type="button" data-highlight aria-pressed="true" hidden>Title reference highlighted</button></div>
+  <pre tabindex="0" aria-label="Utility menu drawing function"><code>{article.code.map((line,i)=><span class:list={['code-line',{'code-focus':i===3}]} data-line={i}><span class="line-number" aria-hidden="true">{i+1}</span><span>{i===3?<><span>  sub_800C2558((int)a1, (int)</span><mark>aUtilityMenu</mark><span>, -98);</span></>:line}</span></span>)}</code></pre>
+  <p class="code-explanation">The title reference is passed to a drawing call. The familiar <code>SYSTEM</code> label below helps identify the menu.</p>
+</guide-motion>}
+{kind==='scope'&&<dl class="experiment-scope"><div><dt>Keep</dt><dd>Stock startup, menu drawing, APP0</dd></div><div><dt>Change</dt><dd>One title in APP1</dd></div></dl>}
+{kind==='comparison'&&<guide-motion class="menu-comparison" data-mode="comparison">
+  <div class="title-pair">{[['Original title','UTILITY MENU'],['Modified title','CUSTOM MENU!']].map(([label,title])=><div><p class="figure-label">{label}</p><div class="comparison-screen"><svg viewBox="0 0 128 64" width="128" height="64" role="img" aria-label={title}><SPPart node={screen} label={title}/></svg></div></div>)}</div>
+  <div class="character-diff" aria-label="Both titles have twelve printable characters"><div><span class="diff-label">Before</span><code>{[...'UTILITY MENU'].map(c=><span>{c===' '?'·':c}</span>)}</code></div><div><span class="diff-label">After</span><code>{[...'CUSTOM MENU!'].map((c,i)=><span data-character={i}>{c===' '?'·':c}</span>)}</code></div></div>
+  <div class="figure-controls" hidden><button type="button" data-replay>Replay the change</button><button type="button" data-pause hidden>Pause</button></div><p class="motion-status" aria-live="polite">12 printable characters. The terminator and image size stay unchanged.</p>
+</guide-motion>}
+{kind==='verification'&&<div class="verification-wrap"><table class="verification-table"><caption>Menu-drawing cases / instruction-level emulator</caption><thead><tr><th scope="col">Selection</th><th scope="col">Original</th><th scope="col">Modified</th></tr></thead><tbody>{selections.map(name=><tr><th scope="row">{name}</th><td>Pass</td><td>Pass</td></tr>)}</tbody></table><p class="figure-label">CPU tests / not device tests</p></div>}
+{kind==='result'&&<div class="hardware-result"><div class="result-parts"><div><svg viewBox="0 0 46 39" width="92" height="78" aria-hidden="true"><SPPart node={part('Button')} label="SHIFT"/></svg><span>SHIFT</span></div><span class="combination-plus" aria-hidden="true">+</span><div><svg viewBox="0 0 46 39" width="92" height="78" aria-hidden="true"><SPPart node={part('Pad - idle')} label="13"/></svg><span>PAD 13</span></div><span class="result-arrow" aria-hidden="true">→</span><div class="result-screen"><svg viewBox="0 0 128 64" width="256" height="128" role="img" aria-label="CUSTOM MENU! title reconstruction"><SPPart node={screen} label="CUSTOM MENU!"/></svg></div></div><blockquote><p>“it wokred”</p><footer>Owner report / 22 September 2026</footer></blockquote><p>Reported visible success. No independent screen capture or installed-image readback.</p></div>}
+<script>import '../../scripts/guide-motion';</script>

@@ -1,0 +1,18 @@
+{
+  "milestone": "First menu-title modification",
+  "baseVersion": "5.52",
+  "researchStarted": "2026-09-15",
+  "ownerReportedResult": "2026-09-22",
+  "before": "UTILITY MENU",
+  "after": "CUSTOM MENU!",
+  "changedApp1BytePositions": 12,
+  "app1SizeUnchanged": true,
+  "app0Unchanged": true,
+  "firstIdaExport": {"candidates":8593,"decompiled":8592,"failures":1},
+  "offlineChecks": {"menuSelections":6,"imageVariants":2,"menuExecutionCases":12,"deterministicRebuild":true,"reversePatchMatchesOriginal":true},
+  "suppliedApp1Sha256": "1ed1cc8222ad7e92997b6f874cd3b3ed4fadf7b36bb10f27b9ba5111e3441c34",
+  "ownerReply": "it wokred",
+  "evidenceType": "Preserved local artifact reports and owner-reported hardware outcome",
+  "limitations": ["No independently captured device screen for this milestone", "No installed-image readback", "CPU tests are not device tests", "The article's screens are labeled title-only reconstructions", "This record is not a firmware package or an installation procedure"],
+  "provenance": "Curated from the preserved v5.52 manifest, IDA full-export summary, menu proof-of-concept manifest and verification report, and September 22 hardware-result note. Source ledger: /AntiWorkProTwerk/opensp/blob/main/docs/first-guide-sources.md on GitHub."
+}

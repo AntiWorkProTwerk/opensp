@@ -1,0 +1,17 @@
+---
+import article from '../../content/first-change.json';
+import GuideFigure from './GuideFigure.astro';
+---
+<GuideFigure kind="hero"/>
+{article.sections.map(section=><section class="guide-section" id={section.id} aria-labelledby={`${section.id}-heading`}>
+  <h2 id={`${section.id}-heading`}>{section.title}</h2>
+  {section.paragraphs.map(p=><p>{p}</p>)}
+  <figure class="guide-figure"><GuideFigure kind={section.figure}/><figcaption>{section.caption}</figcaption></figure>
+</section>)}
+<section class="guide-evidence" aria-labelledby="evidence-title">
+  <h2 id="evidence-title">The record behind the story</h2>
+  <p>The preserved download manifest, IDA export summary, menu-test report and September 22 hardware note underpin this account. <a href="/evidence/first-change.json">Read the curated evidence record</a>.</p>
+  <details><summary>Build identity and limits</summary><p>The supplied candidate's APP1 SHA-256 was <code class="artifact-hash">1ed1cc8222ad7e92997b6f874cd3b3ed4fadf7b36bb10f27b9ba5111e3441c34</code>. That identifies the local file supplied for the experiment, not a device readback. The original archive retained its pre-test <code>UNVERIFIED</code> name.</p><p>This is a historical account, not an installation procedure or a firmware download. It does not establish recovery after a failed update or the safety of other modifications.</p></details>
+  <p class="further-reading">References: <a href="https://www.roland.com/global/support/by_product/sp-404mk2/updates_drivers/">Roland's official update index</a> · <a href="https://github.com/AntiWorkProTwerk/opensp/blob/main/docs/first-guide-sources.md">Project source ledger</a></p>
+  <a class="return-link" href="/#guides">Back to guides</a>
+</section>

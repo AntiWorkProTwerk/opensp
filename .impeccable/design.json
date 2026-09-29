@@ -1,0 +1,117 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-09-29T02:02:53Z",
+  "title": "Design System: OpenSP",
+  "extensions": {
+    "colorMeta": {
+      "paper": {"role": "neutral", "displayName": "Paper"},
+      "ink": {"role": "neutral", "displayName": "Ink"},
+      "muted": {"role": "neutral", "displayName": "Muted"},
+      "line": {"role": "neutral", "displayName": "Line"},
+      "surface": {"role": "neutral", "displayName": "Surface"},
+      "dark-paper": {"role": "neutral", "displayName": "Dark paper"},
+      "dark-ink": {"role": "neutral", "displayName": "Dark ink"},
+      "dark-muted": {"role": "neutral", "displayName": "Dark muted"},
+      "dark-line": {"role": "neutral", "displayName": "Dark line"},
+      "dark-surface": {"role": "neutral", "displayName": "Dark surface"},
+      "oled-black": {"role": "neutral", "displayName": "OLED black"},
+      "oled-pixel": {"role": "neutral", "displayName": "OLED pixel"}
+    },
+    "typographyMeta": {
+      "hero": {"displayName": "Hero", "purpose": "Homepage display title at its desktop size."},
+      "hero-mobile": {"displayName": "Hero mobile", "purpose": "Mobile homepage and guide titles."},
+      "article-title": {"displayName": "Article title", "purpose": "Guide title at its desktop size."},
+      "heading": {"displayName": "Heading", "purpose": "Section headings."},
+      "intro": {"displayName": "Intro", "purpose": "Introductory prose."},
+      "body": {"displayName": "Body", "purpose": "Desktop reading text."},
+      "body-mobile": {"displayName": "Body mobile", "purpose": "Mobile reading text."},
+      "caption": {"displayName": "Caption", "purpose": "Figure captions and row descriptions."},
+      "label": {"displayName": "Label", "purpose": "Functional section labels and metadata."},
+      "navigation": {"displayName": "Navigation", "purpose": "Shared primary links."},
+      "code": {"displayName": "Code", "purpose": "Readable code excerpts."}
+    },
+    "shadows": [],
+    "motion": [
+      {"name": "document-transition", "value": "120ms", "purpose": "Native cross-document transition; disabled for reduced motion."},
+      {"name": "stage-border", "value": "180ms ease-out", "purpose": "Runtime diagram active border; disabled for reduced motion."},
+      {"name": "flow-marker", "value": "250ms ease-out", "purpose": "Runtime diagram marker transform; disabled for reduced motion."},
+      {"name": "character-change", "value": "160ms ease-out", "purpose": "Character comparison color state; disabled for reduced motion."}
+    ],
+    "breakpoints": [
+      {"name": "guide-narrow-desktop", "value": "1200px"},
+      {"name": "shell-narrow-desktop", "value": "1100px"},
+      {"name": "guide-stacked-index", "value": "900px"},
+      {"name": "homepage-stacked-hero", "value": "720px"},
+      {"name": "mobile", "value": "600px"}
+    ]
+  },
+  "components": [
+    {
+      "name": "Figure button",
+      "kind": "button",
+      "refersTo": "figure-button",
+      "description": "The guide's existing reader-started playback control; preview shows its visual states.",
+      "html": "<button class=\"ds-figure-button\" type=\"button\">Replay menu check</button>",
+      "css": ".ds-figure-button{min-height:44px;padding:10px 16px;border:1px solid var(--line,#888888);background:var(--paper,#ffffff);color:var(--ink,#111111);font:13px/1.5 var(--font-label,Cousine,'Courier New',monospace);cursor:pointer;border-radius:0}.ds-figure-button:hover{border-color:var(--ink,#111111);background:var(--soft,#f2f2f2)}.ds-figure-button:focus-visible{outline:2px solid var(--ink,#111111);outline-offset:4px}"
+    },
+    {
+      "name": "Primary navigation",
+      "kind": "nav",
+      "refersTo": "primary-navigation",
+      "description": "The shared Releases and Guides links.",
+      "html": "<nav class=\"ds-primary-navigation\" aria-label=\"Main navigation\"><a href=\"/#releases\">Releases</a><a href=\"/#guides\">Guides</a></nav>",
+      "css": ".ds-primary-navigation{display:flex;gap:36px;align-items:center;color:var(--ink,#111111)}.ds-primary-navigation a{color:inherit;font:14px/1.5 var(--font-label,Cousine,'Courier New',monospace);letter-spacing:.3px;text-decoration:none;padding:14px 0;border-bottom:1px solid transparent}.ds-primary-navigation a:hover{border-color:var(--ink,#111111)}.ds-primary-navigation a:focus-visible{outline:2px solid var(--ink,#111111);outline-offset:5px}"
+    },
+    {
+      "name": "Theme selector",
+      "kind": "input",
+      "refersTo": "theme-selector",
+      "description": "Existing native select for System, Light and Dark. Theme persistence belongs to the site script.",
+      "html": "<select class=\"ds-theme-selector\" aria-label=\"Color theme\"><option>System</option><option>Light</option><option>Dark</option></select>",
+      "css": ".ds-theme-selector{border:0;background:var(--paper,#ffffff);color:var(--ink,#111111);max-width:105px;min-height:44px;padding:8px;cursor:pointer;font:12px/1.5 var(--font-label,Cousine,'Courier New',monospace)}.ds-theme-selector:focus-visible{outline:2px solid var(--ink,#111111);outline-offset:5px}"
+    },
+    {
+      "name": "Guide row",
+      "kind": "nav",
+      "refersTo": "guide-row",
+      "description": "Existing index row with a title, description and inline SVG link arrow.",
+      "html": "<a class=\"ds-guide-row\" href=\"/guides/first-change/\"><span class=\"ds-guide-number\" aria-hidden=\"true\">01</span><span><span class=\"ds-guide-title\">Our first change on the SP.</span><span class=\"ds-guide-description\">Two update files, a decompiler, and twelve changed characters.</span></span><svg class=\"ds-guide-arrow\" viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M5 19 19 5M5 5h14v14\"/></svg></a>",
+      "css": ".ds-guide-row{display:grid;grid-template-columns:32px minmax(0,1fr) 24px;gap:24px;padding:16px 0;border-top:1px solid var(--line,#888888);text-decoration:none;min-height:88px;color:var(--ink,#111111);font-family:var(--font-reading,Arimo,Arial,sans-serif)}.ds-guide-number{padding-top:5px;font:13px/1.54 var(--font-label,Cousine,'Courier New',monospace);letter-spacing:.26px;font-variant-numeric:tabular-nums}.ds-guide-title{font-size:22px;line-height:1.45}.ds-guide-description{display:block;font-size:16px;line-height:1.5;color:var(--muted,#555555);margin-top:4px}.ds-guide-row:hover .ds-guide-title{text-decoration:underline;text-underline-offset:5px}.ds-guide-row:focus-visible{outline:2px solid var(--ink,#111111);outline-offset:5px}.ds-guide-arrow{width:24px;height:24px;margin-top:4px;stroke:currentColor;stroke-width:1.25;fill:none}@media(max-width:600px){.ds-guide-row{grid-template-columns:minmax(0,1fr) 24px;gap:8px}.ds-guide-number{display:none}.ds-guide-title{font-size:20px;line-height:1.4}}"
+    },
+    {
+      "name": "Release preview",
+      "kind": "card",
+      "refersTo": "release-preview",
+      "description": "The existing flat release container. It has no hover action or elevation.",
+      "html": "<div class=\"ds-release-preview\"><p>Release preview</p></div>",
+      "css": ".ds-release-preview{background:var(--soft,#f2f2f2);color:var(--ink,#111111);padding:16px 24px;min-height:88px;font-family:var(--font-reading,Arimo,Arial,sans-serif)}.ds-release-preview p{font-size:16px;line-height:1.5;margin:8px 0 0}@media(max-width:600px){.ds-release-preview{padding:16px 20px}}"
+    }
+  ],
+  "narrative": {
+    "northStar": "Field manual",
+    "overview": "OpenSP uses the owner's chosen field-manual direction: regular reading type, monospaced navigation, open space and sharp instrument drawings. The Teenage Engineering references inform the hierarchy and room around the hardware. OpenSP keeps its own fonts, copy and component geometry.\n\nThe homepage and first guide share the same visual system. Penpot holds linked main components and their instances; the static website renders semantic text and exported SP geometry.",
+    "keyCharacteristics": [
+      "Monochrome surfaces and thin dividing rules.",
+      "Arimo for reading, Cousine for navigation and technical labels.",
+      "Reusable SP parts with separate display content.",
+      "One responsive template and shared content for both themes."
+    ],
+    "rules": [
+      {"name": "The semantic theme rule", "body": "Use the existing `--paper`, `--ink`, `--muted`, `--line` and `--soft` aliases so both themes inherit the same component structure.", "section": "colors"},
+      {"name": "The reading and labels rule", "body": "Keep paragraphs in Arimo and functional labels in Cousine. Use regular-weight headings and the established modest negative tracking; do not introduce a second display face.", "section": "typography"},
+      {"name": "The shared geometry rule", "body": "Theme changes preserve layout. Responsive overrides must retain the underlying Penpot component links.", "section": "layout"}
+    ],
+    "dos": [
+      "Do reuse linked Penpot mains, shared typography and semantic theme aliases.",
+      "Do compare desktop and mobile in both themes after shared changes.",
+      "Do keep reading text and static figures usable without JavaScript.",
+      "Do identify reconstructed screens and preserve their provenance."
+    ],
+    "donts": [
+      "Don't add accent colors, gradients, shadows or decorative card systems.",
+      "Don't flatten the reusable SP assembly or redraw its screen bezel for new content.",
+      "Don't treat a native poster as browser interaction or a device capture.",
+      "Don't turn the existing homepage eyebrow into a default guide pattern."
+    ]
+  }
+}

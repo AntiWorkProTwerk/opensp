@@ -12,6 +12,7 @@
     "test": "playwright test",
     "test:install": "playwright install chromium",
     "design:pull": "node tools/pull-penpot.mjs",
+    "design:pull-guide": "node tools/pull-guide-design.mjs",
     "design:tokens": "node tools/build-design-tokens.mjs"
   },
   "dependencies": {

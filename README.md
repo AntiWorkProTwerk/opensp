@@ -9,8 +9,10 @@ and enforced HTTPS.
 
 The production site uses Astro static output, reusable components derived from
 the shared Penpot design, and the original AntiWorkProTwerk R3 frame animation.
-It has no application server or site-wide framework hydration. Guide topics
-remain unpublished previews; no firmware downloads are offered yet.
+It has no application server or site-wide framework hydration. The first guide,
+[Our first change on the SP](https://opensp.fyi/guides/first-change/), follows the
+firmware investigation through the first reported menu-title change. Remaining
+topics are unpublished previews; no firmware downloads are offered yet.
 
 ```powershell
 npm ci
@@ -35,7 +37,8 @@ account configuration stay outside this repository. See
 Use the named Penpot assets and linked components. `npm run design:pull` reads
 the approved native components and white desktop homepage into reviewable
 snapshots; it does not publish them. See [design-language.md](docs/design-language.md)
-and [the screen component contract](docs/sp-display.md).
+and [the screen component contract](docs/sp-display.md). `npm run design:pull-guide`
+reads the first guide's linked mains and four responsive/theme layouts.
 
 The firmware project's narrative remains the editorial source; no research
 artifacts or firmware binaries are included in the public site build. The R3

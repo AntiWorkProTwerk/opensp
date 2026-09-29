@@ -1,0 +1,101 @@
+{
+  "title": "Our first change on the SP.",
+  "description": "Two update files, a decompiler, and twelve changed characters. How we went from wondering what was possible to seeing our own text on the SP-404MKII.",
+  "period": "15–22 September 2026",
+  "sections": [
+    {
+      "id": "two-files",
+      "title": "Two files, no source code",
+      "short": "Two files",
+      "paragraphs": [
+        "We started with a question: how much of the SP could we change through its firmware? Roland's public updates gave us somewhere to look. Each archive contained two binaries, SP404MKII_APP0.bin and SP404MKII_APP1.bin. There was no source tree, SDK or board schematic alongside them.",
+        "Before touching the files, we kept the originals and recorded their SHA-256 hashes: fingerprints that let us identify the exact bytes later. We began with five releases and eventually compared eight, using version 5.52 as our working base.",
+        "APP1 offered readable strings and recognizable ARM instructions. APP0 was much less transparent. Treating them as two parts to investigate, rather than assuming their filenames explained their jobs, kept the early guesses separate from what we actually knew."
+      ],
+      "figure": "files",
+      "caption": "The two files in the official update. Different contents, different unknowns."
+    },
+    {
+      "id": "runtime-map",
+      "title": "A file is not a memory map",
+      "short": "The memory map",
+      "paragraphs": [
+        "A binary is a long sequence of bytes. A running program needs those bytes in particular places. APP1's startup code described how to build that arrangement: copy some regions, decompress others and clear others to zero. This is called scatter loading.",
+        "That mattered before decompilation. Loading the whole file at the wrong address would make references point to the wrong things. We reconstructed the runtime regions first, so a reference to a menu label could lead to the label the program actually used.",
+        "Our extractor initially assumed every firmware version had the same startup layout. The older releases proved otherwise. We corrected that assumption and a separate emulator stop-address mistake, then compared the extracted output with the original instructions. A tool failure had taught us to check the experiment as carefully as the firmware."
+      ],
+      "figure": "memory",
+      "caption": "A conceptual view of scatter loading. Regions and proportions are simplified; this is not a complete address map."
+    },
+    {
+      "id": "reading-ida",
+      "title": "Learning to read the program",
+      "short": "Inside IDA",
+      "paragraphs": [
+        "With those regions in place, we used IDA and the ARM Hex-Rays decompiler to inspect the program. A decompiler translates machine instructions into C-like pseudocode. It makes relationships easier to follow, but it cannot give back the original names, comments or intent.",
+        "The first full export produced pseudocode for 8,592 of 8,593 candidate functions. That was a useful map, with a known missing piece. Names such as sub_8013E8B0 were still address-based labels, and inferred types needed checking.",
+        "Readable text gave us an anchor. Following a reference to the Utility menu title led to a drawing routine. The excerpt below is from that IDA export: the title reference appears in a call, with familiar menu labels further down. It connected something in the file to something we could recognize on the instrument."
+      ],
+      "figure": "code",
+      "caption": "Actual IDA pseudocode excerpt, shortened with omissions marked. This is selectable text, not a screenshot of IDA or recovered original source."
+    },
+    {
+      "id": "smaller-question",
+      "title": "We were asking too much at once",
+      "short": "A smaller question",
+      "paragraphs": [
+        "The initial ambition was much bigger than a menu label. We built an original diagnostic program and investigated how a replacement application might start. The monitor passed instruction-level tests, but it had not run on the SP. The resident loader's full contract was still unknown.",
+        "That was a real obstacle to a complete replacement. It did not mean every smaller experiment had to wait. On September 22, the direction became explicit: start with a visible proof of concept.",
+        "The stock system already knew how to start the instrument and draw its menus. Could we leave that machinery alone and change one piece of text?"
+      ],
+      "figure": "scope",
+      "caption": "The first hardware experiment kept the stock system and narrowed the question to one visible title."
+    },
+    {
+      "id": "twelve-characters",
+      "title": "Twelve characters was enough",
+      "short": "Twelve characters",
+      "paragraphs": [
+        "UTILITY MENU and CUSTOM MENU! both contain twelve printable characters. That let the experiment keep the terminating zero, image size and surrounding layout intact. APP0 stayed byte-for-byte unchanged; the only changed APP1 positions were the twelve title bytes.",
+        "It was a small result by design. A recognizable title would tell us whether this specific modified image had reached a visible part of the interface. It would not prove that a replacement operating system, audio engine or recovery path worked."
+      ],
+      "figure": "comparison",
+      "caption": "Title-only reconstruction. The lettering is illustrative; no photograph or full-screen capture was recorded for this test."
+    },
+    {
+      "id": "before-hardware",
+      "title": "Check the route, then the result",
+      "short": "Before hardware",
+      "paragraphs": [
+        "Finding the new words in the output file was only the first check. We ran the stock memory-copy instructions and Utility drawing routine in an instruction-level emulator, once for each of six selections in both the original and modified images.",
+        "All twelve cases reached the expected title-drawing call. The other labels, icons and selections remained consistent. A fresh rebuild produced identical bytes, and reversing the title change restored the original APP1 hash.",
+        "Those checks supported the experiment without pretending to be a device test. The package still carried UNVERIFIED in its name when it left the PC. Acceptance by the updater and the actual display result were still unanswered."
+      ],
+      "figure": "verification",
+      "caption": "Twelve instruction-level menu cases: six selections, tested with both titles. These are CPU-test results, not twelve physical tests."
+    },
+    {
+      "id": "on-the-sp",
+      "title": "Then the SP answered",
+      "short": "On the SP",
+      "paragraphs": [
+        "We did not yet have a verified USB flashing path. The owner installed the candidate through the SD update workflow, then checked the Utility menu using SHIFT and pad 13. The expected title was CUSTOM MENU!.",
+        "The reply was short: “it wokred”. On September 22, we recorded the first owner-reported visible success. The supplied stock-based modification had made it to the instrument and produced the expected result.",
+        "There was no independent screen capture or installed-image readback, so the record stays precise about its evidence. This was a reported success for one particular title change. The larger questions remained, but the next experiment could start from something that had worked on the SP."
+      ],
+      "figure": "result",
+      "caption": "Illustration of the reported result. The controls and title explain the observation; this is not a live SP connection or a device recording."
+    }
+  ],
+  "code": [
+    "int __fastcall sub_8013E8B0(_DWORD **a1)",
+    "{",
+    "  // local declarations omitted",
+    "  sub_800C2558((int)a1, (int)aUtilityMenu, -98);",
+    "  // intervening drawing calls omitted",
+    "  strcpy(v4, \"SYSTEM\");",
+    "  sub_800D4FA0(a1[13], 32, 30, (int)v4);",
+    "  // remaining menu entries omitted",
+    "}"
+  ]
+}

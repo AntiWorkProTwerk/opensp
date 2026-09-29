@@ -1,0 +1,25 @@
+{
+  "kind": "curated-local-lab-summary",
+  "route": "/guides/first-change/",
+  "lighthouseVersion": "13.5.0",
+  "capturedAt": "2026-09-29T02:10:12.512Z",
+  "environment": "Windows, isolated headless Chrome Canary, local Astro preview",
+  "formFactor": "mobile",
+  "throttlingMethod": "simulate",
+  "cpuSlowdownMultiplier": 4,
+  "networkRttMs": 150,
+  "networkThroughputKbps": 1638.4,
+  "scores": {"performance": 100, "accessibility": 100, "bestPractices": 100, "seo": 100},
+  "firstContentfulPaintMs": 1357.4178,
+  "largestContentfulPaintMs": 1357.4178,
+  "totalBlockingTimeMs": 0,
+  "cumulativeLayoutShift": 0.0001361913622822897,
+  "previousCumulativeLayoutShift": 0.2375733583571919,
+  "runtimeError": null,
+  "runWarnings": [],
+  "limitations": [
+    "Local simulated-mobile lab run, not a physical phone or real-user measurement.",
+    "The CLI reported EPERM during temporary browser-profile cleanup after saving the valid report.",
+    "The raw local report remains outside the repository; this summary excludes local paths and account information."
+  ]
+}

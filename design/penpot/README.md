@@ -7,6 +7,23 @@ mapping). These are current read-only API snapshots, refreshed by
 They do not replace a full importable `.penpot` archive or claim automatic sync.
 The latest native archive below predates the owner's copy edits and R3 screen.
 
+The first guide adds `guide-components.json` and `first-guide-layouts.json`,
+read directly from the **Guide components** and **First guide** pages with
+`npm run design:pull-guide`. These preserve native main/instance IDs, nested
+geometry, shared text and typography, and four desktop/mobile theme layouts.
+They are API snapshots, not importable `.penpot` archives. `first-guide.js` and
+`finalize-guide.js` contain the bounded native authoring operations. Run only
+the intended stage against the named page; component creation checks existing
+names, and layout creation refuses to overwrite an existing board.
+
+The finish review caught stale dark-copy render positions despite apparently
+correct API bounds. `review-guide.js` and its runner record the correction:
+tighten the linked light introductions, remove the extra hero label, use vector
+disclosure strokes, and recreate only the two guide dark boards from those
+finished light layouts. Final PNG exports were reviewed alongside the browser.
+Always check rendered output after component propagation; bounds alone did
+not catch this mismatch.
+
 `opensp-desktop.penpot` is the native export downloaded from the OpenSP file
 on 2026-09-28 before mobile/dark studies. It contains the five desktop/vector
 study sheets. ZIP integrity was checked; no linked libraries are required.

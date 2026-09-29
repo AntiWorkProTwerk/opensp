@@ -56,6 +56,10 @@ offscreen or hidden playback. Do not connect the public site to the physical SP.
   desktop homepage. Review its snapshot and shared-copy diff before building.
   Run `npm run design:tokens` after a pull. Do not hand-edit generated geometry
   or token CSS to hide a mismatch with Penpot.
+- For the first guide, `npm run design:pull-guide` snapshots its native mains
+  and four layouts. `src/content/first-change.json` is the shared narrative for
+  browser rendering and Penpot authoring. Review copy changes against the source
+  ledger; never turn CPU checks or an owner report into a device capture claim.
 - Use the shared Astro components under `src/components/`. `SPPart` renders
   native exported geometry; `SPDisplay` owns playback. Extend the shared shape
   renderer and test new Penpot shape types before using them in production.

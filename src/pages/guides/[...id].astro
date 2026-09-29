@@ -3,11 +3,47 @@ import {getCollection,render,type CollectionEntry} from 'astro:content';
 import Base from '../../layouts/Base.astro';
 import SiteHeader from '../../components/SiteHeader.astro';
 import SiteFooter from '../../components/SiteFooter.astro';
+import article from '../../content/first-change.json';
+import '../../styles/guide.css';
 export async function getStaticPaths(){return (await getCollection('guides',g=>!g.data.draft)).map(guide=>({params:{id:guide.id},props:{guide}}));}
 interface Props {guide:CollectionEntry<'guides'>;}
 const {guide}=Astro.props;
 const {Content}=await render(guide);
+const first=guide.id==='first-change';
+const contents=first?article.sections:[];
 ---
 <Base title={`${guide.data.title} / OpenSP`} description={guide.data.description}>
-  <SiteHeader/><main id="main" class="article"><a href="/#guides">All guides</a><h1>{guide.data.title}</h1><p class="intro">{guide.data.description}</p><div class="prose"><Content/></div></main><SiteFooter page="GUIDE"/>
+  <SiteHeader/>
+  <main id="main" class="guide-layout">
+    <aside class="guide-rail" aria-label="Guide navigation">
+      <a class="all-guides" href="/#guides">All guides</a>
+      {contents.length>0&&<details class="guide-contents" open>
+        <summary>On this page <svg class="contents-toggle" width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M1 7h12M7 1v12" stroke="currentColor" stroke-width="1"/></svg></summary>
+        <nav aria-label="Table of contents">{contents.map(s=><a href={`#${s.id}`}>{s.short}</a>)}</nav>
+        <p class="rail-evidence">Owner-reported result<br/>22 September 2026</p>
+      </details>}
+      {contents.length>0&&<script is:inline>
+        (()=>{const index=document.currentScript.previousElementSibling;if(index instanceof HTMLDetailsElement)index.open=!matchMedia('(max-width: 900px)').matches;})();
+      </script>}
+    </aside>
+    <article class="guide-article">
+      <header class="guide-introduction"><h1>{guide.data.title}</h1><p>{first?article.description:guide.data.description}</p>{first&&<p class="guide-period"><time datetime="2026-09-15">15</time>–<time datetime="2026-09-22">22 September 2026</time> <span>/ Project journal</span></p>}</header>
+      <Content/>
+    </article>
+  </main>
+  <SiteFooter page="GUIDE"/>
 </Base>
+<script>
+  const contents=document.querySelector<HTMLDetailsElement>('.guide-contents');
+  if(contents){
+    const narrow=matchMedia('(max-width: 900px)');
+    const adapt=()=>{contents.open=!narrow.matches;};adapt();narrow.addEventListener('change',adapt);
+    contents.querySelector('summary')?.addEventListener('click',event=>{if(!narrow.matches)event.preventDefault();});
+    contents.querySelectorAll('a').forEach(a=>a.addEventListener('click',()=>{if(narrow.matches)contents.open=false;}));
+  }
+  const links=[...document.querySelectorAll<HTMLAnchorElement>('.guide-contents nav a')];
+  const sections=[...document.querySelectorAll<HTMLElement>('.guide-section')];
+  if('IntersectionObserver' in window){
+    const observer=new IntersectionObserver(entries=>{const entry=entries.find(e=>e.isIntersecting);if(entry)links.forEach(a=>{if(a.hash==='#'+entry.target.id)a.setAttribute('aria-current','location');else a.removeAttribute('aria-current');});},{rootMargin:'-10% 0px -65% 0px'});sections.forEach(s=>observer.observe(s));
+  }
+</script>

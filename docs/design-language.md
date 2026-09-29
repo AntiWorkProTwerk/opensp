@@ -7,9 +7,27 @@ component and library-asset snapshot. The instrument keeps its exported geometry
 page text uses semantic HTML, shared copy and responsive CSS. Both themes share
 one template. The R3 display plays through the reusable browser component.
 The [development guide](development.md) records the pull, test and deployment
-workflow. Production guide rows are marked as unpublished and do not link to
-the older design studies. The history below records how the design reached this
+workflow. The first published guide has a real article route; remaining preview
+rows are marked as unpublished and do not link to the older design studies.
+The history below records how the design reached this
 point; references to a blank public site describe earlier checkpoints.
+
+## First guide
+
+**First guide** extends the existing field-manual layout with a desktop contents
+rail and a collapsible mobile index. Its light/dark desktop and mobile boards
+are paired on the canvas. **Guide components** holds the linked paragraph,
+heading, caption, contents and figure mains; sections reuse those parts.
+The instrument keeps the shared SP assembly, with a separate `Menu title screen`
+instance in its existing viewport. The homepage's R3 sequence is unchanged.
+
+Native posters show the browser controls and final evidence state. The browser
+implements replay, pause, highlighting and disclosures; Penpot does not play
+these sequences. The design uses the approved Arimo/Cousine typography and
+semantic theme colors. API snapshots and the source mapping are recorded in
+[the native export notes](../design/penpot/README.md) and
+[development guide](development.md). [The source ledger](first-guide-sources.md)
+keeps the historical title change separate from later firmware milestones.
 
 ## Design history and source
 

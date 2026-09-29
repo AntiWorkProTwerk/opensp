@@ -7927,6 +7927,15 @@
       "letterSpacing": "0"
     },
     {
+      "id": "88ef66de-c84d-8075-8008-b5f3051c77de",
+      "name": "Article title",
+      "fontFamily": "Arimo",
+      "fontSize": "60",
+      "fontWeight": "400",
+      "lineHeight": "1.08",
+      "letterSpacing": "-1.5"
+    },
+    {
       "id": "d862c4e5-8ca1-80d0-8008-b5895e3cfb71",
       "name": "Caption mobile",
       "fontFamily": "Arimo",
@@ -7961,6 +7970,15 @@
       "fontWeight": "400",
       "lineHeight": "1.5",
       "letterSpacing": "0.3"
+    },
+    {
+      "id": "88ef66de-c84d-8075-8008-b5f30550700f",
+      "name": "Code",
+      "fontFamily": "Cousine",
+      "fontSize": "14",
+      "fontWeight": "400",
+      "lineHeight": "1.65",
+      "letterSpacing": "0"
     }
   ]
 }

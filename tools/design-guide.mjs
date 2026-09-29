@@ -1,0 +1,9 @@
+import fs from 'node:fs';
+import {execFileSync} from 'node:child_process';
+const step=process.argv[2];
+let code;
+if(step==='load')code=fs.readFileSync('design/penpot/first-guide.js','utf8').replace('__ARTICLE__',fs.readFileSync('src/content/first-change.json','utf8'));
+else code=`return await storage.guide.${step};`;
+const output=execFileSync(process.execPath,['tools/penpot-call.mjs','execute_code','='+code],{encoding:'utf8',maxBuffer:8*1024*1024});
+console.log(output);
+if(output.includes('Tool execution failed:'))process.exitCode=1;
