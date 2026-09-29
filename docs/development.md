@@ -63,7 +63,9 @@ image or manually redrawn instrument is used. Fonts are self-hosted Arimo and
 Cousine, with their licenses retained under `design/studies/fonts/`.
 
 The shape renderer currently supports the exported board/group, rectangle,
-ellipse, path and text types. Before introducing masks, rotated shapes,
+ellipse, path and text types, plus native geometric mask groups through SVG
+clip paths. The Display uses a circular aperture shared with its browser player;
+see [panel geometry](references/sp-panel.md). Before introducing alpha masks, rotated shapes,
 gradients or effects in Penpot, extend and visually verify that renderer.
 Compare the finished homepage against both Penpot sizes and both themes after
 each pull. Native interactions still need semantic browser implementations.
@@ -117,9 +119,20 @@ source artifacts, verify asset paths, and cap generated JavaScript plus inline
 scripts from the largest page at 15 KiB gzip. This conservative budget includes
 all generated scripts, even those not used by that page. The first guide build
 measured 3,518 bytes gzip of JavaScript and about 10.8 KiB gzip of guide HTML.
-The 42-test suite passes locally in headless Canary, including actual instrument
-highlights and desktop/mobile contents behavior. These are lab results, not
+The expanded guide currently passes 54 tests locally in headless Canary, including shared surround
+geometry, circular screen clipping, actual instrument
+highlights, five keyboard-scrubbable timelines and desktop/mobile contents behavior.
+The native-layout regression checks shared copy and seven checkpoint/five
+timeline links in each of the four Penpot snapshots.
+Its current conservative JavaScript total is 5,415 bytes gzip. The earlier
+Lighthouse measurements below apply to the first-guide launch, not this revision.
+These are lab results, not
 physical-device measurements or real-user Core Web Vitals.
+
+`public/examples/menu-title-check.py` is an intentional, narrowly allowlisted
+download. It is an original, in-memory reading exercise, not imported research
+source. Other Python files and private artifacts remain rejected by the build.
+See [the source ledger](first-guide-sources.md) for its limits.
 
 Initialize the mobile contents disclosure before parsing the article. Deferring
 that collapse to a module caused a measured 0.238 layout shift on cold load.

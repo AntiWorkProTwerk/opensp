@@ -24,6 +24,15 @@ must confirm the file and page before edits. A page switch is asynchronous;
 confirm the new current page in the next call. Helper `storage` is session-local
 and must be reloaded after reconnecting. Never rerun creation steps blindly.
 
+The guide refinement encountered another stale heartbeat despite a connected
+toolbar indicator; reconnecting did not immediately resolve it. A later call
+resumed. An expired Chrome debugging-consent dialog also kept the View-mode tab
+active during export; canceling that obsolete request and focusing the editor
+restored the heartbeat. Do not click Allow on the owner's behalf or assume every
+heartbeat failure has the same cause. The MCP client now hides its credential
+reader subprocess and exits unsuccessfully when the service returns a textual
+`Tool execution failed:` response, even if the protocol error flag is absent.
+
 `refine-home.js` loads bounded helper functions. Scaling and dark-theme work use
 small queues, skipping hidden archived SVG trees. These are staged migration
 tools, not an idempotent whole-file generator. Keep linked component instances.

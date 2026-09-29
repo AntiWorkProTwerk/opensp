@@ -92,12 +92,12 @@ spacing:
   column-gap: "48px"
   page-gutter: "64px"
 components:
-  figure-button:
+  timeline-button:
     backgroundColor: "{colors.paper}"
     textColor: "{colors.ink}"
     rounded: "{rounded.square}"
-    padding: "10px 16px"
-  figure-button-hover:
+    padding: "0px"
+  timeline-button-hover:
     backgroundColor: "{colors.surface}"
     textColor: "{colors.ink}"
   primary-navigation:
@@ -177,6 +177,10 @@ to 52px at 1200px, and use hero-mobile below 600px. Guide section headings becom
 28px below 600px. Body text uses body-mobile there; captions retain their size.
 Guide paragraphs stop at 68ch and captions at 70ch. Contextual label sizes and
 leading are specified in [guide.css](src/styles/guide.css).
+Timeline clocks and byte-value annotations use 10–12px Cousine inside diagrams;
+they never carry the only explanation of a step. Checkpoint instructions use
+18px reading text, with 16px evidence notes. The instrument's 36px mobile title
+and 15px code explanation are figure-specific overrides.
 
 **The reading and labels rule.** Keep paragraphs in Arimo and functional labels
 in Cousine. Use regular-weight headings and the established modest negative
@@ -215,10 +219,14 @@ Controls and content containers have square corners. Interface rules are 1px;
 the instrument retains the strokes and proportions in its native geometry.
 Its circular bezel and knobs are hardware shapes, not a rounding rule for cards.
 Navigation symbols use vector paths or CSS strokes.
+The shared knob rail and effects housing follow the front-on panel reference.
+The OLED spans the inner circular aperture; its 2:1 content is uniformly scaled
+and clipped at the rim. [Panel geometry](docs/references/sp-panel.md) records
+the native mains and their renderer mapping.
 
 ## Components
 
-The five sidecar examples are existing website patterns: figure button, primary
+The five sidecar examples are existing website patterns: the former figure button, primary
 navigation, theme selector, guide row and release preview. They introduce no new
 input, chip or card family. The selector is a native select; its browser affordance
 is preserved. Buttons have at least 44px height. Guide rows keep descriptions
@@ -231,15 +239,22 @@ The first guide's contents, paragraphs, headings, captions and figures map to
 [GuideFigure](src/components/guides/GuideFigure.astro). Native posters show a
 representative state; semantic HTML implements disclosures and playback.
 Code styling and native typography are explicitly mapped, not automatically synced.
+The timeline replaces the former figure button: a 44px play/pause target,
+1px seek line, keyboard-accessible range input and elapsed/duration clock.
+Reader checkpoints group the important actions and expected observations beneath
+each numbered section. Both are reusable guide patterns.
 
 SPPart renders the shared native shapes; SPInstrument composes the instrument.
 The 128×64 screen remains independent of its bezel and enclosure. The guide's
 Menu title screen and the homepage's R3 sequence have separate sources and
 provenance. Follow [the display contract](docs/sp-display.md) when swapping them.
 
-Guide motion starts on reader request, supports pause, and stops offscreen or
-when the page is hidden. Reduced motion shows the requested result immediately.
-Static explanations remain available without scripts. The homepage display has
+Guide figures autoplay once when at least 20% visible, without looping. The
+timeline supports pause and scrubbing; manual pause survives leaving and
+re-entering the viewport. Playback suspends offscreen or while the page is hidden.
+Reduced motion starts at the final state and permits explicit playback. Static
+explanations remain available without scripts, with space reserved for controls
+to avoid a layout jump. The homepage display has
 its own documented autoplay and pause behavior. Cross-document transitions last
 120ms where supported and are disabled for reduced motion.
 

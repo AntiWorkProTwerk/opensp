@@ -44,3 +44,21 @@ No real-user Core Web Vitals or physical-phone measurements are available.
 
 `/build-info.json` identifies the current deployed revision and artifact hashes.
 The [development guide](development.md) documents future releases.
+
+## September 29 guide and panel update
+
+This revision adds the shared knob/effects surrounds and circular screen
+aperture, expands the first guide into seven steps, and replaces its replay
+buttons with five autoplaying, scrubbable timelines. An original offline Python
+exercise demonstrates the byte comparison without accepting firmware files.
+
+Local validation passes 54 browser tests and Astro's 23-file check with no
+diagnostics. The conservative script total is 5,415 bytes gzip. Native snapshots
+include 24 guide mains and four linked layouts, each with seven checkpoints and
+five timelines. Two native mobile text overflows were corrected and the rendered
+layouts checked in both themes. Earlier Lighthouse scores above are historical;
+they are not measurements of this larger guide.
+
+The release uses the existing Pages workflow. The live build record identifies
+the published commit and design hashes; publication is verified after that
+workflow completes, not inferred from a local build.

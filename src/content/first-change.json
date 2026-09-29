@@ -1,47 +1,54 @@
 {
   "title": "Our first change on the SP.",
-  "description": "Two update files, a decompiler, and twelve changed characters. How we went from wondering what was possible to seeing our own text on the SP-404MKII.",
+  "description": "How we traced a menu title from Roland's update files to the SP's screen, what we checked at each step, and how to repeat the offline checks.",
   "period": "15–22 September 2026",
   "sections": [
     {
       "id": "two-files",
-      "title": "Two files, no source code",
+      "title": "1. Preserve the exact inputs",
       "short": "Two files",
       "paragraphs": [
         "We started with a question: how much of the SP could we change through its firmware? Roland's public updates gave us somewhere to look. Each archive contained two binaries, SP404MKII_APP0.bin and SP404MKII_APP1.bin. There was no source tree, SDK or board schematic alongside them.",
-        "Before touching the files, we kept the originals and recorded their SHA-256 hashes: fingerprints that let us identify the exact bytes later. We began with five releases and eventually compared eight, using version 5.52 as our working base.",
+        "Before touching the files, we kept the original archive, recorded its download URL and computed SHA-256 hashes for the archive and both binaries. A version label alone is not enough: two differently edited files can have the same name. We began with five releases and eventually compared eight, using version 5.52 as our working base.",
         "APP1 offered readable strings and recognizable ARM instructions. APP0 was much less transparent. Treating them as two parts to investigate, rather than assuming their filenames explained their jobs, kept the early guesses separate from what we actually knew."
       ],
       "figure": "files",
-      "caption": "The two files in the official update. Different contents, different unknowns."
+      "caption": "Our preserved v5.52 inputs. Sizes identify the files; SHA-256 identifies their exact contents.",
+      "steps": ["Obtain the official update from Roland and keep its archive unchanged. Extract a separate working copy; do not connect the SP for this reading exercise.","In the extracted folder, record each file's size and SHA-256. Compare with the v5.52 record below only if you have that exact release. A mismatch means stop and identify your input."],
+      "checkpoint": "You should have an untouched archive, two identified binaries and a small record of where they came from. The commands only read the files.",
+      "command": "Get-Item .\\SP404MKII_APP0.bin, .\\SP404MKII_APP1.bin | Select-Object Name, Length\nGet-FileHash .\\SP404MKII_APP0.bin, .\\SP404MKII_APP1.bin -Algorithm SHA256"
     },
     {
       "id": "runtime-map",
-      "title": "A file is not a memory map",
+      "title": "2. Separate file bytes from runtime memory",
       "short": "The memory map",
       "paragraphs": [
         "A binary is a long sequence of bytes. A running program needs those bytes in particular places. APP1's startup code described how to build that arrangement: copy some regions, decompress others and clear others to zero. This is called scatter loading.",
-        "That mattered before decompilation. Loading the whole file at the wrong address would make references point to the wrong things. We reconstructed the runtime regions first, so a reference to a menu label could lead to the label the program actually used.",
+        "We treated each startup region as a record: source in the file, destination in memory, length and operation. Copy preserves bytes; decompression expands a stored representation; zero-fill creates empty state that need not occupy space in the file. File offsets and runtime addresses therefore cannot be used interchangeably. We checked those regions before trusting references in IDA.",
         "Our extractor initially assumed every firmware version had the same startup layout. The older releases proved otherwise. We corrected that assumption and a separate emulator stop-address mistake, then compared the extracted output with the original instructions. A tool failure had taught us to check the experiment as carefully as the firmware."
       ],
       "figure": "memory",
-      "caption": "A conceptual view of scatter loading. Regions and proportions are simplified; this is not a complete address map."
+      "caption": "Copy, expansion and zero-fill do different jobs. The small letter sequences are illustrative, not bytes or addresses from the firmware.",
+      "steps": ["Keep file offsets and runtime addresses in separate columns in your notes. Record how each region is produced before assigning it a purpose.","Use the timeline to compare the three operations. A region created by zero-fill has no block of stored bytes to search in the original file."],
+      "checkpoint": "Our runtime extraction was version-specific and checked against the original startup instructions. This diagram explains the result; it is not a loader or a complete recipe for rebuilding that memory map."
     },
     {
       "id": "reading-ida",
-      "title": "Learning to read the program",
+      "title": "3. Follow the title to its caller",
       "short": "Inside IDA",
       "paragraphs": [
         "With those regions in place, we used IDA and the ARM Hex-Rays decompiler to inspect the program. A decompiler translates machine instructions into C-like pseudocode. It makes relationships easier to follow, but it cannot give back the original names, comments or intent.",
         "The first full export produced pseudocode for 8,592 of 8,593 candidate functions. That was a useful map, with a known missing piece. Names such as sub_8013E8B0 were still address-based labels, and inferred types needed checking.",
-        "Readable text gave us an anchor. Following a reference to the Utility menu title led to a drawing routine. The excerpt below is from that IDA export: the title reference appears in a call, with familiar menu labels further down. It connected something in the file to something we could recognize on the instrument."
+        "Readable text gave us an anchor. We found UTILITY MENU, followed its cross-reference into a function and inspected the call that consumed the title. The nearby SYSTEM label gave us a second clue that this was the Utility drawing route. We kept the decompiler's original address-based names in the excerpt so the source remains identifiable. One matching string alone would not have established that the visible menu used it."
       ],
       "figure": "code",
-      "caption": "Actual IDA pseudocode excerpt, shortened with omissions marked. This is selectable text, not a screenshot of IDA or recovered original source."
+      "caption": "Actual IDA pseudocode, with omissions marked. The timeline follows the string reference, its drawing call and a nearby label that corroborates the menu's identity.",
+      "steps": ["In an already correctly mapped analysis database, open IDA's Strings view, select the menu title and inspect its cross-references. Open the referring function's pseudocode alongside its disassembly.","Check the argument carrying the title, then look for a second recognizable menu label in the same routine. If references land outside mapped regions, return to the mapping step instead of guessing."],
+      "checkpoint": "Our anchor was aUtilityMenu in the title-drawing call, with SYSTEM nearby. The excerpt below can be inspected without IDA; it does not reconstruct the whole database."
     },
     {
       "id": "smaller-question",
-      "title": "We were asking too much at once",
+      "title": "4. Define one visible experiment",
       "short": "A smaller question",
       "paragraphs": [
         "The initial ambition was much bigger than a menu label. We built an original diagnostic program and investigated how a replacement application might start. The monitor passed instruction-level tests, but it had not run on the SP. The resident loader's full contract was still unknown.",
@@ -49,34 +56,42 @@
         "The stock system already knew how to start the instrument and draw its menus. Could we leave that machinery alone and change one piece of text?"
       ],
       "figure": "scope",
-      "caption": "The first hardware experiment kept the stock system and narrowed the question to one visible title."
+      "caption": "A small experiment needs an explicit boundary and an observable result.",
+      "steps": ["Write down the one observation that would count as success: the Utility menu displays CUSTOM MENU!.","List what must remain unchanged: APP0, APP1 length, the title's terminator, surrounding bytes and the other menu-drawing behavior."],
+      "checkpoint": "A changed title would answer whether this candidate reached the visible menu. It would not demonstrate a replacement OS or a recovery method."
     },
     {
       "id": "twelve-characters",
-      "title": "Twelve characters was enough",
+      "title": "5. Compare the complete change",
       "short": "Twelve characters",
       "paragraphs": [
         "UTILITY MENU and CUSTOM MENU! both contain twelve printable characters. That let the experiment keep the terminating zero, image size and surrounding layout intact. APP0 stayed byte-for-byte unchanged; the only changed APP1 positions were the twelve title bytes.",
         "It was a small result by design. A recognizable title would tell us whether this specific modified image had reached a visible part of the interface. It would not prove that a replacement operating system, audio engine or recovery path worked."
       ],
       "figure": "comparison",
-      "caption": "Title-only reconstruction. The lettering is illustrative; no photograph or full-screen capture was recorded for this test."
+      "caption": "A comparison of the two title records, including the unchanged zero terminator. Scrubbing reveals the comparison; it does not edit or install firmware.",
+      "steps": ["Count bytes, not just visible characters. These titles use ASCII: twelve printable bytes followed by a zero terminator. The space is a byte too.","Run the downloadable offline example with Python 3. It constructs two tiny records in memory, checks their lengths and terminators, and confirms that reversing the replacement restores the original record."],
+      "checkpoint": "Expected output: 12 changed bytes; terminator unchanged; size unchanged; reverse comparison passed. This synthetic example accepts no input files and is not an SP firmware patcher.",
+      "command": "python menu-title-check.py",
+      "download": true
     },
     {
       "id": "before-hardware",
-      "title": "Check the route, then the result",
+      "title": "6. Test the consumer, not just the string",
       "short": "Before hardware",
       "paragraphs": [
         "Finding the new words in the output file was only the first check. We ran the stock memory-copy instructions and Utility drawing routine in an instruction-level emulator, once for each of six selections in both the original and modified images.",
-        "All twelve cases reached the expected title-drawing call. The other labels, icons and selections remained consistent. A fresh rebuild produced identical bytes, and reversing the title change restored the original APP1 hash.",
+        "The test compared the drawing calls produced by each run: expected title, other labels, icon states and selected item. All twelve cases reached the expected title-drawing call, with the other observations consistent. A fresh rebuild produced identical bytes; reversing the title change restored the original APP1 hash. These checked different failure modes: reproducibility, scope of change and the route actually consuming the text.",
         "Those checks supported the experiment without pretending to be a device test. The package still carried UNVERIFIED in its name when it left the PC. Acceptance by the updater and the actual display result were still unanswered."
       ],
       "figure": "verification",
-      "caption": "Twelve instruction-level menu cases: six selections, tested with both titles. These are CPU-test results, not twelve physical tests."
+      "caption": "Replay of the preserved CPU-test report: six selections for each image. This animation is not running an emulator or testing connected hardware.",
+      "steps": ["Separate file checks from execution checks. A text search can confirm that a title exists; it cannot confirm which code path displays it.","In the offline example, inspect the six-selection by two-title test matrix. It demonstrates the comparison structure with an original Python model, not the SP's machine instructions."],
+      "checkpoint": "The example should report 12 synthetic cases passed. Our historical report contains 12 instruction-level menu cases. Those are different tests; neither is a physical-device result."
     },
     {
       "id": "on-the-sp",
-      "title": "Then the SP answered",
+      "title": "7. Record the hardware observation",
       "short": "On the SP",
       "paragraphs": [
         "We did not yet have a verified USB flashing path. The owner installed the candidate through the SD update workflow, then checked the Utility menu using SHIFT and pad 13. The expected title was CUSTOM MENU!.",
@@ -84,7 +99,9 @@
         "There was no independent screen capture or installed-image readback, so the record stays precise about its evidence. This was a reported success for one particular title change. The larger questions remained, but the next experiment could start from something that had worked on the SP."
       ],
       "figure": "result",
-      "caption": "Illustration of the reported result. The controls and title explain the observation; this is not a live SP connection or a device recording."
+      "caption": "The observation expected after the candidate was installed. SHIFT and pad 13 open the menu; pressing them does not perform the title modification.",
+      "steps": ["Keep the supplied candidate's identity separate from a device readback. We preserved the candidate hash, but did not independently capture the installed bytes.","Record what the owner actually observed and what remains untested. Preserve the exact reply and do not relabel the earlier CPU checks as hardware tests."],
+      "checkpoint": "The offline reproduction ends here. The historical owner report supports this one visible result; this page does not provide an installation package or establish recovery after a failed update."
     }
   ],
   "code": [

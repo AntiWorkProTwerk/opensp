@@ -7,6 +7,13 @@ The production homepage uses the same player through `SPDisplay.astro`.
 `SPInstrument.astro` positions it from the exported Penpot OLED content slot,
 while `SPPart.astro` renders the bezel and instrument geometry.
 
+The current Display has a 122-unit circular aperture inside its 132×132 board.
+Its screen slot is 122×61 at 5, 35.5. It reaches the circle's diameter, with the
+corners clipped by the opening. The 128×64 source is uniformly scaled, without
+stretching. Both native posters and browser playback use the same aperture;
+screen colors remain fixed across themes. [Panel geometry](references/sp-panel.md)
+records the reference, component names and propagation procedure.
+
 The first guide supplies a `screenPart` and accessible `screenLabel` to
 `SPInstrument`. Its `Menu title screen` is a separate native Penpot main with
 the same 128×64 viewport. Passing that part replaces only the screen content;
@@ -65,10 +72,12 @@ named main under `SP/Screens`, then swap the linked content slot. Keep the bezel
 and Instrument links intact.
 
 Newly inserted children did not inherit the homepage instances' earlier scale
-overrides. Run `fit-screen-slots.js` separately on SP components and Homepage
+overrides. The surround/aperture migration uses `fit-sp-parts.js` on all four
+current component/layout pages. For a later content-only swap, run
+`fit-screen-slots.js` separately on SP components and Homepage
 after insertion or replacement. It derives the slot from each existing OLED
 window and preserves the 2:1 aspect ratio. `verify-screen-slots.js` checks all
-four homepage views. They now each have 55 linked nested SP component heads.
+four homepage views. They now each have 57 linked nested SP component heads.
 The previous native archive predates this change; the live file is current.
 
 ## Using another sequence

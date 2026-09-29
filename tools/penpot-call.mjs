@@ -10,7 +10,7 @@ let endpoint = 'http://localhost:4401/mcp';
 const headers = {'Content-Type':'application/json', Accept:'application/json, text/event-stream'};
 async function connectHosted(){
   if(!fs.existsSync(credentialPath))throw Error('Hosted connection is not configured.');
-  const url=execFileSync('pwsh',['-NoProfile','-Command',"$s=Import-Clixml -LiteralPath (Join-Path $env:LOCALAPPDATA 'OpenSP/penpot-mcp.xml'); [System.Net.NetworkCredential]::new('', $s).Password"],{encoding:'utf8'}).trim();
+  const url=execFileSync('pwsh',['-NoProfile','-Command',"$s=Import-Clixml -LiteralPath (Join-Path $env:LOCALAPPDATA 'OpenSP/penpot-mcp.xml'); [System.Net.NetworkCredential]::new('', $s).Password"],{encoding:'utf8',windowsHide:true}).trim();
   const parsed=new URL(url);
   if(parsed.origin!=='https://design.penpot.app'||parsed.pathname!=='/mcp/stream')throw Error('Unexpected hosted endpoint');
   endpoint=url;
@@ -45,4 +45,4 @@ for (const item of result.content || []) {
   }
 }
 if (!result.content) console.log(JSON.stringify(result,null,2));
-if(result.isError)process.exitCode=1;
+if(result.isError||result.content?.some(item=>item.type==='text'&&item.text.startsWith('Tool execution failed:')))process.exitCode=1;

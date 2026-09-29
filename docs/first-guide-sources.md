@@ -34,3 +34,26 @@ used in this project, without calling it the current release forever.
 The [Teenage Engineering EP-133 guide](https://teenage.engineering/guides/ep-133)
 remains a layout reference for concise sections, navigable contents and
 instrument-led explanation. No TE fonts or artwork are copied.
+
+## Offline reading exercise
+
+The September 29 revision adds input sizes and hashes from the preserved v5.52
+manifest, numbered checkpoints, and an original
+[Python lesson](../public/examples/menu-title-check.py). The lesson creates two
+13-byte records in memory and checks their length, twelve changed positions,
+unchanged terminator and reversible comparison. Its twelve model cases explain
+the test matrix; they do not execute SP instructions. It accepts no filenames,
+performs no file or device writes, and is not a firmware patcher or installer.
+
+The read-only input commands follow Microsoft's
+[Get-FileHash documentation](https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.utility/get-filehash?view=powershell-7.5).
+The Strings/cross-reference reading step follows the official
+[IDA subviews reference](https://docs.hex-rays.com/ida-9.2/user-guide/user-interface/subviews).
+It assumes an already correctly mapped database and does not provide its loader.
+
+Figure playback uses [shared scene data](../src/content/guide-scenes.json).
+Runtime letter sequences are illustrative. The verification figure replays saved
+results; it does not run tests in the browser. The instrument figure opens the
+menu of an already installed candidate: pressing SHIFT and pad 13 must never
+appear to perform the title modification itself. Native posters and browser
+animations remain reconstructions, not device footage.

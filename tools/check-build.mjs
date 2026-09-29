@@ -12,7 +12,8 @@ const built=files(fileURLToPath(dist)),home=read('index.html').toString();
 const htmlFiles=built.filter(p=>p.endsWith('.html'));
 if(!home.includes('OpenSP')||!home.includes('<sp-display')||home.includes('<astro-island'))throw Error('Homepage must be static HTML with the progressive screen player');
 for(const page of htmlFiles)if(/design\.penpot\.app|[Cc]:[\\/]Users|penpot-mcp|localhost|\.penpot|Direction contract|impeccable:product-schema/.test(fs.readFileSync(page,'utf8')))throw Error('Private/design-only reference in output '+path.relative(fileURLToPath(dist),page));
-if(built.some(p=>/\.(penpot|py|env)$/.test(p)||p.endsWith('.xml')&&!path.basename(p).startsWith('sitemap')))throw Error('Unexpected source material in deployment');
+const publicLesson=fileURLToPath(new URL('examples/menu-title-check.py',dist));
+if(built.some(p=>p!==publicLesson&&(/\.(penpot|py|env)$/.test(p)||p.endsWith('.xml')&&!path.basename(p).startsWith('sitemap'))))throw Error('Unexpected source material in deployment');
 const scripts=built.filter(p=>p.endsWith('.js'));
 // Conservative budget: all generated JS plus the largest page's inline scripts.
 const pageReports=htmlFiles.map(p=>{const html=fs.readFileSync(p,'utf8');const inline=[...html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/g)].map(m=>m[1]).filter(Boolean);return {path:path.relative(fileURLToPath(dist),p).replaceAll('\\','/'),sha256:hash(html),gzipBytes:gzipSync(html).length,inlineJavascriptGzipBytes:inline.reduce((sum,s)=>sum+gzipSync(s).length,0)};});

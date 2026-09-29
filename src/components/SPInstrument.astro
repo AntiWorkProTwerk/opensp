@@ -6,10 +6,12 @@ interface Props {screenPart?:Shape;screenLabel?:string;}
 const {screenPart,screenLabel}=Astro.props;
 const instrument=part('Instrument');
 const screen=findShape(instrument,'OLED content slot');
-if(!screen)throw new Error('Exported Penpot instrument has no display content slot');
+const aperture=findShape(instrument,'OLED circular aperture');
+if(!screen||!aperture)throw new Error('Exported Penpot instrument has no display content slot or aperture');
 const screenStyle=`left:${screen.x/instrument.width*100}%;top:${screen.y/instrument.height*100}%;width:${screen.shape.width/instrument.width*100}%`;
+const clip=`ellipse(${aperture.shape.width/2/screen.shape.width*100}% ${aperture.shape.height/2/screen.shape.height*100}% at ${(aperture.x+aperture.shape.width/2-screen.x)/screen.shape.width*100}% ${(aperture.y+aperture.shape.height/2-screen.y)/screen.shape.height*100}%)`;
 ---
 <div class="instrument">
   <svg xmlns="http://www.w3.org/2000/svg" viewBox={`0 0 ${instrument.width} ${instrument.height}`} width={instrument.width} height={instrument.height} aria-hidden="true"><SPPart node={instrument} omitScreen/></svg>
-  <slot name="screen">{screenPart?<svg class="instrument-menu-screen" data-menu-screen style={`position:absolute;${screenStyle}`} viewBox={`0 0 ${screenPart.width} ${screenPart.height}`} width={screenPart.width} height={screenPart.height} aria-hidden="true"><SPPart node={screenPart} label={screenLabel}/></svg>:<SPDisplay style={screenStyle}/>}</slot>
+  <slot name="screen">{screenPart?<svg class="instrument-menu-screen" data-menu-screen style={`position:absolute;${screenStyle};clip-path:${clip}`} viewBox={`0 0 ${screenPart.width} ${screenPart.height}`} width={screenPart.width} height={screenPart.height} aria-hidden="true"><SPPart node={screenPart} label={screenLabel}/></svg>:<SPDisplay style={`${screenStyle};--screen-clip:${clip};--screen-icon-inset:9%`}/>}</slot>
 </div>

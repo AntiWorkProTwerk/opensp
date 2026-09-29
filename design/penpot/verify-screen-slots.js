@@ -5,10 +5,12 @@ const boards=penpot.currentPage.root.children.filter(s=>!s.hidden&&s.type==='boa
 return boards.map(b=>{
   const all=walk(b);
   const display=all.find(s=>s.isComponentHead()&&s.component()?.id==='e630c86e-d742-80d8-8008-b565ebd57582');
-  const slot=display.children.find(s=>s.name.startsWith('OLED content slot'));
-  const bg=display.children.find(s=>s.name==='OLED background');
+  const slot=walk(display).find(s=>s.name.startsWith('OLED content slot'));
+  const bg=walk(display).find(s=>s.name==='OLED background');
+  const aperture=walk(display).find(s=>s.name==='OLED circular aperture');
   if(!slot?.isComponentCopyInstance()||slot.component()?.id!=='88ef66de-c84d-8075-8008-b5cd51dfbbdb')throw Error('Unlinked content');
   for(const [a,c] of [[slot.x,bg.x],[slot.width,bg.width],[slot.height,slot.width/2],[slot.y+slot.height/2,bg.y+bg.height/2]])if(Math.abs(a-c)>.001)throw Error('Slot fit '+b.name);
+  if(!aperture||Math.abs(aperture.width-slot.width)>.001||Math.abs(aperture.y+aperture.height/2-slot.y-slot.height/2)>.001)throw Error('Circular aperture fit '+b.name);
   if(all.some(s=>['OLED heading','OLED value','OLED waveform'].includes(s.name)))throw Error('Old placeholder visible');
   if(slot.fills[0]?.fillColor!=='#000000'||slot.children[0].fills[0]?.fillColor!=='#ffffff')throw Error('OLED palette');
   const old=storage.screenBefore?.[b.id];

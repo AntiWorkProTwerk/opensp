@@ -8,6 +8,7 @@ function shape(s,parent){
   if(s.fills?.length)n.fills=s.fills.map(f=>({color:f.fillColor,opacity:f.fillOpacity??1,ref:f.fillColorRefId}));
   if(s.strokes?.length)n.strokes=s.strokes.map(f=>({color:f.strokeColor,width:f.strokeWidth,opacity:f.strokeOpacity??1,ref:f.strokeColorRefId}));
   if(s.type==='path'){n.d=s.toD();n.pathOrigin=[round(s.x),round(s.y)];}
+  if(s.type==='group'&&s.isMask())n.maskId=s.children[0].id;
   if(s.type==='text')Object.assign(n,{text:s.characters,fontFamily:s.fontFamily,fontSize:Number(s.fontSize),fontWeight:s.fontWeight,lineHeight:Number(s.lineHeight),letterSpacing:Number(s.letterSpacing)||0,align:s.align});
   if(s.children)n.children=s.children.map(c=>shape(c,s)).filter(Boolean);
   return n;

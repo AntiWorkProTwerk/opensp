@@ -12,6 +12,13 @@ rows are marked as unpublished and do not link to the older design studies.
 The history below records how the design reached this
 point; references to a blank public site describe earlier checkpoints.
 
+The shared SP now includes linked **Knob surround** and **Effects surround**
+mains. Its wider OLED meets the inner circular opening and clips at that edge.
+The homepage and first guide use these parts in both sizes and themes; page
+copy and overall layout were preserved by that geometry change. [Panel reference and source mapping](references/sp-panel.md)
+record the geometry and native propagation checks. Older unlinked studies stay
+historical.
+
 ## First guide
 
 **First guide** extends the existing field-manual layout with a desktop contents
@@ -22,12 +29,19 @@ The instrument keeps the shared SP assembly, with a separate `Menu title screen`
 instance in its existing viewport. The homepage's R3 sequence is unchanged.
 
 Native posters show the browser controls and final evidence state. The browser
-implements replay, pause, highlighting and disclosures; Penpot does not play
+implements autoplay, pause, scrubbing, highlighting and disclosures; Penpot does not play
 these sequences. The design uses the approved Arimo/Cousine typography and
 semantic theme colors. API snapshots and the source mapping are recorded in
 [the native export notes](../design/penpot/README.md) and
 [development guide](development.md). [The source ledger](first-guide-sources.md)
 keeps the historical title change separate from later firmware milestones.
+
+The expanded article uses seven numbered steps with reader checkpoints. Five
+figures share one timeline pattern: a play/pause arrow, a thin seek line and a
+small elapsed/duration readout. Playback begins once on entering the viewport,
+pauses offscreen/hidden, and stays stopped after a manual pause. Reduced motion
+defaults to the complete poster. The downloadable Python exercise reproduces
+only the offline comparison structure; it is not a hardware installation guide.
 
 ## Design history and source
 

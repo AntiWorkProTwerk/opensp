@@ -13,7 +13,8 @@ function call(argument){
 }
 call('=await penpot.openPage("e630c86e-d742-80d8-8008-b565a285cdc0"); return true;');
 const data=call('design/penpot/export-production.js');
-if(data.components.length!==12||data.source.fileId!=='24d9d841-759d-81bc-8008-b518bc70d8b3')throw Error('Unexpected component library');
+const required=['Instrument','Display','Knob','Knob surround','Effects surround','Effect buttons','Enclosure','Pad grid','Pad - idle','Pad - active','Button','Control section','Performance buttons','AntiWorkProTwerk R3'];
+if(required.some(name=>!data.components.some(c=>c.name===name))||data.source.fileId!=='24d9d841-759d-81bc-8008-b518bc70d8b3')throw Error('Unexpected component library');
 const out=path.join(root,'design/penpot/production.json');
 fs.writeFileSync(out,JSON.stringify(data,null,2)+'\n');
 call('=await penpot.openPage("65e71e3a-a290-8019-8008-b52b1fb87f69"); return true;');

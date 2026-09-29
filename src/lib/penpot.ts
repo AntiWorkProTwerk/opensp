@@ -1,8 +1,9 @@
-import snapshot from '../../design/penpot/production.json';
+import snapshot from '../../design/penpot/production.json' with {type:'json'};
 
 export interface Shape {
   id:string;name:string;type:string;x:number;y:number;width:number;height:number;rotation:number;
   componentId?:string;componentName?:string;
+  maskId?:string;
   fills?:{color?:string;opacity:number;ref?:string}[];
   strokes?:{color?:string;width:number;opacity:number;ref?:string}[];
   d?:string;pathOrigin?:number[];text?:string;fontFamily?:string;fontSize?:number;

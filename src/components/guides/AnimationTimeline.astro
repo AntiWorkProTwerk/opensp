@@ -1,0 +1,11 @@
+---
+interface Props {label:string;duration:number;}
+const {label,duration}=Astro.props;
+---
+<div class="animation-timeline" data-timeline hidden>
+  <button type="button" data-toggle aria-label={`Play ${label}`}>
+    <svg viewBox="0 0 20 20" width="20" height="20" aria-hidden="true"><path class="timeline-play" d="m6 3 11 7-11 7Z"/><path class="timeline-pause" d="M6 3v14M14 3v14"/></svg>
+  </button>
+  <div class="timeline-track"><span aria-hidden="true"></span><input type="range" data-seek min="0" max="1000" step="10" value="1000" aria-label={`${label} timeline`} aria-valuetext="Final state"/></div>
+  <output data-time aria-hidden="true">{`0:${String(duration).padStart(2,'0')} / 0:${String(duration).padStart(2,'0')}`}</output>
+</div>

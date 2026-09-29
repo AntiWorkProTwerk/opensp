@@ -7,6 +7,12 @@ mapping). These are current read-only API snapshots, refreshed by
 They do not replace a full importable `.penpot` archive or claim automatic sync.
 The latest native archive below predates the owner's copy edits and R3 screen.
 
+The current API snapshots also include the knob/effects surrounds and circular
+OLED aperture. `complete-sp-parts.js` records the one-time main-component edit;
+`fit-sp-parts.js` applies the affected responsive/theme overrides in bounded
+batches. The native mask's first child is exported as `maskId`. See
+[panel geometry](../../docs/references/sp-panel.md) before changing those parts.
+
 The first guide adds `guide-components.json` and `first-guide-layouts.json`,
 read directly from the **Guide components** and **First guide** pages with
 `npm run design:pull-guide`. These preserve native main/instance IDs, nested
@@ -137,3 +143,19 @@ MCP connection using a Windows-encrypted credential outside the repository.
 It replaces the local `@penpot/mcp@2.15.4` connector, which warned about the
 app's newer 2.18.1 version. Follow the connection notes before sending commands;
 confirm the intended file and page, and leave browser permissions to the owner.
+
+## Guide walkthrough refinement
+
+`guide-walkthrough.js` adds the reusable **Animation timeline** and **Reader
+checkpoint** mains, replaces replay-button instances in the five animated
+figures, and fits the shared seven-step narrative into the existing layouts.
+Load `first-guide.js` with `node tools/design-guide.mjs load`, then load this
+helper with `load-motion`. Run one figure/section at a time; the helper is a
+staged authoring tool, not an unattended rebuild command. Read the current
+canvas before repeating a stage. Preserve the existing SP assembly and theme
+links. The former Figure control main is retained under `OpenSP / Archive`.
+
+Article copy comes from `src/content/first-change.json`; scene labels, duration
+and final-state captions come from `src/content/guide-scenes.json`. Native
+posters are static. `AnimationTimeline.astro` and `guide-motion.ts` supply browser
+playback without a framework or a device connection.
