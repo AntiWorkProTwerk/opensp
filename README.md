@@ -21,6 +21,8 @@ See [development.md](docs/development.md) for design pulls, content authoring,
 tests and deployment. `npm run check`, `npm run build` and `npm test` run before
 publishing. GitHub Actions deploys only `dist/` after the `main` checks pass.
 `site/index.html` is the historical blank page, no longer the deployment source.
+The [launch record](docs/deployment.md) includes live browser checks and mobile/
+desktop Lighthouse reports.
 
 ## Shared design
 
