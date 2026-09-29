@@ -109,7 +109,7 @@ and Actions updates; nothing auto-merges.
 
 The first npm Dependabot job reached GitHub's PR-creation service, which returned
 HTTP 500. Its follow-up error-reporting endpoint also failed. GitHub rejected a
-retry of that dynamic run. The [failed maintenance job](https://github.com/AntiWorkProTwerk/opensp/actions/runs/36501312889)
+retry of that dynamic run. The failed maintenance job
 is separate from the successful build/deployment jobs; the next scheduled update
 check remains enabled. No dependency PR was merged and production is unaffected.
 
