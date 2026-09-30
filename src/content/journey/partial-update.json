@@ -1,0 +1,84 @@
+{
+  "slug": "partial-update",
+  "title": "What a partial update taught us",
+  "description": "A cumulative work limit stopped a write partway through. The failure changed how we budget operations and report success.",
+  "order": 100,
+  "category": "USB",
+  "period": "September 25, 2026",
+  "evidenceLabel": "Failed write and owner/USB recovery evidence",
+  "summary": "R31 never booted. Its transfer reached RAM, then the writer stopped after reporting only part of the application programmed. We preserved that failure and recovered the earlier R27 application.",
+  "timeline": {
+    "kind": "sequence",
+    "title": "Received is not installed",
+    "caption": "Schematic incident sequence. Progress values come from the retained device reports; sector contents were not independently dumped.",
+    "duration": 15000,
+    "steps": [
+      {"title": "Fresh baseline", "body": "A full power removal cleared the earlier diagnostic hold and returned R30 to idle before the new attempt.", "display": ["PROVIDER R30", "FRESH IDENTITY", "WRITER IDLE", "HOLD CLEARED"]},
+      {"title": "Transfer completes", "body": "All 27,300 candidate bytes arrived in RAM. Persistent writing still had its own completion conditions.", "display": ["R31 CANDIDATE", "RECEIVED 27300", "RAM PRESENT", "NOT BOOTED"]},
+      {"title": "Write stops", "body": "The cumulative work allowance ran out at 20,480 reported programmed bytes. Final readback did not complete.", "display": ["STATE 7", "ERROR 30", "WRITTEN 20480", "PARTIAL IMAGE"]},
+      {"title": "Preserve the failure", "body": "A separate status read agreed. A mixed application body could not be treated as a valid old or new installation.", "display": ["SEPARATE CHECK", "FAILURE MATCHES", "NO FINAL VERIFY", "DO NOT CLAIM OK"]},
+      {"title": "Confirm recovery", "body": "After the owner's application-only SD recovery, the screen and fresh USB marker identified R27.", "display": ["ROM MAP R27", "524D0001", "FRESH STATE 0", "R31 UNBOOTED"]}
+    ]
+  },
+  "sections": [
+    {
+      "id": "read-the-result",
+      "title": "A completed request can still report failure",
+      "short": "Host result",
+      "paragraphs": [
+        "Before the partial write, R30 exposed a smaller reporting mistake. A requested provider diagnostic failed and placed its coordinator in HOLD. The host process nevertheless exited successfully because the USB exchange had completed. Its decoded report already said the provider had failed; the process result disagreed with the operation result.",
+        "We preserved the original host tool and made a separate correction that returned a failing exit status for a failed requested diagnostic. Captured-transfer replay checked the change without touching the device. The owner then removed power completely, and a fresh USB read confirmed R30 back in idle state. The later write attempt began from that fresh session, not from the earlier HOLD."
+      ]
+    },
+    {
+      "id": "separate-transfer-and-write",
+      "title": "The whole file arrived, but the write did not finish",
+      "short": "Partial progress",
+      "paragraphs": [
+        "The R31 candidate was 27,300 bytes. The device received every byte, then stopped its persistent operation with state 7 and error 30. Only 20,480 bytes were reported programmed. A separately opened status read agreed with the failure and progress count. The candidate never reached final full-sector readback or a confirmed boot.",
+        "The exhausted limit counted work across the entire operation. Individual waits could be finite and reasonable while their accumulated cost exceeded the shared allowance. Earlier models had made the memory respond immediately, so they missed this interaction. The failure exposed a gap in the test model as well as in the writer's budgeting."
+      ],
+      "checkpoint": "Received length, programmed progress, verified length and boot identity are different fields. None can stand in for the others."
+    },
+    {
+      "id": "keep-the-image-invalid",
+      "title": "An old entry point does not preserve the old application",
+      "short": "Mixed image",
+      "paragraphs": [
+        "The writer saved the first application sector until last. Applying that order to the reported progress suggested that the entry sector was still old while part of the body had changed. This was an inference from the implementation and status, not a readback of the failed image. The uncertain sector was kept explicitly uncertain.",
+        "Even if the old entry bytes remained, they could call into a mixed old/new body. We therefore could not call the stored result either a valid R30 or a valid R31. The failure record remained attached to R31, with no normal-boot success claim. Clearing a status or restoring controller settings would not have repaired those application bytes."
+      ]
+    },
+    {
+      "id": "recover-and-identify",
+      "title": "Record exactly what the recovery proves",
+      "short": "R27 recovery",
+      "paragraphs": [
+        "The owner first reached an SD updater screen that listed both application packages. We stopped before proceeding because the intended restore concerned only the main application. After correcting the card contents, the owner reported the application-only updater and its completion message, then ROM MAP R27 on normal startup.",
+        "A fresh USB read independently confirmed R27's marker 524D0001 with idle state. This established physical recovery from the partial main-application write through the intact resident update path. The owner prepared the card on another computer, and we did not independently read it back here. The SD operation also did not supply the full flash readback used by our USB writer. Damage to the resident loader or APP0 remained outside this result."
+      ]
+    },
+    {
+      "id": "bound-the-right-unit",
+      "title": "Give each bounded operation its own allowance",
+      "short": "Offline correction",
+      "paragraphs": [
+        "The separate Writer B component gives each size-bounded operation a fresh allowance at its outer boundary. Inner polling loops cannot refill it. Cleanup has an independent allowance, so an operation that runs out of work units can still make a bounded attempt to observe the memory becoming idle before restoring controller state.",
+        "Its compiled models include finite slow responses and a permanently busy device with a frozen timer. They keep the first error even when cleanup later succeeds. Those are offline tests; Writer B was not established as a physically validated repair or a new installable package by this work. The small exercise below reproduces the budgeting distinction without representing memory, sectors or an actual writer."
+      ]
+    }
+  ],
+  "exercise": {
+    "title": "Bound jobs without starving later jobs",
+    "intro": "Use Python 3 to compare cumulative and per-job limits on invented costs. The example runs entirely in memory and does not communicate with hardware or write files.",
+    "code": "costs = [4, 4, 4]\nlimit = 10\n\ndef cumulative():\n    remaining = limit\n    completed = 0\n    for cost in costs:\n        if cost > remaining:\n            return completed\n        remaining -= cost\n        completed += 1\n    return completed\n\ndef per_job():\n    return sum(cost <= limit for cost in costs)\n\nprint(f'one allowance: {cumulative()}/3 jobs')\nprint(f'bounded allowances: {per_job()}/3 jobs')\nfailed_job = 11 > limit\ncleanup_cost, cleanup_limit = 3, 4\nprint(f'oversized job rejected: {failed_job}')\nprint(f'cleanup can finish: {cleanup_cost <= cleanup_limit}')\nprint('original failure remains recorded')\n",
+    "expected": "one allowance: 2/3 jobs\nbounded allowances: 3/3 jobs\noversized job rejected: True\ncleanup can finish: True\noriginal failure remains recorded",
+    "explanation": "Real bounds also cover nested work and a maximum number of jobs. Giving every loop unlimited new fuel would destroy the bound. Cleanup completion cannot turn a partially completed operation into success."
+  },
+  "sources": [
+    {"title": "R30 failure and R27 restore", "path": "analysis/hardware/provider_r30_20260925/README.md", "evidence": "Retained project record, not a public download: diagnostic HOLD, host result correction, partial R31 progress and subsequent owner/USB R27 recovery."},
+    {"title": "Partial application recovery scope", "path": "analysis/resident/APP1_PARTIAL_RECOVERY.md", "evidence": "Retained project analysis of the intact resident path; does not qualify recovery from a damaged resident."},
+    {"title": "Writer B bounded-budget models", "path": "sdk/examples/provider_diag_a1/writer_b/README.md", "evidence": "Retained offline component report: finite slow-operation tests, independent cleanup allowance and preserved first failure."}
+  ],
+  "limits": ["R31 never booted and its partial storage contents were not independently dumped.", "The recovery establishes an intact-resident application restore, not independent resident recovery.", "The owner prepared the recovery card elsewhere; its contents were not independently read back here.", "Writer B's correction was tested in compiled models, not qualified on the SP by this incident."]
+}

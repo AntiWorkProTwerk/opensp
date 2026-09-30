@@ -1,0 +1,96 @@
+{
+  "slug": "first-animation",
+  "title": "Making AntiWorkProTwerk move",
+  "description": "The first working animation joined an integer renderer, owned widget state and the screen's existing redraw callback.",
+  "order": 30,
+  "category": "Display",
+  "period": "September 22, 2026",
+  "evidenceLabel": "Original renderer trace + owner report",
+  "summary": "R3 put the rotating AntiWorkProTwerk logo on pad 1. Its preserved renderer frames are the same source used by the OpenSP homepage. The owner reported that it worked; the browser's playback timing is still an assumption.",
+  "timeline": {
+    "kind": "r3",
+    "title": "The original R3 renderer",
+    "caption": "Replay of pixel calls from the compiled original ARM renderer, not a recording of the SP. The trace omits the stock font, caption, header and surrounding UI. Its 50 ms frame interval is a preview assumption, not measured device timing.",
+    "duration": 3200,
+    "steps": [
+      { "title": "Build a bounded image", "body": "The logo occupies a 36 by 14 cell grid, projected at 64 angles with three depth layers.", "display": ["ANTIWORK", "PROTWERK", "64 ANGLES", "RENDERER TRACE"] },
+      { "title": "Own the phase", "body": "The widget gains one initialized word for its current animation angle.", "display": ["WIDGET STATE", "OWNED PHASE", "0 THROUGH 63", "WRAP TO 0"] },
+      { "title": "Request a redraw", "body": "The existing periodic callback advances the phase for pad 1 and marks the screen dirty.", "display": ["PERIODIC TICK", "ADVANCE PHASE", "REQUEST REDRAW", "PAD 1"] },
+      { "title": "Keep the other pads", "body": "Other pads retain R2's sample-information display. The owner confirms visible continuous animation.", "display": ["ASCII SPIN3!", "OWNER: WORKED", "DEVICE FPS", "UNMEASURED"] }
+    ]
+  },
+  "sections": [
+    {
+      "id": "give-pad-one-a-picture",
+      "title": "Give pad 1 a different screen",
+      "short": "The idea",
+      "paragraphs": [
+        "Once R2 could draw useful sample information, we had a working place for a more visible experiment. R3 gave the first pad in each bank a rotating two-line logo: AntiWork above ProTwerk. Other pads kept the information panel. Selecting pad 1 was enough to keep the animation moving while that screen stayed active; it did not depend on repeatedly pressing the pad.",
+        "The original design used a 36 by 14 cell grid and three depth layers. Integer projection placed the text at 64 angles, with small pixel patterns standing in for ASCII-style marks. Perspective and a slight tilt gave the letters depth. The renderer avoided a floating-point library, and the animation reused the widget's existing periodic callback instead of creating another animation task."
+      ]
+    },
+    {
+      "id": "put-state-with-its-owner",
+      "title": "Put the angle inside the widget",
+      "short": "Owned state",
+      "paragraphs": [
+        "A single frame can be drawn from its inputs. An animation also needs to remember where it was. R3 extended the widget's allocation from 228 to 232 bytes and initialized the added word when the widget was constructed. That word held the phase, so its lifetime followed the screen object that used it.",
+        "The periodic wrapper ran the original callback first. When pad 1 was selected outside external-control mode, it advanced the phase and requested a redraw through the existing dirty-notification helper. Selecting another pad stopped that advance. Returning to pad 1 resumed the retained phase; reconstructing the widget reset it. The tests checked allocation and initialization together, because adding a field without guaranteeing its storage would make an otherwise correct renderer unsafe."
+      ],
+      "checkpoint": "Treat allocation, initialization and the callback that updates state as one contract. Testing the drawing function alone leaves the animation's lifetime unchecked."
+    },
+    {
+      "id": "check-a-whole-cycle",
+      "title": "Check a cycle and the paths around it",
+      "short": "CPU checks",
+      "paragraphs": [
+        "The local tests produced 64 distinct renderer frames and exercised 128 callback invocations, enough to cross the phase boundary twice. They also compared 450 other-pad cases with R2 so the new logo would not silently replace the information panel everywhere. Bank changes, layout variants and external-mode behavior were part of the bounded checks.",
+        "R3 needed more room than R2's small reservation. Its implementation used a separate code-and-constant section, which made the builder's view of placement important. An initial address was four bytes before the linker's emitted aligned section. Inspection caught the mismatch before delivery, and the builder gained a check against the actual section address. A separate test expectation missed an external-mode query made by the callback; that expected trace was corrected. Neither finding was a hardware failure."
+      ],
+      "steps": [
+        "Render every phase and check that the captured frames are distinct.",
+        "Advance through wraparound and verify that state stays in range.",
+        "Compare unaffected pad paths with the preserved R2 behavior.",
+        "Verify the emitted build's layout instead of assuming the linker kept a requested placement."
+      ]
+    },
+    {
+      "id": "separate-device-from-preview",
+      "title": "Separate the owner result from the preview",
+      "short": "Device and replay",
+      "paragraphs": [
+        "Asked whether the R3 marker and continuously spinning logo worked, the owner replied, \"yes r3 completely worked\". That supports boot and visible animation on their SP, including this widget-state and periodic-redraw path. There was no independent installed-image readback or screen photograph, and the report did not measure frame rate, timing margin or long-session behavior.",
+        "The replay on this page comes from pixel calls captured while executing the compiled original ARM renderer. It preserves the 64 renderer frames, but omits the stock font, caption, header and surrounding UI. Its 50 ms interval gives a 3.2-second browser cycle. That interval was chosen for the preview and has not been established as the physical SP's frame timing. A recognizable replay is useful evidence of the drawing code without being a device recording."
+      ]
+    },
+    {
+      "id": "reuse-the-display-content",
+      "title": "Keep the sequence separate from the instrument",
+      "short": "Reusable playback",
+      "paragraphs": [
+        "OpenSP's instrument drawing has a separate display-content slot. The same preserved R3 sequence can occupy that slot on the homepage or in a guide without redrawing the bezel, knobs or pads. Page size and theme change the surrounding component; they do not create another copy of the animation source.",
+        "The small exercise below isolates the part we can explain without firmware: bounded phase state, pause conditions and a predictable wrap. Its numbers match the phase count, but it does not reproduce the logo's projection or simulate an SP callback. The retained renderer and verification records provide the historical evidence; those underlying project records are not public downloads from this site."
+      ]
+    }
+  ],
+  "exercise": {
+    "title": "Test a bounded animation phase",
+    "intro": "This Python 3 model uses an invented widget state and a 64-position cycle. It accesses no instrument, firmware, network or files. The model's callback count is independent of real time.",
+    "code": "PHASES = 64\n\ndef tick(phase, pad_one, external):\n    if pad_one and not external:\n        return (phase + 1) % PHASES\n    return phase\n\nphase = 0\nvisited = set()\nfor _ in range(128):\n    phase = tick(phase, pad_one=True, external=False)\n    visited.add(phase)\nassert phase == 0\nassert len(visited) == PHASES\nprint(f'{len(visited)} phases; after 128 ticks: {phase}')\n\nphase = 17\nassert tick(phase, pad_one=False, external=False) == 17\nassert tick(phase, pad_one=True, external=True) == 17\nprint('Other pad: held at 17')\nprint('External mode: held at 17')\nprint(f'Resume pad 1: {tick(phase, True, False)}')\n",
+    "expected": "64 phases; after 128 ticks: 0\nOther pad: held at 17\nExternal mode: held at 17\nResume pad 1: 18",
+    "explanation": "Modulo keeps the phase in the range 0 through 63. The two pause conditions leave it unchanged, so resuming continues from 17. The test establishes state behavior only. It does not measure scheduler frequency, drawing cost or physical animation smoothness."
+  },
+  "sources": [
+    { "title": "R3 implementation and test scope", "path": "custom_firmware/spin_r3/README.md", "evidence": "Integer renderer, owned phase, periodic redraw, unaffected-pad comparisons and corrected linker/test assumptions. Retained research record, not a public download." },
+    { "title": "R3 hardware result", "path": "custom_firmware/spin_r3/HARDWARE_RESULT.md", "evidence": "Owner's general success report and exact supplied-build identity; no measured device frame rate or installed-image readback." },
+    { "title": "Preserved renderer frames", "path": "custom_firmware/build/spin_r3/frames.json", "evidence": "Pixel-call trace from the compiled renderer, reused by the website with its omissions and timing caveat." },
+    { "title": "Native execution checks", "path": "custom_firmware/build/spin_r3/verification.json", "evidence": "64 distinct frames, 128 callback invocations and 450 unaffected-pad comparisons in the intercepted CPU environment." },
+    { "title": "Website sequence provenance", "path": "../opensp/design/assets/screens/antiworkprotwerk-r3/manifest.json", "evidence": "Browser assets, preserved frame count and preview timing are pinned independently of the instrument geometry." }
+  ],
+  "limits": [
+    "The replay is an original renderer trace, not an SP screen recording.",
+    "Stock text and surrounding UI are absent from the trace; 50 ms playback timing is an assumption.",
+    "The owner reported R3 success on one unit, without independent frame-rate or long-session measurements.",
+    "The offline exercise models phase behavior only and cannot establish firmware safety or device performance."
+  ]
+}

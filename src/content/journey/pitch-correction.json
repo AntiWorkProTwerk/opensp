@@ -1,0 +1,90 @@
+{
+  "slug": "pitch-correction",
+  "title": "Pitch correction, before the firmware",
+  "description": "Separating pitch detection, musical decisions and sound processing while keeping latency and evidence in view.",
+  "order": 160,
+  "category": "Research",
+  "period": "September 29, 2026 · AT1 and AT2 milestone",
+  "evidenceLabel": "Original DSP tests · no live SP effect yet",
+  "summary": "The requested effect belongs inside Roland's sampler. Our first work established an original processing component, tested its pitch decisions and compared synthesis approaches on a computer. Those results leave live routing, vocal quality and the SP's processing budget to verify.",
+  "timeline": {
+    "kind": "sequence",
+    "title": "Three different decisions inside one effect",
+    "caption": "Schematic explanation of the AT1 pipeline and its test boundaries. These screens are not firmware captures, and their timing does not represent measured processing latency.",
+    "duration": 18000,
+    "steps": [
+      {"title": "Estimate the input", "body": "The detector estimates a single pitch and checks confidence before admitting a musical decision.", "display": ["PITCH DETECTOR", "MONOPHONIC INPUT", "ESTIMATE + CHECK", "HOST / CPU TEST"]},
+      {"title": "Choose a target", "body": "Key and scale constrain allowed notes. Hysteresis and retune settings affect how the target changes.", "display": ["NOTE SELECTION", "KEY + SCALE", "TARGET NOTE", "RETUNE CONTROL"]},
+      {"title": "Shift the stream", "body": "AT1 uses interpolated delay heads. A correct target alone does not establish a natural-sounding result.", "display": ["AUDIO SHIFTER", "DELAY HEADS", "CONTINUOUS AUDIO", "QUALITY PENDING"]},
+      {"title": "Measure distinct delays", "body": "The retained component has a 16 ms dry delay. First detection and variable wet delay are different measurements.", "display": ["LATENCY CHECK", "DRY 16 MS", "WET VARIABLE", "DEVICE UNKNOWN"]},
+      {"title": "Keep the interface provisional", "body": "The linked Penpot screens explore hard tuning, key and scale. Firmware gestures and live integration remain unverified.", "display": ["INTERFACE STUDY", "SPEED KEY SCALE", "LINKED SCREENS", "NOT INSTALLED"]}
+    ]
+  },
+  "sections": [
+    {
+      "id": "preserve-the-sampler",
+      "title": "Start with the requested instrument",
+      "short": "Preserve the sampler",
+      "paragraphs": [
+        "The owner wanted a selectable live pitch-correction effect added to the existing Roland firmware. Replacing the sampler with an original application would miss that requirement. We therefore kept the original DSP component separate from the version-specific adapter that must eventually connect it to the stock audio path.",
+        "AT1 accepts small mono blocks at 48 kHz and keeps state in memory supplied by its caller. Processing does not allocate memory or access hardware. Configuration and processing must be serialized; having a portable API does not make simultaneous UI changes safe. The component can be tested before its host task, live route or screen is ready."
+      ]
+    },
+    {
+      "id": "split-the-pipeline",
+      "title": "Separate detection from the sound it controls",
+      "short": "Split the pipeline",
+      "paragraphs": [
+        "Pitch detection estimates the incoming note. Musical selection chooses an allowed target using a key, scale or fixed note. Synthesis changes the audio to follow that target. Keeping these jobs distinct lets us ask whether a wrong result came from an incorrect estimate, an unwanted note choice or artifacts in the shifter.",
+        "The first detector interpolation was 12.56 cents sharp near 970 Hz. Using the raw difference curve for its final interpolation reduced that case to 1.90 cents. Another review found that frequent mix changes restarted analysis before it could finish. The correction preserves an in-progress analysis during ordinary mix updates, with a regression test for that sequence."
+      ],
+      "checkpoint": "A sine wave can test pitch error without proving vocal quality. Keep an estimate's accuracy separate from how a corrected voice sounds during consonants, breaths and changing notes."
+    },
+    {
+      "id": "account-for-delay",
+      "title": "Measure more than one kind of latency",
+      "short": "Account for delay",
+      "paragraphs": [
+        "AT1's original delay ring used 20,844 bytes of state. Bounding the read positions at the lowest supported pitch allowed a smaller ring, reducing state to 12,652 bytes and the delayed dry path to 768 samples. At 48 kHz, that path contributes 16 ms before hardware transport.",
+        "The wet path reads changing positions and can reach about 31.4 ms. The detector also needs enough history to identify the first pitch, while retune time controls how correction approaches a target. Quoting the 16 ms dry figure as total input-to-output latency would hide those distinctions. None of these component figures measures the complete SP audio path."
+      ]
+    },
+    {
+      "id": "compare-under-one-fixture",
+      "title": "Keep the comparison repeatable",
+      "short": "Compare the algorithms",
+      "paragraphs": [
+        "The retained AT1 reports pass 17 host test groups and five compiled ARM cases. The ARM and host outputs match across 24,000 frames in those cases. Emulator execution checks the compiled calculation; desktop callback timings cannot establish worst-case processing time inside the SP while the sampler and effects are running.",
+        "AT2 then compared synthesis configurations using 144 synthetic sine and vowel renders. A scripted rebuild repeated the pitch and envelope metrics exactly, while host timings changed. Its DLL hash also changed, and the first DLL had already been overwritten. The retained report remains useful, but that history does not establish binary reproducibility or a listening verdict. Real vocal evaluation and target timing remained outside this milestone."
+      ]
+    },
+    {
+      "id": "design-the-playing-surface",
+      "title": "Keep key and scale within reach",
+      "short": "Design the controls",
+      "paragraphs": [
+        "The owner chose hard, fast tuning as the primary workflow. The Penpot study puts Speed, Key and Scale on the performance screen, with proposed secondary controls behind SHIFT. Seven editable screen mains and their linked copies reuse the shared SP hardware components. A review corrected the pitch-correction rail so its position and displayed value agree.",
+        "These are interface proposals. Planned formant controls do not establish implemented formant processing, and a clear screen does not validate the gesture inside stock firmware. The next integration evidence must connect a known live audio route to a bounded processing task while preserving the sampler. This chapter records the AT1 and AT2 milestone rather than presenting the evolving experiments as a released effect."
+      ]
+    }
+  ],
+  "exercise": {
+    "title": "Choose a scale note and count the delay",
+    "intro": "This Python 3 exercise starts with an invented 445 Hz estimate. It selects a C-major note and calculates a pitch ratio and a sample delay. It does not detect or process audio.",
+    "code": "from math import log2\n\nfrequency = 445.0\nestimate = 69 + 12 * log2(frequency / 440.0)\nc_major = {0, 2, 4, 5, 7, 9, 11}\nallowed = [note for note in range(48, 85) if note % 12 in c_major]\ntarget = min(allowed, key=lambda note: abs(note - estimate))\ntarget_hz = 440.0 * 2 ** ((target - 69) / 12)\nprint(f'estimated MIDI note: {estimate:.3f}')\nprint('target MIDI note:', target)\nprint(f'pitch ratio: {target_hz / frequency:.6f}')\nprint(f'768 samples at 48000 Hz: {1000 * 768 / 48000:.1f} ms')\n",
+    "expected": "estimated MIDI note: 69.196\ntarget MIDI note: 69\npitch ratio: 0.988764\n768 samples at 48000 Hz: 16.0 ms",
+    "explanation": "The target is A4, which belongs to C major. The ratio lowers the invented estimate toward 440 Hz. Producing clean audio at that ratio requires a separate shifter; the arithmetic says nothing about its sound or the hardware's total latency."
+  },
+  "sources": [
+    {"title": "AT1 component contract", "path": "../sp404mk2-autotune/AUTOTUNE.md", "evidence": "Retained original-DSP record with interpolation correction, state size, delay and integration limits. It is not an effect download."},
+    {"title": "AT1 host evidence", "path": "../sp404mk2-autotune/evidence/at1/verification.json", "evidence": "Historical host verification for the AT1 milestone; no physical SP result."},
+    {"title": "AT1 compiled ARM evidence", "path": "../sp404mk2-autotune/evidence/at1/arm_verification.json", "evidence": "Five CPU cases and host comparison across 24,000 frames."},
+    {"title": "AT2 comparison and rebuild record", "path": "../sp404mk2-autotune/evidence/at2_research/README.md", "evidence": "144 synthetic renders and repeated metrics; preserves the overwritten-first-DLL limitation."},
+    {"title": "Open Tune interface study", "path": "../sp404mk2-autotune/design/autotune/README.md", "evidence": "Seven native screen mains and reviewed correction rail. Gestures and formant controls remain proposals."}
+  ],
+  "limits": [
+    "This AT1/AT2 milestone does not establish a live installed SP effect, target CPU margin or real-vocal quality.",
+    "Component delay, first pitch acquisition, retune behavior and total hardware latency are different quantities.",
+    "Underlying research records are retained locally; this page does not offer a firmware or third-party DSP binary download."
+  ]
+}

@@ -60,6 +60,12 @@ offscreen or hidden playback. Do not connect the public site to the physical SP.
   and four layouts. `src/content/first-change.json` is the shared narrative for
   browser rendering and Penpot authoring. Review copy changes against the source
   ledger; never turn CPU checks or an owner report into a device capture claim.
+- Later chapters share `src/content/journey/<slug>.json` between their Astro
+  template, Penpot authoring and curated evidence. Follow
+  [the authoring contract](docs/journey-authoring.md) and
+  [source ledger](docs/journey-sources.md). Keep MDX wrappers in agreement with
+  that source and run `npm run test:journey`. Exercises must remain original,
+  offline and independent of firmware files or a connected SP.
 - Use the shared Astro components under `src/components/`. `SPPart` renders
   native exported geometry; `SPDisplay` owns playback. Extend the shared shape
   renderer and test new Penpot shape types before using them in production.

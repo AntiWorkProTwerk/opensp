@@ -1,0 +1,105 @@
+{
+  "slug": "bootloader-boundaries",
+  "title": "Keeping a way back",
+  "description": "What our offline loader tests establish, and why replacing reset-time code still needs an independent recovery path.",
+  "order": 150,
+  "category": "Research",
+  "period": "September 2026",
+  "evidenceLabel": "Hardware observations + offline models · replacement withheld",
+  "summary": "Original applications now run above the retained loader. Replacing the code that starts the machine raises a different recovery problem. We developed the reusable pieces offline while keeping the resident, APP0 and boot settings unchanged.",
+  "timeline": {
+    "kind": "sequence",
+    "title": "Separate progress from permission to install",
+    "caption": "Schematic evidence states. This is an explanation of the project boundaries, not a boot procedure or device recording.",
+    "duration": 18000,
+    "steps": [
+      {"title": "Retain the known loader", "body": "An original application can run while the existing reset-time code remains intact.", "display": ["ORIGINAL APP", "RETAINED LOADER", "APP1 MILESTONE", "SEPARATE RISKS"]},
+      {"title": "Model the updater", "body": "P12B integrates compiled components against modeled USB, storage and peripheral behavior.", "display": ["P12B MODEL", "UPLOAD CHECKED", "READBACK CHECKED", "NO DEVICE TEST"]},
+      {"title": "Interrupt the journal", "body": "The trial coordinator tests interrupted record updates without touching a physical instrument.", "display": ["TRIAL MODEL", "OLD RECORD KEPT", "COMMIT CHECKED", "FAILURES TESTED"]},
+      {"title": "Stop before unowned memory", "body": "P18's normal path deliberately holds before selecting a new stack or relocating the runtime.", "display": ["P18 ENTRY", "OWNERSHIP HOLD", "NO RAM RELOCATE", "OFFLINE ONLY"]},
+      {"title": "Require independent recovery", "body": "A resident replacement remains withheld until recovery works without relying on the code being replaced.", "display": ["RECOVERY NEEDED", "INDEPENDENT ENTRY", "VERIFIED RESTORE", "NO RESIDENT WRITE"]}
+    ]
+  },
+  "sections": [
+    {
+      "id": "name-the-layer",
+      "title": "Be precise about which loader changed",
+      "short": "Name the layer",
+      "paragraphs": [
+        "An original APP1 application can contain its own upload service or second-stage loader. It still starts through the retained reset-time resident. That distinction explains why a successful application boot, USB update or return from a RAM program does not establish that we can replace the earliest boot code safely.",
+        "Our project keeps the enclosure closed. We also preserve the resident, APP0 and boot settings while recovery is unresolved. Those constraints leave useful work available: source-built components, CPU tests and experiments confined to already understood application behavior. They do not turn an unknown recovery route into a verified one."
+      ]
+    },
+    {
+      "id": "measure-the-existing-loader",
+      "title": "Gather evidence without replacing the loader",
+      "short": "Hardware evidence",
+      "paragraphs": [
+        "Read-only application surveys added physical evidence alongside the offline work. R17 recorded the running unit's boot configuration; R26 captured reset settings twice with matching results and unchanged USB status. Those R26 readings described that boot, not the earlier failed resets. Between them, R25 read the mapped resident window twice. Both 524,288-byte captures matched each other and the earlier R5 capture byte for byte. That supported repeatability and an unchanged mapped window through the intervening application updates. It was not a raw-chip backup or a demonstrated resident restore.",
+        "Separate software requests in R19 and R21 tried to reach the chip's built-in downloader. Neither test observed its expected USB device. The owner reported a dark screen with lights on, and full power removal restored the installed application, confirmed by fresh USB status. The exact point reached remained unknown. Returning after a power cycle did not prove a route that could recover a damaged resident.",
+        "R33 later established a narrower result: one guarded normal watchdog reset made USB disappear and return with fresh diagnostic state and the expected reset flags. The owner confirmed the post-reset title and responsive controls. No ROM request or boot-area write occurred in that test. A working normal reset gave later experiments a tested component without resolving independent recovery."
+      ]
+    },
+    {
+      "id": "compose-the-runtime",
+      "title": "Test the components together",
+      "short": "Compose the runtime",
+      "paragraphs": [
+        "P12B connects the original transport, update state machine, storage backend and corrected session provider in one compiled runtime. Its tests check the sequence from received data through validation and modeled readback. They also check failures and whether a bus reset preserves the transaction's state.",
+        "One retained test processes a 65,540-byte synthetic image and checks 69,632 bytes of modeled sector readback. Its 306 actions receive 306 acknowledgments. These figures describe an integrated CPU fixture. Peripheral responses, memory accessibility and storage completion still come from models; no physical cold boot or interrupted-write recovery follows from that count."
+      ]
+    },
+    {
+      "id": "preserve-confirmed-state",
+      "title": "Keep confirmed and candidate state separate",
+      "short": "Preserve confirmed state",
+      "paragraphs": [
+        "The trial coordinator explores how a future loader might remember a candidate without losing the confirmed image. It keeps two records and updates the inactive record first. A final commit marks a complete record. A newer pending record still names the old confirmed image until the intended trial is confirmed through the trusted session.",
+        "The compiled P2 tests cover 768 interruptions before individual byte changes and 42 adapter failures. The storage fixture models one-to-zero programming, but real erase and programming failures need not stop neatly at a byte boundary. CRC checks detect accidental corruption; they do not authenticate records or guarantee exactly-once behavior under every later corruption pattern."
+      ],
+      "checkpoint": "In a trial model, ask separately which record is complete, which image is confirmed and whether the current session actually ran the candidate. A newer record answers only the first question."
+    },
+    {
+      "id": "hold-at-unknowns",
+      "title": "Make an unresolved assumption stop execution",
+      "short": "Hold at unknowns",
+      "paragraphs": [
+        "P18 composes more of the proposed resident path, but its normal entry deliberately stops before selecting a new stack, calling C or copying and clearing RAM. We have not established that the intended memory is free from work by other hardware masters at that point. A linker map allocates addresses to our program; it cannot prove that the machine has stopped using them elsewhere.",
+        "Separate conditional CPU cases exercise the later path under an explicit ownership assumption. Those tests are useful for finding defects behind the hold. Repeating them cannot establish the missing physical ownership contract, so their success does not remove the hold or make the image an installation candidate."
+      ]
+    },
+    {
+      "id": "qualify-recovery",
+      "title": "Define what a recovery result must prove",
+      "short": "Qualify recovery",
+      "paragraphs": [
+        "Application recovery can depend on a healthy resident. A replacement resident needs a way back when that code no longer runs usefully. The project's recovery requirement therefore includes an independent entry route, a complete verified backup and a demonstrated restore. A software request issued by a working application cannot, on its own, satisfy independent entry.",
+        "That evidence is still missing for a resident replacement on the SP. The following exercise stays inside a fictional journal in Python memory. It demonstrates why committing candidate metadata does not automatically make that candidate the confirmed image. It contains no device interface, storage addresses or installation procedure."
+      ]
+    }
+  ],
+  "exercise": {
+    "title": "A candidate is not yet confirmed",
+    "intro": "Run this fictional two-record model in Python 3. All records exist only in memory. Its checksum is an accidental-corruption check, not a security mechanism.",
+    "code": "from zlib import crc32\n\ndef record(sequence, confirmed, candidate, committed):\n    body = (sequence, confirmed, candidate)\n    return {'body': body, 'crc': crc32(repr(body).encode()),\n            'committed': committed}\n\ndef latest(records):\n    valid = [r for r in records if r['committed'] and\n             r['crc'] == crc32(repr(r['body']).encode())]\n    return max(valid, key=lambda r: r['body'][0])['body']\n\nold = record(1, 'A', None, True)\nnew = record(2, 'A', 'B', False)\nrecords = [old, new]\nprint('before commit:', latest(records)[1])\nnew['committed'] = True\nprint('after commit:', latest(records)[1])\nprint('candidate:', latest(records)[2])\nnew['crc'] ^= 1\nprint('damaged record:', latest(records)[1])\n",
+    "expected": "before commit: A\nafter commit: A\ncandidate: B\ndamaged record: A",
+    "explanation": "A complete pending record still keeps A confirmed. Changing the checksum rejects the new record in this simplified fixture. The example omits trial execution, trusted confirmation, real storage failure patterns and boot selection; it is not a recovery guarantee."
+  },
+  "sources": [
+    {"title": "Recovery qualification", "path": "../sp404mk2/RECOVERY_QUALIFICATION.md", "evidence": "Retained project requirements for independent entry and a demonstrated restore. Underlying device research is not published as a recovery tool."},
+    {"title": "R17 read-only boot survey", "path": "../sp404mk2/analysis/hardware/boot_survey_r17_20260924T0552Z/README.md", "evidence": "Fresh-boot USB confirmation and observed boot configuration, without a demonstrated independent recovery route."},
+    {"title": "R25 repeated resident capture", "path": "../sp404mk2/sdk/examples/original_r25/HARDWARE_RESULT.md", "evidence": "Two 524,288-byte mapped captures match each other and R5; this is not raw-chip or resident-restore evidence."},
+    {"title": "R26 read-only reset survey", "path": "../sp404mk2/sdk/examples/original_r26/HARDWARE_RESULT.md", "evidence": "Repeated frozen reset-setting captures and unchanged status on a confirmed R26 boot, not a reconstruction of earlier failed resets."},
+    {"title": "R19 software-entry observation", "path": "../sp404mk2/analysis/hardware/rom_entry_r19_20260924T0750Z/README.md", "evidence": "No expected downloader enumerated; owner and fresh USB status confirmed normal application return after power removal. Exact ROM progress remained unknown."},
+    {"title": "R21 software-entry observation", "path": "../sp404mk2/analysis/hardware/rom_usb_r21_20260924T1940Z/README.md", "evidence": "No downloader observed after the separate request; power removal restored the confirmed application. No independent recovery was established."},
+    {"title": "R33 normal-reset result", "path": "../sp404mk2/sdk/examples/original_r33/HARDWARE_RESULT.md", "evidence": "One normal watchdog reset returned fresh USB state; the owner confirmed the title and responsive controls. No ROM request or boot-area write occurred."},
+    {"title": "Integrated updater model", "path": "../sp404mk2/sdk/examples/boot_chain_p12b_runtime/README.md", "evidence": "Three compiled-model suites, including the 65,540-byte case and 306-action accounting; no device package."},
+    {"title": "Trial coordinator evidence", "path": "../sp404mk2/sdk/examples/boot_trial_p2/README.md", "evidence": "768 modeled interruption points and 42 adapter failures with explicit storage-model limits."},
+    {"title": "Composed resident ownership hold", "path": "../sp404mk2/sdk/examples/boot_chain_p18_composed/README.md", "evidence": "Normal entry stops before RAM relocation; later CPU tests assume external ownership."}
+  ],
+  "limits": [
+    "No independent SP resident recovery or full resident restore is established here.",
+    "The original resident images remain offline artifacts, not installable releases.",
+    "Model interruption counts do not establish physical power-loss behavior or permission to alter resident, APP0 or fuses."
+  ]
+}

@@ -30,7 +30,7 @@ await rpc('initialize',{protocolVersion:'2024-11-05',capabilities:{},clientInfo:
 const [name, argument] = args;
 const result = name === 'list' ? await rpc('tools/list',{},2) : await rpc('tools/call',{
   name,
-  arguments: name === 'execute_code' ? {code:argument.startsWith('=') ? argument.slice(1) : fs.readFileSync(argument,'utf8')} : JSON.parse(argument || '{}')
+  arguments: name === 'execute_code' ? {code:argument==='-' ? fs.readFileSync(0,'utf8') : argument.startsWith('=') ? argument.slice(1) : fs.readFileSync(argument,'utf8')} : JSON.parse(argument || '{}')
 },2);
 for (const item of result.content || []) {
   if (item.type === 'text') {

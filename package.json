@@ -9,10 +9,12 @@
     "build": "node tools/build-design-tokens.mjs && astro build && node tools/check-build.mjs",
     "preview": "astro preview --host 127.0.0.1",
     "check": "astro check",
-    "test": "playwright test",
+    "test": "node tools/check-journey.mjs --exercises && playwright test",
+    "test:journey": "node tools/check-journey.mjs --exercises",
     "test:install": "playwright install chromium",
     "design:pull": "node tools/pull-penpot.mjs",
     "design:pull-guide": "node tools/pull-guide-design.mjs",
+    "design:pull-journey": "node tools/pull-journey-design.mjs",
     "design:tokens": "node tools/build-design-tokens.mjs"
   },
   "dependencies": {

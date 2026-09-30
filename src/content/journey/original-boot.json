@@ -1,0 +1,97 @@
+{
+  "slug": "original-boot",
+  "title": "Our first original application",
+  "description": "What R6 and R7 established about starting our own code, drawing a screen and responding to the power switch.",
+  "order": 50,
+  "category": "SDK",
+  "period": "September 22, 2026",
+  "evidenceLabel": "Owner reports + R7 photographs",
+  "summary": "R6 put a source-built application on the SP's display. R7 brought quick startup and working shutdown, while the missing pad response led us toward a separate input driver.",
+  "timeline": {
+    "kind": "sequence",
+    "title": "What the first boots actually showed",
+    "caption": "Schematic evidence states for R6 and R7. The sequence compresses separate observations; its timing and screen composition are illustrative.",
+    "duration": 12000,
+    "steps": [
+      {"title": "R6 appears", "body": "The owner reports an automatic screen after roughly 20 seconds, followed by an advancing heartbeat.", "display": ["ORIGINAL R6", "APP1 RUNNING", "ALIVE MOVES", "DELAY REPORTED"]},
+      {"title": "Input is still missing", "body": "Receive traffic increases, but pads do not change the display and the power switch is ignored.", "display": ["R6 INPUT", "RX TRAFFIC", "PADS ABSENT", "OFF IGNORED"]},
+      {"title": "R7 starts quickly", "body": "The owner reports fast automatic startup. Photos show timer progress and the configured ready input high.", "display": ["ORIGINAL R7", "T1 R1", "ALIVE MOVES", "FAST START"]},
+      {"title": "SHIFT has evidence", "body": "Separate photographs capture a packet on press and another on release. Other controls still do not respond.", "display": ["SHIFT", "PRESS / RELEASE", "PACKETS SEEN", "PADS ABSENT"]},
+      {"title": "OFF is handled", "body": "The owner confirms working shutdown. Its physical completion is an owner report, not a photograph of the exchange.", "display": ["R7 POWER", "OFF REQUEST", "SHUTDOWN", "OWNER CONFIRMED"]}
+    ]
+  },
+  "sections": [
+    {
+      "id": "small-first-program",
+      "title": "Give the first boot a small job",
+      "short": "The first application",
+      "paragraphs": [
+        "Our earlier changes ran inside Roland's application. The next candidate replaced APP1 with a small original program built from source, while retaining the stock resident program and APP0. Its job was to put an identifiable title on the display, advance a heartbeat and expose a few observations about startup and incoming traffic. It had no sample playback or project browser.",
+        "The preserved R6 application was 4,340 bytes. CPU tests could check pieces of its startup and modeled display output, but the physical screen still needed a device result. The visible ORIGINAL R6 marker helped connect the owner's report to the intended package. We did not have an independent on-device hash or readback for this early test."
+      ]
+    },
+    {
+      "id": "correct-the-observation",
+      "title": "Wait before calling it a button response",
+      "short": "The delayed screen",
+      "paragraphs": [
+        "The owner initially saw the screen after pressing pad 1 and wondered whether a button had woken it. They then corrected the observation: the display appeared automatically after roughly 20 seconds. The pad and button lights were already on. We preserved both reports and withdrew the button-wake explanation.",
+        "Once the screen appeared, ALIVE increased and the bottom bar progressed. That supported physical boot and continued execution of our application and display driver. Pads did not change the screen. Moving the power switch to OFF also left the unit awake, requiring power removal. R6 did not handle the controller's shutdown request. The exact cause of its startup delay was still unproven."
+      ],
+      "checkpoint": "For a suspected input response, repeat the observation without touching the control. Record what changes automatically before attributing a change to your action."
+    },
+    {
+      "id": "separate-signals",
+      "title": "Make each counter answer one question",
+      "short": "Reading the signals",
+      "paragraphs": [
+        "A rising receive counter established that traffic arrived. It did not establish pad input, correct packet alignment or a working control map. R6 also showed a receive error. Those observations called for better visibility into the packets and their timing instead of interpreting every change as a button event.",
+        "R7 added interrupt-driven receive handling, explicit timer and ready-input setup, packet history and the traced shutdown reply. The display distinguished frames, received packets, interrupt entries and received bytes. This gave a later photograph enough context to compare a physical action with a specific change, even when the higher-level event counter remained zero. The program still lacked the local pad and knob drivers."
+      ],
+      "steps": [
+        "Use a unique visible build title so feedback has a clear candidate.",
+        "Keep heartbeat, raw traffic and interpreted events in separate fields.",
+        "Preserve the state before and after one physical action.",
+        "Check normal shutdown independently of successful screen drawing."
+      ]
+    },
+    {
+      "id": "r7-evidence",
+      "title": "Compare the photographs with the report",
+      "short": "The R7 result",
+      "paragraphs": [
+        "The owner reported quick automatic startup, an advancing progress bar and working power-off in R7. Three photographs showed its title and captured the initial state, SHIFT press and SHIFT release. Each SHIFT edge added one four-byte packet, four received bytes and four interrupt-handler entries. The timer-progress flag and configured ready-input flag both read one.",
+        "An early description said TX was changing. The photographs corrected our interpretation: the adjacent received-byte counter changed while the transmit-failure counter stayed zero. One framing error remained unchanged across the images. Recognizable SHIFT packets did not establish that error recovery always worked, and a moving timer did not measure its frequency. The shutdown result came from the owner's report; the photographs did not capture the power exchange."
+      ]
+    },
+    {
+      "id": "next-input-path",
+      "title": "Follow the missing controls to their own path",
+      "short": "The next driver",
+      "paragraphs": [
+        "Only SHIFT affected the input display. The corresponding stock trace connected those packets to SHIFT's press and release handlers, while separate GPIO and analog routines supplied local controls. R7 had not implemented those routines. The next input work therefore needed a local scan, followed by physical mapping, instead of assuming all controls would arrive over the controller link.",
+        "R6 and R7 established increasingly usable original-application bring-up on the owner's instrument. They still depended on Roland's resident program and APP0, had no sampler or audio features, and had no demonstrated failed-image recovery at this milestone. Later recovery results belong to their own tests. We kept these early packages and reports unchanged so later success would not erase what was missing here."
+      ]
+    }
+  ],
+  "exercise": {
+    "title": "Test a bounded startup model",
+    "intro": "Run this standalone Python 3 model with invented event times. It separates waiting for readiness, advancing the application and handling a stop request. It performs no device access and does not model the SP's electrical timing or controller protocol.",
+    "code": "def run(ready_at=None, stop_at=None):\n    state = 'waiting'\n    frames = 0\n    for tick in range(8):\n        if state == 'waiting':\n            if tick == ready_at:\n                state = 'running'\n            elif tick >= 3:\n                return 'startup timeout'\n        if state == 'running':\n            frames += 1\n            if tick == stop_at:\n                return f'stopped after {frames} frames'\n    return f'{state}, {frames} frames'\n\nready_and_stop = run(ready_at=1, stop_at=4)\nnever_ready = run()\nkeeps_running = run(ready_at=1)\nassert ready_and_stop == 'stopped after 4 frames'\nassert never_ready == 'startup timeout'\nassert keeps_running == 'running, 7 frames'\nprint('ready + stop:', ready_and_stop)\nprint('no readiness:', never_ready)\nprint('no stop request:', keeps_running)",
+    "expected": "ready + stop: stopped after 4 frames\nno readiness: startup timeout\nno stop request: running, 7 frames",
+    "explanation": "A readiness event lets the model advance, and a missing event ends in a bounded timeout. Stopping needs its own handled event. These tests cover the invented state machine only; they cannot establish physical boot, a measured startup delay or working power removal."
+  },
+  "sources": [
+    {"title": "R6 hardware result", "path": "custom_firmware/original_r6/HARDWARE_RESULT.md", "evidence": "Owner-reported boot and heartbeat, corrected startup-delay observation, missing controls and ignored power switch. Retained project record; the underlying record is not published with this guide."},
+    {"title": "R7 candidate and scope", "path": "custom_firmware/original_r7/README.md", "evidence": "Interrupt, timer, ready-input and shutdown changes; the original build-time descriptions remain separate from the later result. Retained project record; the underlying record is not published with this guide."},
+    {"title": "R7 hardware result and photograph analysis", "path": "custom_firmware/original_r7/HARDWARE_RESULT.md", "evidence": "Owner startup/shutdown reports, SHIFT packet observations and correction of the changing-counter interpretation. Retained project record; the photographs and underlying record are not published with this guide."},
+    {"title": "Local input contract", "path": "LOCAL_INPUT.md", "evidence": "The separate controller, GPIO-matrix and analog input paths that explained the missing controls. Retained project record; the underlying record is not published with this guide."}
+  ],
+  "limits": [
+    "R6 and R7 package identity rests on reported or photographed titles, without an independent device hash/readback.",
+    "The roughly 20-second R6 delay is an owner observation; its exact cause was not established.",
+    "R7 photographs support SHIFT packet observations, while successful shutdown is separately owner-reported.",
+    "These candidates retained stock resident/APP0 and had no sampler, audio or demonstrated failed-image recovery at this milestone.",
+    "The in-memory exercise reproduces a small state-machine check, not the original firmware or a hardware installation."
+  ]
+}

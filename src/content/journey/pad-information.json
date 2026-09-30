@@ -1,0 +1,95 @@
+{
+  "slug": "pad-information",
+  "title": "Getting pad information onto the screen",
+  "description": "A working text renderer still needs a route from the real screen. R2 taught us to test both.",
+  "order": 20,
+  "category": "Display",
+  "period": "September 22, 2026",
+  "evidenceLabel": "CPU checks + owner-reported display",
+  "summary": "We replaced the large BPM display with a compact information panel. The first attempt passed its local tests and changed nothing the owner could see. Following the active screen's redraw route led to the working R2 build.",
+  "timeline": {
+    "kind": "sequence",
+    "title": "From a renderer to a visible panel",
+    "caption": "Schematic sequence with invented sample data. The owner confirmed that R2 displayed pad information; no device photograph or installed-image readback was captured.",
+    "duration": 12000,
+    "steps": [
+      { "title": "Define the fields", "body": "Show the sample name, stored source tempo, trimmed duration and playback flags.", "display": ["Dry kick", "SRC 120.00 ST", "LEN 1.25s", "G:1 L:0 R:0"] },
+      { "title": "Test the formatter", "body": "Synthetic records exercise empty pads, boundaries and the text renderer.", "display": ["LOCAL TEST", "TEXT: PASS", "ROUTE: UNKNOWN", "R1"] },
+      { "title": "Check the active route", "body": "The current widget reaches the stock renderer without calling R1's custom panel.", "display": ["CURRENT WIDGET", "STOCK: REACHED", "CUSTOM: MISSED", "R1"] },
+      { "title": "Connect and verify", "body": "R2 tests the current draw route and uses a distinct menu marker. The owner confirms the marker and panel.", "display": ["PAD INFO R2!", "ROUTE: CHECKED", "PANEL: REPORTED", "OWNER TEST"] }
+    ]
+  },
+  "sections": [
+    {
+      "id": "choose-the-information",
+      "title": "Choose information that fits the screen",
+      "short": "The fields",
+      "paragraphs": [
+        "After the first menu-title change, we wanted the screen to say something useful about the selected sample. A compact panel could show its name, source tempo, duration and playback settings without requiring a separate menu. Keeping that panel tied to the current selection was part of the feature: changing pads or banks should change the information.",
+        "The labels needed precise meanings. SRC is the stored source BPM, which can differ from the tempo heard during playback. LEN is the trimmed source duration before playback-speed changes. ST and MO describe stereo or mono; G, L and R show gate, loop and reverse. R2 limits the name to 17 printable ASCII characters and gives an empty pad an explicit EMPTY PAD state. These choices keep the drawing bounded even when the sample record is unusual."
+      ]
+    },
+    {
+      "id": "the-missed-route",
+      "title": "Find why the passing build changed nothing",
+      "short": "The missed route",
+      "paragraphs": [
+        "The first candidate passed 528 native display cases and 804 comparisons involving the event handler. The owner then reported that the update had completed but the pads still showed the same large number. The tests and the report appeared to disagree because they were checking different paths.",
+        "R1's tests called an older page renderer and its event handler directly. Those calls established what our code did when invoked. The current sample screen used a different widget and redraw dispatcher, so the visible screen never reached the custom panel through that route. We preserved R1 and wrote a regression that began at the current widget's draw entry. It reached the stock BPM renderer without entering R1's custom drawing code. That reproduced the routing mistake locally, although it could not establish the exact bytes installed on the owner's unit."
+      ],
+      "checkpoint": "A renderer test should answer two questions: does the function draw correctly, and does the real screen call that function?"
+    },
+    {
+      "id": "keep-the-existing-screen",
+      "title": "Add the panel to the current redraw",
+      "short": "The correction",
+      "paragraphs": [
+        "R2 kept the current widget's stock renderer and event handlers intact. Its wrapper let the stock rendering run, then drew the compact information panel through the current widget's canvas. The dispatcher could continue drawing its header and status areas. External-control behavior remained outside the new panel's normal path.",
+        "The correction also removed the earlier event hook. This reduced the number of altered paths we had to explain and kept selection behavior with the existing handler. The revised CPU checks exercised 480 selection notifications followed by current-widget redraws, covering all 160 pads across three layouts. Another 524 detail cases covered formatting and boundary behavior. Drawing APIs and several stock operations were intercepted, so these remained CPU checks with synthetic records, not an emulated OLED, scheduler or audio engine."
+      ],
+      "steps": [
+        "Start a routing test at the entry used by the current screen.",
+        "Keep the original drawing and event behavior in the expected call sequence.",
+        "Exercise selection changes as well as one direct draw.",
+        "Check empty and invalid records before considering a device result."
+      ]
+    },
+    {
+      "id": "identify-the-build",
+      "title": "Give the result a visible identity",
+      "short": "Build identity",
+      "paragraphs": [
+        "R1 reused CUSTOM MENU!, the marker from the earlier title-only experiment. That made a report of the title ambiguous. R2 introduced PAD INFO R2! so the owner could identify the candidate independently of whether the new sample panel appeared.",
+        "The owner initially reported CUSTOM MENU! again, then clarified that the wrong build had been running and confirmed both PAD INFO R2! and the pad information. This was a separate mistake from R1's missed route. Combining the two into one story would hide a real code defect behind an installation mix-up. The hardware report records the correction while leaving the original packages and their build-time reports unchanged."
+      ]
+    },
+    {
+      "id": "what-the-result-supports",
+      "title": "Keep the success narrower than the feature list",
+      "short": "The result",
+      "paragraphs": [
+        "The owner's confirmation supports successful execution and a visible pad-information panel on their SP. No independent screenshot or installed-image hash was captured. Individual field accuracy, all banks and layouts, playback behavior and long-session stability still needed separate hardware checks.",
+        "You can reproduce the formatting and routing distinction below without owning an SP or obtaining a firmware image. The example uses invented records and an ordinary Python function table. Its route names explain the test structure; they are not interfaces to the instrument. The retained project reports identify the historical builds and CPU checks, but the underlying research records are not public downloads from this site."
+      ]
+    }
+  ],
+  "exercise": {
+    "title": "Check the text and the route separately",
+    "intro": "Run this standalone Python 3 example. It reads invented in-memory sample data and prints a bounded panel, then checks whether a simulated current screen reaches the custom renderer. It does not access an SP or any files.",
+    "code": "def panel(sample):\n    if sample is None:\n        return ['EMPTY PAD']\n    name = ''.join(c if 32 <= ord(c) <= 126 else '?'\n                   for c in sample['name'])[:17]\n    seconds = sample['frames'] / sample['rate']\n    return [name, f\"SRC {sample['bpm']:.2f} ST\",\n            f\"LEN {seconds:.2f}s\", 'G:1 L:0 R:0']\n\nsample = {'name': 'Dry kick', 'frames': 60000,\n          'rate': 48000, 'bpm': 120}\nassert panel(None) == ['EMPTY PAD']\nassert len(panel({**sample, 'name': 'abcdefghijklmnopqr'})[0]) == 17\nprint('\\n'.join(panel(sample)))\n\nroutes = {'R1': ['stock'], 'R2': ['stock', 'custom']}\nfor build, calls in routes.items():\n    reached = 'custom' in calls\n    print(f\"{build} current route: {'reached' if reached else 'missed'}\")\n",
+    "expected": "Dry kick\nSRC 120.00 ST\nLEN 1.25s\nG:1 L:0 R:0\nR1 current route: missed\nR2 current route: reached",
+    "explanation": "The duration follows from 60,000 source frames at 48,000 frames per second. Passing the panel assertions says nothing about which renderer a screen calls. The final two lines make that second check explicit. The flag line is fixed example data, not a decoder for Roland's sample records."
+  },
+  "sources": [
+    { "title": "R1 hardware report and route diagnosis", "path": "custom_firmware/pad_info/HARDWARE_RESULT.md", "evidence": "Owner's unchanged-screen report; preserved R1 failure and current-widget routing regression. Retained research record, not a public download." },
+    { "title": "R1 build and test scope", "path": "custom_firmware/pad_info/README.md", "evidence": "528 native display cases and 804 event comparisons, including the limits of their older-renderer entry point." },
+    { "title": "R2 design and CPU checks", "path": "custom_firmware/pad_info_r2/README.md", "evidence": "Field meanings, bounded overlay, current-widget correction, 524 detail cases and 480 selection/redraw checks." },
+    { "title": "R2 hardware result", "path": "custom_firmware/pad_info_r2/HARDWARE_RESULT.md", "evidence": "Owner's wrong-build clarification and subsequent confirmation of the unique marker and visible pad information; supplied-file hashes are not device readback." }
+  ],
+  "limits": [
+    "The timeline is schematic and its sample values are invented.",
+    "The owner confirmed the panel on one unit; no photograph or installed-image hash was captured.",
+    "CPU checks do not establish physical field accuracy, audio behavior or long-session stability.",
+    "The exercise reproduces a test structure, not firmware modification or installation."
+  ]
+}

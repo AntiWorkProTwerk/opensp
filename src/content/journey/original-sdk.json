@@ -1,0 +1,89 @@
+{
+  "slug": "original-sdk",
+  "title": "Small pieces, tested in isolation",
+  "description": "How we separated reusable audio code from the board, and checked its behavior before connecting it to hardware.",
+  "order": 140,
+  "category": "SDK",
+  "period": "September 22 and 23, 2026",
+  "evidenceLabel": "Compiled ARM tests · no hardware audio claim",
+  "summary": "An original application needs more than a successful boot. It needs small components whose inputs, outputs and failure behavior are understood. We started an unpublished development kit with audio packing and extraction code that can build without a Roland image or an attached SP.",
+  "timeline": {
+    "kind": "sequence",
+    "title": "From a contract to an independent component",
+    "caption": "Schematic test sequence, not a recording of the SP. Passing CPU cases establish the checked buffer behavior; they do not establish sound output.",
+    "duration": 16000,
+    "steps": [
+      {"title": "Describe the bytes", "body": "Specify sample widths, ordering and buffer limits before writing the component.", "display": ["AUDIO CONTRACT", "INPUT VALUES", "BYTE ORDER", "BOUNDS FIRST"]},
+      {"title": "Keep the source independent", "body": "The caller supplies storage. The component makes no hardware accesses and links no vendor image.", "display": ["ORIGINAL C", "CALLER STORAGE", "NO DEVICE I/O", "NO VENDOR IMAGE"]},
+      {"title": "Execute compiled tests", "body": "The retained TX report passes 47 cases over 967 frames. RX passes 94 cases over 1,571 frames.", "display": ["CPU TESTS", "TX 47 CASES", "RX 94 CASES", "CHECKED OUTPUT"]},
+      {"title": "Rebuild in isolation", "body": "A clean source copy reproduces the library and CPU test image with the same installed tools.", "display": ["ISOLATED BUILD", "SAME TOOLCHAIN", "MATCHING BYTES", "DEVICE PENDING"]}
+    ]
+  },
+  "sections": [
+    {
+      "id": "separate-the-layers",
+      "title": "Give each layer a smaller job",
+      "short": "Separate the layers",
+      "paragraphs": [
+        "Our display and control experiments had already produced original code, but much of a firmware experiment concerns one particular build or board state. Reusing that whole experiment would carry its assumptions into the next one. We separated portable processing from the code that knows how to reach the SP's peripherals or cooperate with Roland's application.",
+        "For an audio helper, that meant accepting ordinary buffers and explicit counts. The caller owns memory and decides when processing runs. The helper has no heap allocation, hardware register access or scheduler dependency. A stock-version adapter can use it later without putting stock function addresses into the portable component."
+      ]
+    },
+    {
+      "id": "write-the-contract",
+      "title": "State exactly what a frame contains",
+      "short": "Write the contract",
+      "paragraphs": [
+        "The transmit packer writes explicit little-endian bytes. Each recovered frame contains fourteen audio values clipped to signed 20-bit range, an unchanged 32-bit auxiliary value and a sign-extended 16-bit control field. Those are logical positions. We had not established the physical meaning of every channel or control value, so the API does not name them as known sockets.",
+        "The receive helper has a different contract: select a stereo pair from sixteen signed 16-bit positions, apply the documented pair ordering and write the result. Neither helper starts a stream. Packing an all-zero buffer also cannot promise safe silence when the meaning of its non-audio fields remains unresolved."
+      ]
+    },
+    {
+      "id": "test-rejection",
+      "title": "Check the calls that should fail",
+      "short": "Test rejection",
+      "paragraphs": [
+        "A correct ordinary frame is only part of the test. We checked zero, partial and full blocks, byte ordering, clipping boundaries and output guards. Invalid lengths, counts or pointers must return before writing output. Input pages were protected during CPU tests so an accidental in-place change could not pass unnoticed.",
+        "The retained transmit report contains 47 passing compiled ARM cases across 967 frames. Receive extraction passes 94 cases across 1,571 frames. Separate research comparisons execute the stock routines on synthetic inputs; the RX comparison matches 2,048 frames byte for byte. These comparisons check a bounded computation, with peripherals and the audio task outside the fixture."
+      ],
+      "checkpoint": "A rejected call should leave the destination unchanged. Test that property directly, including the bytes just outside the declared output area."
+    },
+    {
+      "id": "remove-hidden-dependencies",
+      "title": "Build without the research workspace",
+      "short": "Build in isolation",
+      "paragraphs": [
+        "A helper can appear independent while quietly importing a project script or reading a local firmware dump. We copied the declared SDK source and test files into an isolated directory, then built using the installed compiler and Python tools. The static library and CPU test image matched the original outputs byte for byte.",
+        "That result applies to the recorded toolchain and source set. It is not a claim that every compiler produces identical binaries. The CPU image also uses an artificial emulator address; it is a test artifact, not a firmware update. Keeping those artifacts separate prevents a successful local build from looking like an installation package."
+      ]
+    },
+    {
+      "id": "connect-evidence-later",
+      "title": "Leave the hardware questions visible",
+      "short": "Hardware remains separate",
+      "paragraphs": [
+        "The same structure lets later work add independently tested controls, transport or DSP without claiming that the whole sampler is complete. A module's tests travel with its source. Board adapters then need their own evidence for ownership, timing and the physical route they use.",
+        "At this milestone, the SDK's public API and source license were still being finalized. It was an unpublished development foundation. The safe exercise below recreates one buffer-contract check using invented signed 16-bit samples. It deliberately omits the SP's transmit layout, unknown control fields and any hardware connection."
+      ]
+    }
+  ],
+  "exercise": {
+    "title": "Reject a short buffer without changing it",
+    "intro": "Run this standalone Python 3 example. It clips invented samples, writes little-endian bytes and verifies an all-or-nothing capacity check. It writes no files and needs no firmware.",
+    "code": "def pack_s16(samples, destination):\n    if len(destination) < len(samples) * 2:\n        return False\n    encoded = bytearray()\n    for sample in samples:\n        value = max(-32768, min(32767, sample))\n        encoded.extend(value.to_bytes(2, 'little', signed=True))\n    destination[:len(encoded)] = encoded\n    return True\n\noutput = bytearray(8)\nassert pack_s16([-40000, -1, 1, 40000], output)\nprint(output.hex(' '))\nshort = bytearray([0xA5] * 3)\nbefore = bytes(short)\nassert not pack_s16([1, 2], short)\nprint('unchanged after rejection:', bytes(short) == before)\n",
+    "expected": "00 80 ff ff 01 00 ff 7f\nunchanged after rejection: True",
+    "explanation": "The short destination retains every sentinel byte because validation happens before assignment. This is a simplified contract exercise, not the SDK implementation or a test of the SP's audio hardware."
+  },
+  "sources": [
+    {"title": "SDK contracts and scope", "path": "../sp404mk2/sdk/README.md", "evidence": "Retained project record describing original source, caller-owned buffers and the unpublished API. This record is not a public SDK download."},
+    {"title": "Transmit CPU verification", "path": "../sp404mk2/sdk/build/verification.json", "evidence": "47 compiled ARM cases and 967 frames; hardware_tested is false."},
+    {"title": "Receive CPU verification", "path": "../sp404mk2/sdk/build/rx_verification.json", "evidence": "94 compiled ARM cases and 1,571 frames; hardware_tested is false."},
+    {"title": "Isolated build verification", "path": "../sp404mk2/sdk/build/standalone_verification.json", "evidence": "Same-toolchain source-only rebuild with matching library and CPU image hashes."},
+    {"title": "Stock receive comparison", "path": "../sp404mk2/analysis/v552/sdk_rx_verification.json", "evidence": "Bounded CPU comparison against the retained stock image, not physical audio evidence."}
+  ],
+  "limits": [
+    "CPU and buffer tests do not establish DMA operation, physical channel identity, sound output or device timing.",
+    "The retained source records are not presented as a released SDK or permission to distribute vendor firmware.",
+    "The exercise models a generic signed 16-bit contract and must not be used as an SP frame definition."
+  ]
+}

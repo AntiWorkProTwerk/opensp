@@ -1,0 +1,90 @@
+{
+  "slug": "mapping-controls",
+  "title": "Giving every control a name",
+  "description": "From moving bars to 55 accepted mappings, with one control at a time and the raw recordings kept for review.",
+  "order": 60,
+  "category": "Controls",
+  "period": "September 22, 2026",
+  "evidenceLabel": "Owner-labeled captures and offline replay",
+  "summary": "Our original application could see buttons and changing analog values. We still needed to establish which reading belonged to which control. The mapping session produced 55 accepted names, caught an incomplete checklist and exposed eight readings for a single DEL button.",
+  "timeline": {
+    "kind": "sequence",
+    "title": "From a raw channel to a control",
+    "caption": "Schematic mapping sequence. Screen text explains the method; it is not a recording of the R12 interface or its timing.",
+    "duration": 16000,
+    "steps": [
+      { "title": "Establish a quiet baseline", "body": "Record idle values and capture health before moving the selected control.", "display": ["RAW INPUT", "BASELINE", "CONTROL STILL", "CHECK ERRORS"] },
+      { "title": "Move one control", "body": "A labeled take connects a deliberate physical action to changing channels.", "display": ["ONE CONTROL", "VOLUME", "TURN AND RETURN", "SAVE RAW TAKE"] },
+      { "title": "Review the candidate", "body": "Accept a channel after reviewing its response. A missing signal stays unresolved.", "display": ["CANDIDATE", "ANALOG 16", "OWNER REVIEW", "ACCEPT VOLUME"] },
+      { "title": "Resolve duplicates", "body": "DEL appears in eight matrix columns. One canonical slot prevents repeated actions.", "display": ["DEL", "8 ROW ALIASES", "KEEP SLOT 4", "ONE ACTION"] },
+      { "title": "Preserve the map", "body": "The completed session retained 55 mappings and all 63 takes, including retries.", "display": ["MAP REVIEW", "55 ACCEPTED", "63 TAKES", "2 UNRESOLVED"] }
+    ]
+  },
+  "sections": [
+    {
+      "id": "raw-response",
+      "title": "Start with a response we can observe",
+      "short": "Raw response",
+      "paragraphs": [
+        "R7 responded to SHIFT over its controller link, but the pads and other panel controls needed separate local acquisition. R8 added button-matrix scanning and analog readings. The owner reported that the buttons and knobs did something, and that pressure or turning changed the bars. That gave us a working raw-input baseline on the SP.",
+        "The bars had no trustworthy physical names yet. A changing channel could show that acquisition worked without telling us whether it belonged to PAD 1, VOLUME or another control. Pressure-responsive readings also did not establish strike velocity. We preserved R8 and moved the naming work into a recorder where each proposed label could be checked against its raw take."
+      ]
+    },
+    {
+      "id": "record-one-control",
+      "title": "Record one physical action at a time",
+      "short": "Record a take",
+      "paragraphs": [
+        "R12 exposed timestamped raw observations over USB. Its capture health included dropped events and ADC errors, so a plausible-looking trace could still be rejected if collection had failed. The guide began each take with a two-second quiet baseline. The owner then moved the named control while leaving the others alone and reviewed the candidate before accepting it.",
+        "Keeping the unprocessed take let us recompute the candidate later. The physical name came from the owner's selected action; the recording alone could not identify the hand on the panel. For a knob, the activity covered its travel and return. Buttons were pressed and released twice. Repeating a no-signal take was useful, but a second failure stayed unresolved instead of acquiring a guessed label."
+      ],
+      "checkpoint": "A mapping needs a labeled action, a usable baseline and a healthy capture. A changing value by itself supplies only one of those."
+    },
+    {
+      "id": "complete-checklist",
+      "title": "Fix the checklist without changing the firmware",
+      "short": "Complete the panel",
+      "paragraphs": [
+        "The first session accepted 22 controls: all 16 pads, CTRL 1 through 3, VALUE rotation and press, and SHIFT. Then the guide stopped. It had omitted VOLUME and the remaining buttons, so calling that session a complete panel map would have hidden a problem in our own instructions.",
+        "R12B revised only the PC guide. It resumed the saved profile, kept the accepted labels and prompted for the missing controls. The owner subsequently reported that the checklist was finished. The combined archive contains 55 unique accepted mappings and all 63 takes, including retries. Every take reported zero capture drops and ADC errors; the UART error count remained at one."
+      ]
+    },
+    {
+      "id": "aliases-and-corrections",
+      "title": "Explain the exceptions before using the map",
+      "short": "Aliases and corrections",
+      "paragraphs": [
+        "VOLUME mapped to analog slot 16. SUB PAD mapped to analog slot 20 and needed pad behavior, correcting the checklist's button classification. An intermediate SUB PAD take had captured EXT SOURCE instead; later corroborating takes superseded it. Keeping that mistaken take made the correction traceable.",
+        "DEL produced the same row response in all eight matrix columns. Treating each candidate as an independent button would duplicate actions. The observed pattern agreed with the stock mapping's column-zero rule, so the named layer uses slot 4 and ignores its seven aliases. Offline replay then produced the expected two DEL press/release pairs. This established a handling rule for the observed pattern without claiming that we had inspected the board wiring."
+      ]
+    },
+    {
+      "id": "review-and-limits",
+      "title": "Freeze what is known and leave gaps visible",
+      "short": "Review the evidence",
+      "paragraphs": [
+        "All accepted candidates could be recomputed from the saved samples, and each accepted mapping emitted the expected event type in offline replay. That check made the map useful for the next native decoder. It remained a single-device, owner-labeled result; replaying a recording was not a second physical test.",
+        "GAIN's saved take had no candidate. MIC/GUITAR was skipped without a take. Neither result proved those controls were analog-only or inaccessible. VALUE's valid state transitions did not establish detents, direction or missed cycles at speed. Pad pressure readings still needed calibration, and a threshold crossing could occur while a finger remained on the pad. Those limits traveled with the map into the next build."
+      ]
+    }
+  ],
+  "exercise": {
+    "title": "Find a candidate and suppress aliases",
+    "intro": "Run this standalone Python 3 example with invented in-memory readings. Its 64-count candidate threshold is illustrative. It performs no device access and writes no files.",
+    "code": "baseline = {2: [1000, 1002, 999], 5: [2000, 2001, 2000]}\nactivity = {2: [1000, 1400, 1001], 5: [2000, 2001, 2000]}\n\ndef span(values):\n    return max(values) - min(values)\n\ncandidates = [slot for slot in baseline\n              if span(activity[slot]) > span(baseline[slot]) + 64]\nassert candidates == [2]\n# Explicit acceptance follows review; a candidate is not a physical name.\naccepted = {2: 'DEMO KNOB'}\n\n# Invented, aligned copies of one button's two presses.\ntrack = [0, 1, 1, 0, 0, 1, 0]\naliases = {4 + 5 * column: track[:] for column in range(8)}\nassert all(values == track for values in aliases.values())\n\ndef press_count(values):\n    return sum(bool(right and not left)\n               for left, right in zip(values, values[1:]))\n\nassert sum(press_count(v) for v in aliases.values()) == 16\nassert press_count(aliases[4]) == 2\nprint('candidate slots:', candidates)\nprint('accepted:', accepted)\nprint('DEL press events:', press_count(aliases[4]))\n",
+    "expected": "candidate slots: [2]\naccepted: {2: 'DEMO KNOB'}\nDEL press events: 2",
+    "explanation": "The quiet channel stays out of the candidate list. Counting every alias would produce 16 press events; consuming the selected canonical slot produces two. Real multi-candidate takes require investigation before applying an alias rule. These invented traces do not reproduce the SP's scan timing."
+  },
+  "sources": [
+    { "title": "R8 physical input report", "path": "custom_firmware/original_r8/HARDWARE_RESULT.md", "evidence": "Owner-reported raw response and its limits. Retained project record; the underlying record is not published with this guide." },
+    { "title": "R12 capture and R12B guide correction", "path": "custom_firmware/original_r12/HARDWARE_RESULT.md", "evidence": "Boot confirmation, the first 22 mappings and completion of the resumed checklist. Underlying project record is not published here." },
+    { "title": "Completed control-map review", "path": "analysis/hardware/r12b_completed_20260922/README.md", "evidence": "55 accepted mappings, 63 retained takes, SUB PAD correction and DEL aliases. Raw recordings are not published with this guide." },
+    { "title": "R12B mapping procedure", "path": "custom_firmware/original_r12/MAPPER_R12B.md", "evidence": "Baseline, one-control capture, explicit acceptance and unresolved probes. Underlying project record is not published here." }
+  ],
+  "limits": [
+    "The labels rely on the owner's actions on one SP; the guide does not establish every unit's wiring.",
+    "GAIN and MIC/GUITAR remain unresolved in this mapping session.",
+    "Raw pressure, threshold intervals and encoder transitions are not calibrated velocity, contact duration or detents.",
+    "The exercise checks an invented data model and is not a firmware installation or hardware capture procedure."
+  ]
+}

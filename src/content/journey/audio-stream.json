@@ -1,0 +1,87 @@
+{
+  "slug": "audio-stream",
+  "title": "The timeout that wasn't a stalled stream",
+  "description": "A first-fault snapshot exposed a timestamp race. R41 then sustained silent streaming, while audible output remained a separate test.",
+  "order": 130,
+  "category": "Audio",
+  "period": "September 26, 2026",
+  "evidenceLabel": "Compiled race regression and physical streaming",
+  "summary": "The stream reported no progress shortly after a completed block. Capturing the state before shutdown showed that the timeout calculation could read its two timestamps in the wrong order.",
+  "timeline": {
+    "kind": "sequence",
+    "title": "Preserve the fault before changing the stream",
+    "caption": "Schematic progression from R38 to R41. Block counts and the 71-tick snapshot interval are documented results; playback speed is illustrative.",
+    "duration": 15000,
+    "steps": [
+      {"title": "First guard trips", "body": "R38 caught a transmit FIFO error before counting a healthy block. USB status remained available.", "display": ["AUDIO LAB R38", "TX FIFO ERROR", "0 HEALTHY", "FAULT RETAINED"]},
+      {"title": "Priming helps", "body": "R39 primed the FIFOs and reached 31 healthy blocks, then reported a no-progress timeout.", "display": ["AUDIO LAB R39", "31 BLOCKS", "TIMEOUT", "CAUSE UNKNOWN"]},
+      {"title": "Capture the fault", "body": "R40's snapshot began only 71 ticks after its latest block, with DMA active and no reported DMA error.", "display": ["AUDIO LAB R40", "13 BLOCKS", "71 TICKS SINCE", "CHECK READ ORDER"]},
+      {"title": "Reproduce the race", "body": "A compiled interleaving test reproduced R40's false timeout and checked R41's corrected order.", "display": ["CPU REGRESSION", "RACE REPEATS", "ORDER CORRECTED", "TIMEOUT RETAINED"]},
+      {"title": "Run on the SP", "body": "R41 reached 44,998 silent blocks without reported audio, DMA, FIFO or sync faults. Audibility was not confirmed.", "display": ["AUDIO LAB R41", "44998 BLOCKS", "NO FAULTS", "SOUND UNCONFIRMED"]}
+    ]
+  },
+  "sections": [
+    {
+      "id": "start-with-silence",
+      "title": "Qualify the transport before asking for sound",
+      "short": "Silent startup",
+      "paragraphs": [
+        "The original audio application started with output disabled. Its first active test moved zero-valued data, which let us examine the stream without treating an audible waveform as the only sign of progress. R38 reached its DMA interrupt handler, caught a transmit FIFO error and stopped before counting a healthy block. The USB writer remained responsive.",
+        "Empty transmit FIFOs at startup were a plausible cause, but the record did not capture the timing needed to prove it. R39 tested that hypothesis by filling the FIFOs with zeros before enabling the stream. It kept the existing fault checks. The physical attempt advanced through 31 healthy block completions before a different error, a no-progress timeout, stopped it."
+      ]
+    },
+    {
+      "id": "capture-before-stop",
+      "title": "Save first-fault state before cleanup destroys it",
+      "short": "Fault snapshot",
+      "paragraphs": [
+        "R39's clean flags described its last completed interrupt, not necessarily the later moment when the timeout fired. They could not exclude a fault after that interrupt or explain why progress appeared to stop. Repeating the same test would not recover the missing state.",
+        "R40 added a fixed first-fault snapshot before shutting down the audio hardware. It recorded the relevant DMA, FIFO and interrupt state without clearing the fault on read. Its physical attempt counted thirteen healthy blocks, then reported the timeout again. The snapshot began only 71 timer ticks after the latest block, with DMA still active and no reported DMA error. That interval directed attention to the timeout calculation itself."
+      ],
+      "checkpoint": "A status captured during the last good event cannot fully describe a later failure. Preserve the failure state before resetting the subsystem."
+    },
+    {
+      "id": "reproduce-the-interleaving",
+      "title": "Two valid reads can form an impossible interval",
+      "short": "Timestamp race",
+      "paragraphs": [
+        "R40 read the current timer first, then the timestamp of the latest completed block. An interrupt could finish a block between those reads and update the latter timestamp. The calculation would then subtract a newer timestamp from an older current-time sample. In unsigned arithmetic, that small negative difference becomes a very large elapsed interval.",
+        "R41 reads the last-block timestamp before reading the current clock. A deterministic test ran both compiled images with the problematic interrupt interleaving: it reproduced the R40 timeout and kept R41 running. Separate checks retained genuine-timeout behavior and handled timer rollover. The correction therefore addressed the read order without removing the timeout that detects real loss of progress."
+      ]
+    },
+    {
+      "id": "check-the-device-again",
+      "title": "Keep the model result separate from the hardware result",
+      "short": "Physical R41 run",
+      "paragraphs": [
+        "R41's installation passed full occupied-sector readback and a separately opened status check. After the owner reported restarting, a fresh USB identity confirmed the new build with audio off and an idle writer. Those checks established the test baseline; the compiled race regression alone could not establish sustained physical streaming.",
+        "The silent run advanced through separated observations and ultimately reached 44,998 blocks without an audio, DMA, FIFO or sync fault. A single bounded waveform request also completed, and its timed lease returned the link to idle without error. The owner changed focus before reporting audibility or pressing pad 1. We therefore recorded sustained transport and a completed bounded request, while leaving headphone routing and pad-triggered sound unconfirmed."
+      ],
+      "steps": ["Confirm the corrected build after a real restart.", "Observe silent progress across separate checks.", "Keep the bounded waveform result distinct from a listening report.", "Retain the failed binaries and snapshots alongside the correction."]
+    },
+    {
+      "id": "try-the-race",
+      "title": "Reproduce the unsigned timeout in memory",
+      "short": "Try the model",
+      "paragraphs": [
+        "The exercise uses an invented eight-bit timer so wraparound fits on one line. It supplies the two reads from the bad interleaving, then checks an ordered pair, a real timeout and a legitimate timer rollover. The bit width and numbers are teaching values, not the device's measured clock.",
+        "Reading the timestamps in the corrected order addresses this particular race. It does not prove that any two shared values are safe to read independently, or that a sequential fault snapshot is instantaneous while DMA continues. R41's physical result extends the evidence beyond the CPU model, but it still does not establish sampler features, audio quality or an audible output route."
+      ]
+    }
+  ],
+  "exercise": {
+    "title": "Make a false timeout visible",
+    "intro": "Run this Python 3 model of an invented wrapping timer. It has no device input, network operations or file writes.",
+    "code": "mask = 0xFF\nthreshold = 20\n\ndef elapsed(now, last):\n    return (now - last) & mask\n\ncases = [\n    ('racing reads', 100, 101),\n    ('ordered reads', 102, 99),\n    ('real timeout', 140, 99),\n    ('timer rollover', 3, 250),\n]\nfor name, now, last in cases:\n    age = elapsed(now, last)\n    print(f'{name}: age={age}, timeout={age > threshold}')\n\nassert elapsed(100, 101) > threshold\nassert elapsed(102, 99) <= threshold\nassert elapsed(140, 99) > threshold\nassert elapsed(3, 250) == 9\n",
+    "expected": "racing reads: age=255, timeout=True\nordered reads: age=3, timeout=False\nreal timeout: age=41, timeout=True\ntimer rollover: age=9, timeout=False",
+    "explanation": "The example exposes the arithmetic consequence of a stale current-time read. The real correction also had compiled interleaving tests and a later physical silent-stream result."
+  },
+  "sources": [
+    {"title": "R38 transmit FIFO fault", "path": "analysis/hardware/audio_r38_20260926T190217Z/README.md", "evidence": "Retained project record, not a public download: first guarded zero-valued attempt and continuing USB status."},
+    {"title": "R39 initial progress", "path": "analysis/hardware/audio_r39_20260926T190705Z/README.md", "evidence": "Retained project record: 31 healthy blocks after priming, followed by a timeout whose later state was not captured."},
+    {"title": "R40 first-fault snapshot", "path": "analysis/hardware/audio_r40_20260926T191237Z/README.md", "evidence": "Retained project record: thirteen blocks, 71-tick interval and preserved DMA/FIFO state."},
+    {"title": "R41 race regression", "path": "sdk/examples/original_r41/README.md", "evidence": "Retained compiled-test report: corrected timestamp read order, real-timeout and rollover coverage."},
+    {"title": "R41 physical silent stream", "path": "analysis/hardware/audio_r41_20260926T191908Z/README.md", "evidence": "Retained project record: 44,998 silent blocks, completed bounded request and explicit absence of an audibility or pad-trigger result."}
+  ],
+  "limits": ["Sustained silent streaming does not establish audible output or a headphone route.", "The bounded waveform request completed, but the owner did not report listening results.", "No pad-triggered sound result was recorded.", "The first-fault snapshot was a sequence of bounded reads, not an instantaneous capture of moving hardware."]
+}

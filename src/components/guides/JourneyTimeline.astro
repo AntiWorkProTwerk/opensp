@@ -1,0 +1,59 @@
+---
+import SPInstrument from '../SPInstrument.astro';
+import AnimationTimeline from './AnimationTimeline.astro';
+import {part, findShape, type Shape} from '../../lib/penpot';
+import type {JourneyChapter} from '../../lib/journey';
+import snapshot from '../../../design/penpot/journey-components.json';
+import sequence from '../../../design/assets/screens/antiworkprotwerk-r3/manifest.json';
+import poster from '../../../design/assets/screens/antiworkprotwerk-r3/poster.png';
+import sprite from '../../../design/assets/screens/antiworkprotwerk-r3/sprite.png';
+interface Props {chapter: JourneyChapter;}
+const {chapter} = Astro.props;
+const {timeline} = chapter;
+const finalStep = timeline.steps.at(-1)!;
+const native = snapshot.components.find(component => component.name === 'Journey screen');
+if (!native) throw new Error('Export the native Journey screen component before building.');
+const screen = structuredClone(native.shape) as Shape;
+const fields = ['Journey title', 'Journey line 1', 'Journey line 2', 'Journey footer'];
+const replaceText = (shape: Shape) => {
+  const field = fields.indexOf(shape.name);
+  if (field >= 0) shape.text = finalStep.display[field];
+  shape.children?.forEach(replaceText);
+};
+replaceText(screen);
+const instrument = part('Instrument');
+const slot = findShape(instrument, 'OLED content slot')!;
+const aperture = findShape(instrument, 'OLED circular aperture')!;
+const screenStyle = `left:${slot.x / instrument.width * 100}%;top:${slot.y / instrument.height * 100}%;width:${slot.shape.width / instrument.width * 100}%;clip-path:ellipse(${aperture.shape.width / 2 / slot.shape.width * 100}% ${aperture.shape.height / 2 / slot.shape.height * 100}% at ${(aperture.x + aperture.shape.width / 2 - slot.x) / slot.shape.width * 100}% ${(aperture.y + aperture.shape.height / 2 - slot.y) / slot.shape.height * 100}%)`;
+---
+<figure class="journey-timeline" aria-labelledby={`${chapter.slug}-timeline-title`}>
+  <journey-motion data-duration={timeline.duration} data-kind={timeline.kind} data-label={timeline.title}>
+    <div class="journey-stage">
+      <div class="guide-instrument journey-instrument">
+        {timeline.kind === 'r3' ? <SPInstrument>
+          <div slot="screen" class="journey-r3-screen" style={screenStyle} data-r3-width={sequence.width} data-r3-height={sequence.height} data-r3-columns={sequence.columns} data-r3-count={sequence.frameCount} data-r3-frame-ms={sequence.frameMs}>
+            <img class="journey-r3-poster" src={poster.src} width={sequence.width} height={sequence.height} alt={sequence.description} decoding="async"/>
+            <svg class="journey-r3-frames" viewBox={`0 0 ${sequence.width} ${sequence.height}`} aria-hidden="true"><image data-r3-frames href={sprite.src} width={sequence.width * sequence.columns} height={sequence.height * Math.ceil(sequence.frameCount / sequence.columns)}/></svg>
+          </div>
+        </SPInstrument> : <SPInstrument screenPart={screen}/>}
+      </div>
+      <div class="journey-explanation">
+        <h2 id={`${chapter.slug}-timeline-title`}>{timeline.title}</h2>
+        <div class="journey-step-stack">
+          {timeline.steps.map((step, index) => <div class="journey-step" data-journey-step data-display={JSON.stringify(step.display)} data-active={index === timeline.steps.length - 1 || undefined} aria-hidden={index !== timeline.steps.length - 1 ? 'true' : undefined}>
+            <p class="journey-step-count">{String(index + 1).padStart(2, '0')} / {String(timeline.steps.length).padStart(2, '0')}</p>
+            <h3>{step.title}</h3><p>{step.body}</p>
+          </div>)}
+        </div>
+        <AnimationTimeline label={timeline.title} duration={Math.ceil(timeline.duration / 1000)}/>
+        {timeline.kind === 'r3' && <p class="journey-media-status" data-media-error hidden role="status">The animation could not load. The original poster is shown; the steps and timeline remain readable.</p>}
+      </div>
+    </div>
+  </journey-motion>
+  <figcaption>{timeline.caption}{timeline.kind !== 'r3' && ' Illustrative timing; no device connection.'}</figcaption>
+  <details class="journey-step-log">
+    <summary>Read every step <svg viewBox="0 0 14 14" width="14" height="14" aria-hidden="true"><path d="M1 7h12M7 1v12"/></svg></summary>
+    <ol>{timeline.steps.map(step => <li><h3>{step.title}</h3><p>{step.body}</p></li>)}</ol>
+  </details>
+</figure>
+<script>import '../../scripts/journey-motion';</script>

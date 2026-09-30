@@ -1,0 +1,86 @@
+{
+  "slug": "usb-updates",
+  "title": "From a RAM upload to a booted update",
+  "description": "How a working USB connection became a verified persistent update, with a failed compatibility check in between.",
+  "order": 80,
+  "category": "USB",
+  "period": "September 22, 2026",
+  "evidenceLabel": "Device readback and fresh boot identity",
+  "summary": "R9 received a program into memory. R11 eventually stored a different program and booted it. We needed separate evidence for every step between those two results.",
+  "timeline": {
+    "kind": "sequence",
+    "title": "What each result establishes",
+    "caption": "Schematic status sequence, not a recording of the SP. The pauses explain the checks and do not represent measured transfer times.",
+    "duration": 15000,
+    "steps": [
+      {"title": "Receive", "body": "R9 accepted 8,488 bytes into RAM and reported a matching transport and reread checksum.", "display": ["USB RAM R9", "RECEIVED 8488", "RAM VERIFIED", "NOT INSTALLED"]},
+      {"title": "Stop at preflight", "body": "R10 rejected the flash profile before any erase or program command. The chip's older table needed investigation.", "display": ["USB FLASH R10", "PROFILE CHECK", "ERROR 11", "NO WRITE SENT"]},
+      {"title": "Verify storage", "body": "R11 accepted the measured profile, then checked the stored proof against all three occupied sectors, including padding.", "display": ["USB FLASH R11", "IMAGE 11716", "READBACK 12288", "STATE 6 / OK"]},
+      {"title": "Check again", "body": "A separately opened status read repeated the completed result. The old runtime was still running at this point.", "display": ["SEPARATE CHECK", "STORED VERIFIED", "R11 BASE RUNS", "BOOT NOT YET"]},
+      {"title": "Confirm a new boot", "body": "After a real restart, the owner saw USB BOOT R11 and USB reported the proof's distinct marker with fresh idle state.", "display": ["USB BOOT R11", "523B0002", "FRESH STATE 0", "BOOT CONFIRMED"]}
+    ]
+  },
+  "sections": [
+    {
+      "id": "start-with-memory",
+      "title": "Start with a transfer that cannot install anything",
+      "short": "RAM first",
+      "paragraphs": [
+        "Moving firmware by SD card slowed every iteration. Before adding a persistent writer, we built R9 to answer a smaller question: could our original application enumerate on Windows and receive a complete, bounded program over USB? Its protocol could upload bytes and check them in RAM. It had no flash or execution operation.",
+        "The first physical transfer contained 8,488 bytes. R9 reported that the received length, transport checksum and RAM-reread checksum agreed. A new host invocation read the same final status. That was useful transport evidence, but the PC had received a device verification result, not an independent dump of those memory bytes. Nothing had been installed, and the uploaded program had never run."
+      ],
+      "checkpoint": "A successful upload needs a precise destination. Record whether the bytes are in RAM, persistent storage, or a running program."
+    },
+    {
+      "id": "respect-the-rejection",
+      "title": "Let a compatibility failure stop the write",
+      "short": "Preflight",
+      "paragraphs": [
+        "R10 added a writer whose runtime lived in RAM while it worked on the application region. Its first read-only probe stopped with error 11. No erase or program command had been sent. The surrounding checks had passed, but R10 could not export enough diagnostic detail to identify the exact failing table condition from that result alone.",
+        "The suspected mismatch was the flash chip's SFDP table, which describes supported memory operations. R10 required at least eleven words; a documented older profile used nine. A synthetic regression reproduced the rejection, so we kept the failed package and built R11 with a narrow diagnostic export and support for that specific profile. We did not disable the preflight check to make the test proceed."
+      ]
+    },
+    {
+      "id": "measure-then-store",
+      "title": "Capture the profile before trusting the correction",
+      "short": "Measured profile",
+      "paragraphs": [
+        "R11's physical capture matched the documented nine-word table. That resolved the earlier hypothesis: R10's minimum-length guard had rejected the actual device profile. The shared identification code still did not establish an exact chip part number, and accepting this profile did not establish compatibility with other chips.",
+        "We then used a separate proof program with a different visible title and build marker. Its 11,716 bytes occupied three storage sectors. R11 reported 12,288 programmed and verified bytes because the last sector also contained padding. The readback compared every occupied-sector byte with the staged image or expected padding before publishing success. A checksum alone would have been a weaker description of what this writer checked."
+      ],
+      "steps": ["Identify the running writer and its supported image format.", "Check the measured device profile against the candidate's requirements.", "Keep the new program's identity distinct from the writer currently running.", "Require complete readback and an independently opened status check."],
+      "checkpoint": "These are evidence requirements, not instructions to install a package. The historical writer accepted only its bounded application format."
+    },
+    {
+      "id": "boot-is-separate",
+      "title": "Treat the restart as a separate test",
+      "short": "Fresh identity",
+      "paragraphs": [
+        "Storage completion left the base R11 runtime alive in RAM. Its continued USB response could not tell us whether the newly stored program would start. The owner performed a real power cycle and reported the new title, USB BOOT R11. A fresh USB read then returned the proof marker 523B0002 with idle state and cleared transfer state.",
+        "That pair of observations closed this particular update: the owner saw the intended program and the host independently read its new identity after restart. We preserved the upload, flash and boot records separately so a later reader could distinguish device-side storage verification from the subsequent boot. A process exit code or a progress screen could not replace those records."
+      ]
+    },
+    {
+      "id": "repeat-the-reasoning",
+      "title": "Reproduce the evidence check offline",
+      "short": "Try the model",
+      "paragraphs": [
+        "The exercise below models a report collector. Each event proves one additional condition, and a boot is accepted only when its identity matches the intended target. Try moving the boot event earlier or changing its marker. Both should fail, even if all bytes were received.",
+        "One successful R11 update established a working route for that bounded application format on this SP. It left repeat-update endurance, power-loss behavior and larger images untested. A host reconnect was also not a cable-reconnect test. Keeping these limits attached to the result prevented the first success from becoming a broader recovery claim."
+      ]
+    }
+  ],
+  "exercise": {
+    "title": "Keep evidence stages in order",
+    "intro": "Run this standalone Python 3 model. It uses invented events in memory, accepts no firmware or device input, and writes no files.",
+    "code": "required = ['received', 'ram_checked', 'stored', 'status_checked', 'booted']\ntarget = 'example-new'\nproof = []\n\ndef accept(event, identity=None):\n    assert event == required[len(proof)], 'missing earlier evidence'\n    if event == 'booted':\n        assert identity == target, 'old runtime is still running'\n    proof.append(event)\n    print(f'{len(proof)}/5 {event}')\n\nfor event in required[:-1]:\n    accept(event)\ntry:\n    accept('booted', 'example-old')\nexcept AssertionError:\n    print('old identity: rejected')\naccept('booted', target)\n",
+    "expected": "1/5 received\n2/5 ram_checked\n3/5 stored\n4/5 status_checked\nold identity: rejected\n5/5 booted",
+    "explanation": "The invented identity check represents the distinction between a writer still running in RAM and a newly booted target. It does not implement a USB protocol or qualify any real image."
+  },
+  "sources": [
+    {"title": "R9 physical RAM transfer", "path": "custom_firmware/original_r9/HARDWARE_RESULT.md", "evidence": "Retained project record, not a public download: 8,488-byte device-side RAM verification and explicit absence of flash or execution."},
+    {"title": "R10 rejected preflight", "path": "custom_firmware/original_r10/HARDWARE_RESULT.md", "evidence": "Retained project record: the first profile failure, no write sent, and the then-unconfirmed table-length hypothesis."},
+    {"title": "R11 update and boot", "path": "custom_firmware/original_r11/HARDWARE_RESULT.md", "evidence": "Retained project record: captured nine-word profile, full-sector device readback, separate status and owner/USB boot confirmation."}
+  ],
+  "limits": ["One physical update and boot, on the owner's SP.", "Device-side readback was not an independent external-flash dump.", "The historical writer was limited to compatible application images up to 64 KiB.", "Power-loss recovery, repeat-update endurance and sampler functionality were not established."]
+}

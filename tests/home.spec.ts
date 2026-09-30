@@ -2,6 +2,11 @@ import {test,expect} from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 import copy from '../design/studies/home-copy.json' with {type:'json'};
 import article from '../src/content/first-change.json' with {type:'json'};
+import {readFileSync,readdirSync} from 'node:fs';
+const journeyDir=new URL('../src/content/journey/',import.meta.url);
+const journey=readdirSync(journeyDir).filter(name=>name.endsWith('.json')).map(name=>JSON.parse(readFileSync(new URL(name,journeyDir),'utf8'))).sort((a,b)=>a.order-b.order);
+const guideTitles=[article.title,...journey.map(chapter=>chapter.title)];
+const guideRoutes=['/guides/first-change/',...journey.map(chapter=>`/guides/${chapter.slug}/`)];
 
 for(const width of [320,390,600,720,768,1100,1440,1920])for(const theme of ['light','dark']){
   test(`homepage ${width}px ${theme}`,async({page})=>{
@@ -16,7 +21,7 @@ for(const width of [320,390,600,720,768,1100,1440,1920])for(const theme of ['lig
     await expect(page.locator('.intro').first()).toHaveText(copy.intro);
     await expect(page.locator('.repository-note')).toHaveText(copy.repository);
     await expect(page.locator('.section-description')).toHaveText([copy.releasesHeading,copy.guidesHeading]);
-    await expect(page.locator('.guide .title')).toHaveText([article.title]);
+    await expect(page.locator('.guide .title')).toHaveText(guideTitles);
     expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
     const nav=await page.locator('nav').boundingBox();expect(Math.abs(nav!.x+nav!.width/2-width/2)).toBeLessThan(2);
     const box=await page.locator('.instrument').boundingBox();expect(box!.height/box!.width).toBeCloseTo(570/400,2);
@@ -76,7 +81,7 @@ test('failed screen asset keeps its poster',async({page})=>{
 
 test('published surface has no dead guide links or private design references',async({page,request})=>{
   await page.goto('/');await expect(page.getByText('Planned guides. Not published yet.')).toHaveCount(0);
-  await expect(page.locator('.guide[href]')).toHaveAttribute('href','/guides/first-change/');
+  expect(await page.locator('.guide[href]').evaluateAll(links=>links.map(link=>link.getAttribute('href')))).toEqual(guideRoutes);
   expect((await request.get('/guides/first-change/')).ok()).toBe(true);
   expect(await page.locator('a[href*="design/studies"],a[href*="penpot"]').count()).toBe(0);
   for(const target of ['/favicon.svg','/robots.txt','/sitemap-index.xml','/build-info.json','/404.html'])expect((await request.get(target)).ok()).toBe(true);

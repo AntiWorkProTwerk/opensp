@@ -1,0 +1,91 @@
+{
+  "slug": "synth-design",
+  "title": "A synth that belongs on the SP",
+  "description": "Designing a live instrument around the pads, knobs and capture workflow, while testing how it could share Roland's sampler.",
+  "order": 170,
+  "category": "Research",
+  "period": "September 29, 2026 · design and contract milestone",
+  "evidenceLabel": "Penpot concepts and CPU contracts · no synth package",
+  "summary": "The owner chose live playing followed by resampling to a pad. That choice shaped the interface and the integration research: an original synth engine should work inside the existing sampler, with a clear path from playing a sound to keeping a take.",
+  "timeline": {
+    "kind": "sequence",
+    "title": "Follow the phrase from patch to pad",
+    "caption": "Schematic proposed workflow, not an implemented SP feature. The design and CPU tests do not establish live synthesis or capture on hardware.",
+    "duration": 18000,
+    "steps": [
+      {"title": "Choose a playable patch", "body": "A browsable patch and useful macros should put the instrument into a playable state without visiting every editor page.", "display": ["SYNTH CONCEPT", "CHOOSE PATCH", "PERFORMANCE PAGE", "PLAY WITH PADS"]},
+      {"title": "Shape the sound", "body": "The proposed controls expose performance changes while deeper oscillator, envelope and filter edits remain separate.", "display": ["EDIT CONCEPT", "MACRO CONTROLS", "DEEPER PAGES", "EDITED STATE"]},
+      {"title": "Keep a take", "body": "The desired live-to-pad flow needs a verified recording route. Stock generated-file export does not prove that route.", "display": ["CAPTURE CONCEPT", "LIVE PHRASE", "KEEP A TAKE", "ROUTE UNVERIFIED"]},
+      {"title": "Resolve destructive actions", "body": "Initialize and Store need explicit outcomes, including the patch name, edited marker and retained take.", "display": ["STATE REVIEW", "CONFIRM ACTION", "UPDATE LABELS", "KEEP TAKE STATE"]},
+      {"title": "Check the audio boundary", "body": "CPU tests constrain the stock mixing contract. Device timing, memory ownership and a usable synth package still need evidence.", "display": ["CPU CONTRACT", "MIXER CHECKED", "DEVICE PENDING", "NO SYNTH RELEASE"]}
+    ]
+  },
+  "sections": [
+    {
+      "id": "choose-the-workflow",
+      "title": "Design around playing, then keeping a phrase",
+      "short": "Choose the workflow",
+      "paragraphs": [
+        "The request was for a subtractive synth inspired by Ableton Drift, with a broad set of sounds and an interface that fits the SP. The owner specified an addition to Roland's firmware and selected live playing followed by resampling. We used those choices to judge the design: playing and capturing should remain understandable without turning the small screen into a desktop synth panel.",
+        "Drift supplied an interaction and feature reference. The planned engine uses original DSP and patches; it does not claim to reproduce Drift's proprietary sound. A proposed 128-patch library is a content target. It says nothing about the number of simultaneous notes the SP can sustain alongside its sampler."
+      ]
+    },
+    {
+      "id": "find-the-audio-boundary",
+      "title": "Trace where a generator joins the sampler",
+      "short": "Find the audio boundary",
+      "paragraphs": [
+        "The stock research found a generator mixer in transmit preparation. It adds generated samples to one selected stereo pair in a fourteen-position working buffer. That gives the adapter a specific computation to verify before considering an original source of samples. A receive buffer used by recording code would not establish the same output route.",
+        "We executed the actual mixer in 294 CPU cases, checking enable state, frame count, pair selection, pan and the gain ramp. A deterministic stub supplied the samples. The tests establish the checked additions and unaffected positions; they do not execute a complete oscillator or establish an audible socket, available CPU time or safe memory reservation."
+      ]
+    },
+    {
+      "id": "constrain-the-producer",
+      "title": "Keep the producer test narrower than the synth",
+      "short": "Constrain the producer",
+      "paragraphs": [
+        "A later fixture exercised thirty-six direct phase sweeps through selected stock waveforms. The saw, triangle and pulse results matched reference values within one integer count and established a signed 16-bit return value. Each phase was assigned directly, so the result does not measure pitch or a continuously advancing oscillator.",
+        "The broader attempt was excluded because its runtime and random-number setup was incomplete. Emulator CPU models also rejected instructions used by the fixture, requiring a model suited to the scalar arithmetic being checked. We retained those limits instead of describing the test as qualification of the SP processor. Noise, hardware clock rate and physical output remained outside it."
+      ]
+    },
+    {
+      "id": "review-real-state-changes",
+      "title": "Review the screens after each action",
+      "short": "Review state changes",
+      "paragraphs": [
+        "The Penpot concept grew to twenty-eight proposed screen states using editable display components and the shared SP panel. Early review found missing take recall, octave feedback and confirmations, along with inconsistent SHIFT wording. Those findings led to explicit routes for the actions a player could actually take.",
+        "The next review caught a subtler error: Initialize and Store still led to a screen showing the old edited patch. Corrected success states update the patch name and edited marker while preserving the intended take state. An enlarged saved-patch export then clipped a label's final character. A subsequent native recapture showed MOTION and SPACE in full, and the focused R2 review passed with the saved patch and retained take still correct. That review cleared the affected design fixes, not the whole interface or its future firmware rendering."
+      ],
+      "checkpoint": "After a confirmation, inspect the destination screen. The patch name, edited marker and take status should describe the completed action, including what survived it."
+    },
+    {
+      "id": "keep-implementation-claims-bounded",
+      "title": "Separate generated audio from a captured performance",
+      "short": "Keep the next check specific",
+      "paragraphs": [
+        "The stock export trace disables live generation and renders samples synchronously into a PCM file. That behavior establishes generated-file export. It does not establish capture of the phrase just played, so the requested live-to-pad workflow still needs a verified recording route and a clear ownership and lifetime contract for the take.",
+        "Original oscillators, envelopes and filters are being developed separately from that adapter. A staged source file or test definition is not a passing engine result. At this design-and-contract milestone, there was no installable synth package or physical audio result. Voice limits, listening tests and behavior under simultaneous sampler load remain measurements to make before presenting the concept as a finished instrument."
+      ]
+    }
+  ],
+  "exercise": {
+    "title": "Make success screens follow the state",
+    "intro": "Run this fictional patch-state example in Python 3. It models cancel, initialize and store entirely in memory. Its names and behavior are an exercise, not the SP's current firmware interface.",
+    "code": "def describe(label, state):\n    status = 'edited' if state['dirty'] else 'clean'\n    print(f\"{label}: {state['patch']} / {status} / {state['take']}\")\n\nstate = {'patch': 'Example patch', 'dirty': True, 'take': 'phrase-1'}\n# Cancel returns the unchanged state.\ncancelled = dict(state)\nassert cancelled == state\ndescribe('cancel', cancelled)\n# Initialization changes the patch, retaining this model's held take.\ninitialized = {**state, 'patch': 'Init', 'dirty': False}\ndescribe('initialize', initialized)\n# Successful storage assigns the saved name and clears the edited marker.\nstored = {**state, 'patch': 'My patch', 'dirty': False}\ndescribe('store', stored)\nassert initialized['take'] == stored['take'] == state['take']\n",
+    "expected": "cancel: Example patch / edited / phrase-1\ninitialize: Init / clean / phrase-1\nstore: My patch / clean / phrase-1",
+    "explanation": "The labels come from the resulting state rather than copied screen text. The unchanged take is an explicit rule of this fictional example. Real firmware still needs defined storage failures, capture ownership and tested transitions."
+  },
+  "sources": [
+    {"title": "Synth research and chosen workflow", "path": "../sp404mk2-synth/docs/RESEARCH.md", "evidence": "Retained design and engineering assessment. Feature and patch counts are proposals, not a released engine."},
+    {"title": "Stock integration contract", "path": "../sp404mk2-synth/docs/STOCK_INTEGRATION.md", "evidence": "Mixer and producer boundaries, generated-file export distinction and unresolved live-capture requirements."},
+    {"title": "Mixer CPU evidence", "path": "../sp404mk2-synth/evidence/stock-generator.json", "evidence": "294 actual mixer cases with a deterministic sample-producer stub; no hardware audio claim."},
+    {"title": "Producer CPU evidence", "path": "../sp404mk2-synth/evidence/stock-producer.json", "evidence": "36 bounded direct-phase cases with documented waveform and runtime exclusions."},
+    {"title": "Penpot interaction review", "path": "../sp404mk2-synth/design/REVIEW.md", "evidence": "Corrected success states and a subsequent recapture that resolved the clipped label. R2 clears the scored design fixes, not a full-surface or device usability review."},
+    {"title": "Historical DSP staging scope", "path": "../sp404mk2/synth_mod/README.md", "evidence": "Preserves the uncompiled staging snapshot and points to the active worktree. No installable package is supplied by this website."}
+  ],
+  "limits": [
+    "The interface is a proposed instrument workflow, not a claim of installed synth controls or physical audio.",
+    "CPU mixer and producer fixtures do not establish voice count, worst-case timing, live capture or stock sampler compatibility.",
+    "The research records identify retained local evidence; they are not public firmware downloads."
+  ]
+}

@@ -1,0 +1,86 @@
+{
+  "slug": "keeping-the-updater",
+  "title": "A USB writer that survives the update",
+  "description": "Why installing a working application removed its updater, and how the B1 bridge kept a writer available afterward.",
+  "order": 90,
+  "category": "USB",
+  "period": "September 24, 2026",
+  "evidenceLabel": "Full-size readback and retained writer",
+  "summary": "The first full-size USB update worked, then the USB writer disappeared. It belonged to the application we had just replaced.",
+  "timeline": {
+    "kind": "sequence",
+    "title": "Who owns the next update?",
+    "caption": "Schematic boot paths. These screens explain component ownership and are not device captures or installation instructions.",
+    "duration": 15000,
+    "steps": [
+      {"title": "Original writer", "body": "R16B could receive and verify the complete R3 application while the writer ran in RAM.", "display": ["ORIGINAL R16B", "USB WRITER", "R3 STAGED", "CHECKED"]},
+      {"title": "R3 starts", "body": "After the real restart, the owner reported R3 working. R3 did not contain R16B's USB writer.", "display": ["R3 SAMPLER", "NORMAL BOOT", "WRITER ABSENT", "APP REPLACED"]},
+      {"title": "Shared package", "body": "B1 packaged a separate writer path with the stock-based application, within the application image.", "display": ["B1 PACKAGE", "SAMPLER PATH", "WRITER PATH", "APP1 ONLY"]},
+      {"title": "A1 verified", "body": "The B1 route installed the wrapped A1 image and verified all 653 occupied sectors.", "display": ["A1 + B1", "653 SECTORS", "READBACK OK", "RESTART NEXT"]},
+      {"title": "Writer still there", "body": "The owner confirmed A1, then a later writer boot returned B1's fresh idle identity.", "display": ["USB BRIDGE B1", "FRESH STATE 0", "A1 RETAINS B1", "NEXT UPDATE"]}
+    ]
+  },
+  "sections": [
+    {
+      "id": "grow-the-transfer",
+      "title": "Move beyond the small proof image",
+      "short": "Full-size transfer",
+      "paragraphs": [
+        "The early original applications fit inside a 64 KiB writer limit. Restoring the working R3 sampler required a much larger image: 2,652,672 bytes. R16B provided a full-size transfer path, and we checked the RAM upload separately before asking its writer to modify storage.",
+        "The earlier R16 package lacked a USB-reset preservation correction and remained excluded from this test. Even identifying R16B needed care: an apparent restart initially left the old runtime and its completed transfer state alive. After another full power cycle, a fresh R16B marker and idle state confirmed the intended starting point. That check kept the test attached to the corrected build."
+      ]
+    },
+    {
+      "id": "verify-the-large-image",
+      "title": "Keep the same evidence standard at a larger size",
+      "short": "Readback",
+      "paragraphs": [
+        "The first stage received all R3 bytes into RAM with a matching checksum and no programmed bytes. The persistent stage then reported 2,654,208 bytes programmed and read back, including sector padding. A separately opened status check repeated the completed result and checksum. Increasing the size did not remove the need to verify every occupied sector.",
+        "The writer still ran from RAM after storage completed. Only a real restart could test the stored application. The owner replied that R3 worked after that cycle. We recorded this as owner-reported startup; the brief reply did not quote the exact marker. The readback record establishes the device writer's comparison, not an independent inspection of the flash chip."
+      ],
+      "checkpoint": "The extra 1,536 bytes belong to sector padding. Comparing the image length with the verified storage length should account for that difference."
+    },
+    {
+      "id": "locate-the-writer",
+      "title": "Find out which program contains the updater",
+      "short": "Ownership",
+      "paragraphs": [
+        "Once R3 was running, R16B's USB writer was gone. The update had replaced the application that supplied it. A successful USB installation therefore did not guarantee another USB installation would be possible from the resulting program.",
+        "B1 addressed that ownership problem by putting two entry paths inside a stock-based application package. Ordinary startup continued to the sampler; a separate writer startup entered B1. The bridge needed one initial SD installation because the running R3 application did not already provide that route. B1 was still part of the application image. It did not replace the resident loader or establish recovery after damage to that loader."
+      ],
+      "steps": ["Locate the writer in the currently running package.", "Check whether the replacement package also contains a compatible writer.", "Verify the normal application after restart.", "Verify the retained writer in a separate fresh startup."],
+      "checkpoint": "An updater included in the outgoing image cannot provide the next update once that image has been replaced."
+    },
+    {
+      "id": "test-both-paths",
+      "title": "Verify the sampler and the writer separately",
+      "short": "Two boot results",
+      "paragraphs": [
+        "The owner reported installing the B1-wrapped R3 package, then saw USB BRIDGE B1 on its writer startup. The PC independently confirmed its marker, idle state and passing read-only preflight. We used that route to install the B1-wrapped A1 diagnostic application.",
+        "A1's 2,671,332-byte image occupied 653 sectors. B1 reported 2,674,688 bytes programmed and verified, followed by a separate matching status read. After normal startup, the owner explicitly confirmed AUDIO TAP A1 and its receive-position display. A subsequent writer startup returned USB BRIDGE B1, and the PC saw fresh idle state with cleared transfer counters. This last check established that A1 retained the writer; A1's normal screen alone could not establish it."
+      ]
+    },
+    {
+      "id": "model-package-ownership",
+      "title": "Model the package before discussing recovery",
+      "short": "Try the model",
+      "paragraphs": [
+        "The exercise represents each application as a set of components. Replacing that set explains why the first writer vanished and why a wrapped package could retain one. Change the target components and check whether the next update remains available. This is a packaging model, without a flash driver or device connection.",
+        "B1 improved the normal update workflow, but it did not make a write atomic. Keeping the first application sector until last reduced one vulnerable interval without preserving the old body during a partial write. The later partial-update incident made that limitation concrete. A retained application writer and an independent recovery route need separate qualification."
+      ]
+    }
+  ],
+  "exercise": {
+    "title": "Track the writer through a replacement",
+    "intro": "This Python 3 exercise uses invented packages represented by in-memory sets. It performs no installation, network access or file writes.",
+    "code": "packages = {\n    'lab': {'display', 'usb_writer'},\n    'sampler': {'display', 'sampler'},\n    'wrapped': {'display', 'sampler', 'usb_writer'},\n}\n\nfor name in ('lab', 'sampler', 'wrapped'):\n    running = packages[name].copy()\n    next_update = 'available' if 'usb_writer' in running else 'absent'\n    print(f'{name}: writer {next_update}')\n\nassert 'usb_writer' not in packages['sampler']\nassert 'usb_writer' in packages['wrapped']\nprint('replacement inherits only its own components')\n",
+    "expected": "lab: writer available\nsampler: writer absent\nwrapped: writer available\nreplacement inherits only its own components",
+    "explanation": "A real package also needs compatible formats, memory ownership and qualified hardware behavior. The model checks only whether a component survives replacement."
+  },
+  "sources": [
+    {"title": "R16B full-size R3 transfer", "path": "analysis/hardware/usb_r16b_full_20260924/README.md", "evidence": "Retained project record, not a public download: RAM verification, full-sector device readback, separate status and owner-reported R3 startup."},
+    {"title": "B1-wrapped A1 installation", "path": "analysis/hardware/usb_b1_a1_20260924T0442Z/README.md", "evidence": "Retained project record: 653 verified sectors, owner-confirmed A1 and a fresh B1 writer startup afterward."},
+    {"title": "R16B correction and scope", "path": "custom_firmware/original_r16b/HARDWARE_RESULT.md", "evidence": "Retained project record: corrected runtime identity and separation from the excluded R16 package."}
+  ],
+  "limits": ["B1 resides in the application image and is not independent resident recovery.", "A full readback result does not make the write atomic.", "The initial bridge required an SD installation.", "The historical success applies to the tested wrapped packages and this SP."]
+}

@@ -85,11 +85,12 @@ The first published guide is `/guides/first-change/`. Its narrative lives in
 article JSON with arbitrary canvas edits. Update shared copy deliberately, then
 check every linked section in Penpot and the browser before publishing.
 
-Guide figures use reader-started playback. The menu demonstration highlights
+Guide figures autoplay once when visible and retain play/pause and seek controls.
+The menu demonstration highlights
 SHIFT and pad 13 on the exported instrument; the title screen is a separate
 linked main passed through `SPInstrument`'s `screenPart` prop. Memory and byte
-comparisons have bounded, pausable sequences. Reduced motion goes straight to
-the result on request. All content and static figures remain readable without
+comparisons have bounded, pausable sequences. Reduced motion defaults to
+the static result. All content and static figures remain readable without
 JavaScript. These illustrations are reconstructions, not device recordings.
 
 Normal links and browser history remain native. Cross-document view transitions
@@ -101,6 +102,55 @@ changes when set to System.
 The [display contract](sp-display.md) covers source fidelity, swapping sequences,
 pause/seek and reduced motion. The homepage replay uses the preserved R3 trace,
 with its original omissions and timing uncertainty. No browser talks to the SP.
+
+## Guide series local handoff
+
+Sixteen later chapters are implemented locally, alongside the existing first
+guide. They share `src/content/journey/<slug>.json`, the `JourneyGuide` template,
+one responsive timeline and the `/guides/` index. MDX wrappers carry route
+metadata; validation checks it against the JSON. Curated evidence and Python
+example endpoints are generated from that same source.
+
+[The source ledger](journey-sources.md) maps the coverage and evidence limits.
+[The authoring contract](journey-authoring.md) defines the schema and exercise
+restrictions. `npm run test:journey` checks all sixteen chapters and runs every
+in-memory Python example against its exact expected output. Add
+`-- --local-sources` to check the retained reports in the adjacent workspaces.
+
+Five native Journey components are exported in `journey-components.json`,
+including the four-line screen required by the browser template. All sixty-four
+responsive/theme article layouts are exported in `journey-layouts.json`.
+`journey-index-layouts.json` holds four index layouts, each with seventeen linked
+guide rows. A fresh main-profile window confirmed the saved article boards and
+corrected timeline mains. Native tests pass for shared copy, component links and
+reading-text bounds across all sixty-eight layouts. The independent finish review
+returned ship for local handoff, with no material findings; see the
+[design review](reports/journey-design-review.md).
+`tools/design-journey.mjs` contains bounded
+authoring stages; inspect the live canvas before using a creation stage.
+`tools/pull-journey-design.mjs` refreshes the live main and layout snapshots.
+A passing local build alone is not a completed Penpot handoff.
+The deployed site is unchanged.
+
+With the complete native snapshots exported, the local run passes all 88 checks,
+including all 54 prior checks, the sixteen chapters' screen text and the native
+article/index checks.
+Type checking reports no errors, warnings or hints across 31 files. All sixteen
+chapter/exercise checks pass. Earlier checks corrected mobile title overflow,
+delayed sprite loading, reduced-motion reconnect behavior and a negative first
+animation interval. The build and publication checks pass; these remain local
+results. The latest build passes the publication checks with 7,274 bytes gzip of
+JavaScript. The final regenerated build passes all 88 tests in 1.3 minutes.
+Desktop/mobile captures in both themes were refreshed and inspected against that
+build. Direct native canvas captures check the index opening and article timeline
+in both sizes and themes, not every full native page.
+The browser capture batch is in `.impeccable/review/journey/`, with build
+identity in `captures.json`. The native mobile index now hides its numbers,
+uses the wider reading column and includes the home link. The first guide's
+index description is read from its existing MDX metadata, preserving its distinct
+article introduction. Updated native tests verify that copy and mobile geometry.
+The design detector found no primary issues and four font-size advisories (28px,
+26px and 12px figure overrides); those findings are included in the finish review.
 
 ## Checks and deployment
 

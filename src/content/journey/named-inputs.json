@@ -1,0 +1,92 @@
+{
+  "slug": "named-inputs",
+  "title": "Turning raw readings into usable controls",
+  "description": "Put the accepted map into an original event decoder, then separate knob acquisition, event filtering and visible movement.",
+  "order": 70,
+  "category": "Controls",
+  "period": "September 22, 2026",
+  "evidenceLabel": "Compiled replay, USB identity and owner reports",
+  "summary": "A saved map gave us names. R13 made those names available inside the original application, with held state and events. The first device check caught reversed knob bars; later measurements explained part of their endpoint delay without resolving how the knobs felt in the hand.",
+  "timeline": {
+    "kind": "sequence",
+    "title": "A reading becomes an event",
+    "caption": "Schematic decoder and knob-review sequence. The display is explanatory, not a recording or a measurement of elapsed device time.",
+    "duration": 16000,
+    "steps": [
+      { "title": "Look up the accepted name", "body": "The frozen map supplies control kind and channel identity to the native decoder.", "display": ["RAW CHANNEL", "LOOK UP MAP", "55 CONTROLS", "KEEP RAW VALUE"] },
+      { "title": "Update state", "body": "The decoder tracks press/release state and emits named events to its caller.", "display": ["NAMED INPUT", "PAD DOWN", "UPDATE HELD", "EMIT EVENT"] },
+      { "title": "Check the real direction", "body": "The owner found that the knob bars emptied at physical maximum. R14 corrected the four knob levels.", "display": ["KNOB REVIEW", "DIRECTION WRONG", "INVERT LEVEL", "OWNER CHECK"] },
+      { "title": "Measure the event delay", "body": "R15 reduced the four knobs' event gate from 64 to 16 counts. A held-start capture measured the return.", "display": ["RETURN CAPTURE", "HOLD ENDPOINT", "16 COUNTS", "FIRST EVENT"] },
+      { "title": "Keep the remaining question", "body": "Electrical response improved, but the owner still felt endpoint lag. Shaft angle was not measured.", "display": ["RESULT", "EVENT SOONER", "FEEL UNRESOLVED", "ANGLE UNKNOWN"] }
+    ]
+  },
+  "sections": [
+    {
+      "id": "native-decoder",
+      "title": "Give the application named events",
+      "short": "Native decoder",
+      "paragraphs": [
+        "R13 compiled the 55 accepted mappings into an original C decoder. Its caller supplied both the state storage and the event sink. That kept the naming rules separate from the hardware drivers: a raw observation could produce a named action, raw value, normalized level and timestamp without allocating memory or asking the PC to interpret it.",
+        "Buttons and pads needed remembered held state so the application could distinguish a new press from a control that remained down. Pad hysteresis used separate activation and release thresholds. The decoder retained SUB PAD's analog behavior and consumed only DEL's canonical matrix slot. Raw acquisition stayed available for diagnosis when a named event looked wrong."
+      ]
+    },
+    {
+      "id": "replay-before-device",
+      "title": "Replay the recordings through the compiled code",
+      "short": "Compiled replay",
+      "paragraphs": [
+        "The accepted raw takes already contained the cases the decoder needed to explain. We fed them through the compiled C implementation and compared its output with the PC adapter. Names, event types, timestamps, counts and held state matched; normalized levels agreed within one part in 1,000. Separate CPU tests exercised the raw input paths and event handling.",
+        "Those results checked the translation from observations to events. Device behavior still required a rebooted build. The owner then reported native controls working and saw HELD increase while holding two pads plus SHIFT. A fresh USB status independently identified R13. Full physical coverage of all 55 controls and operation with USB disconnected were not separately reported."
+      ],
+      "checkpoint": "A replay pass checks the decoder against saved inputs. Record the live build identity and the owner's observed behavior separately."
+    },
+    {
+      "id": "direction-and-delay",
+      "title": "Correct direction, then measure the lag",
+      "short": "Knob direction",
+      "paragraphs": [
+        "The first live check found a simple usability error: knob bars emptied at physical maximum. R14 reversed the four knob display levels, and the owner confirmed that their direction was now correct. They also estimated that the display waited through roughly one twentieth of the travel near each endpoint. We had no shaft-angle measurement or stock-firmware comparison.",
+        "R14 published a new analog event only after moving 64 raw counts from the preceding event anchor. A guided VOLUME sweep captured raw values from 0 to 4,084, but published events covered 14 to 4,035. After the high endpoint, the next reverse event arrived at 3,968: a 116-count gap. Event filtering therefore contributed to the delay, while the owner's estimate of physical travel remained a separate observation."
+      ]
+    },
+    {
+      "id": "held-start-capture",
+      "title": "Begin the measurement before the turn",
+      "short": "Measure the return",
+      "paragraphs": [
+        "R15 reduced the event gate to 16 counts for VOLUME and CTRL 1 through 3, leaving the other analog channels unchanged. The owner still felt much the same endpoint lag. The first sweep showed an earlier return event at one end, but never captured a return from the other. A focused retry also missed it: the first raw sample was already partway through the turn.",
+        "For the next capture, the owner held the endpoint while recording began. The initial raw reading was about 4,083. The first return event arrived at 4,067, 16 counts lower; the next event at 4,049 was the first to show LEVEL 1 and one bar pixel. That run contained 240 snapshots and 233 VOLUME events, with no capture drops or ADC errors."
+      ]
+    },
+    {
+      "id": "three-thresholds",
+      "title": "Keep electrical and physical response separate",
+      "short": "Interpret the result",
+      "paragraphs": [
+        "The measurements now distinguished a changing raw value from a published event and a visible display step. The first event could arrive while the whole-percent number and pixel bar still looked unchanged. R15 improved the measured electrical return delay at both ends, yet the owner's physical impression remained unresolved.",
+        "Neither capture measured shaft angle or the precise start of hand motion. Mechanical travel, an electrical plateau and display quantization still needed separation. Lowering the event gate again lacked supporting evidence; one sweep already contained a brief event backtrack near reversal. We kept the 16-count setting and the earlier results, including the missed captures, instead of describing the knob feel as fixed."
+      ]
+    }
+  ],
+  "exercise": {
+    "title": "Separate state, event and display thresholds",
+    "intro": "This Python 3 example uses invented pad and knob readings entirely in memory. The thresholds illustrate the layers; they are not a calibrated SP control model. It reads no device or firmware and writes no files.",
+    "code": "held = False\npad_events = []\nfor index, level in enumerate([0, 310, 280, 170, 140, 0]):\n    if not held and level >= 300:\n        held = True\n        pad_events.append((index, 'DOWN'))\n    elif held and level <= 150:\n        held = False\n        pad_events.append((index, 'UP'))\n\nanchor = 4000\nknob_events = []\nfor raw in [4000, 3993, 3984, 3978, 3968, 3963, 3940]:\n    if abs(raw - anchor) >= 16:\n        anchor = raw\n        percent = (4000 - raw) * 100 // 4000\n        pixels = (4000 - raw) * 128 // 4000\n        knob_events.append((raw, percent, pixels))\n\nassert pad_events == [(1, 'DOWN'), (4, 'UP')]\nassert knob_events == [(3984, 0, 0), (3968, 0, 1), (3940, 1, 1)]\nprint('pad events:', pad_events)\nprint('knob events:', knob_events)\n",
+    "expected": "pad events: [(1, 'DOWN'), (4, 'UP')]\nknob events: [(3984, 0, 0), (3968, 0, 1), (3940, 1, 1)]",
+    "explanation": "The pad remains held between its two thresholds. The first knob event changes neither visible output; a later event moves the bar before the integer percentage changes. The tuples expose raw value, percent and pixels separately. Their numbers are invented and do not replace the retained R14/R15 captures."
+  },
+  "sources": [
+    { "title": "R13 native decoder", "path": "sdk/examples/original_r13/README.md", "evidence": "Caller-owned decoder, accepted map and CPU test scope. Underlying implementation record is not published with this guide." },
+    { "title": "Compiled capture replay", "path": "sdk/examples/original_r13/build/capture_replay_verification.json", "evidence": "Matching event identity, timestamps and state, with normalized levels within 1/1,000. Raw captures and this report are not published here." },
+    { "title": "R13 live controls report", "path": "custom_firmware/original_r13/HARDWARE_RESULT.md", "evidence": "Owner-reported held controls and fresh USB build identity. Underlying project record is not published here." },
+    { "title": "R14 knob measurement", "path": "custom_firmware/original_r14/HARDWARE_RESULT.md", "evidence": "Direction correction and the measured 116-count return gap. Underlying project record is not published here." },
+    { "title": "R15 return capture", "path": "analysis/hardware/knob_r15_return_20260922T235004Z/README.md", "evidence": "Held-start baseline, first event and first visible event, with no measured shaft angle. Raw capture is not published with this guide." },
+    { "title": "R15 feedback and missed captures", "path": "custom_firmware/original_r15/HARDWARE_RESULT.md", "evidence": "Owner's unchanged feel, the two incomplete attempts and corrected measurement. Underlying project record is not published here." }
+  ],
+  "limits": [
+    "The live R13 report did not independently cover every named control or USB-disconnected operation.",
+    "Normalized levels are raw-range mappings, not calibrated velocity or force.",
+    "The knob captures measured electrical values and software output, not shaft angle or stock-firmware behavior.",
+    "R15 reduced measured event delay; the owner's remaining physical endpoint lag was not resolved."
+  ]
+}

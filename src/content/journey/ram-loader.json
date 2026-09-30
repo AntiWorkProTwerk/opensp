@@ -1,0 +1,84 @@
+{
+  "slug": "ram-loader",
+  "title": "Load, run, return",
+  "description": "A bounded program ran from RAM and returned to the updater without an owner power cycle. R37 made that round trip observable.",
+  "order": 110,
+  "category": "USB",
+  "period": "September 26, 2026",
+  "evidenceLabel": "Physical execution and updater return",
+  "summary": "Uploading a program was already possible. R37 tested the harder round trip: admit one known program, run it, reset normally, and confirm the updater came back.",
+  "timeline": {
+    "kind": "sequence",
+    "title": "Follow one program through the round trip",
+    "caption": "Schematic R37 sequence, not recorded screen footage. The historical test used a fixed original payload; this page does not accept or execute programs.",
+    "duration": 15000,
+    "steps": [
+      {"title": "Start in the writer", "body": "The owner confirmed LOADER LAB R37, and USB returned the expected fresh idle identity.", "display": ["LOADER LAB R37", "NORMAL WRITER", "FRESH STATE 0", "BASELINE READ"]},
+      {"title": "Reserve RAM mode", "body": "The existing endpoint changed software mode. The normal writer could not use the shared staging memory at the same time.", "display": ["RAM ADMISSION", "ONE OWNER", "WRITER CLOSED", "MODE VERIFIED"]},
+      {"title": "Seal the payload", "body": "The fixed 4,304-byte original program was received and sealed, followed by a separate matching status check.", "display": ["FIXED PAYLOAD", "4304 BYTES", "SEALED", "STATUS AGREES"]},
+      {"title": "Execute and reset", "body": "The payload left its expected retained result and requested a guarded normal watchdog reset.", "display": ["PROGRAM RUN", "RESULT STORED", "NORMAL RESET", "RETURN EXPECTED"]},
+      {"title": "Verify the return", "body": "Fresh R37 USB, the expected result and a separate writer preflight confirmed the round trip without an owner power cycle.", "display": ["R37 RETURNED", "RESULT MATCHES", "WRITER READY", "NO POWER CYCLE"]}
+    ]
+  },
+  "sections": [
+    {
+      "id": "define-the-round-trip",
+      "title": "Make execution produce evidence after it ends",
+      "short": "Round-trip proof",
+      "paragraphs": [
+        "A RAM loader can shorten experiments because the test program does not have to replace the stored application. That still leaves several ways to mistake partial progress for success. An accepted launch request might precede a crash, a stalled controller or a program that never reaches its intended entry. We needed a result that could be checked after the original application returned.",
+        "R37 used one fixed original program, 4,304 bytes long, with an expected retained result and a guarded normal watchdog reset. Restricting the payload made the first physical qualification small enough to reason about. The goal was this particular warm round trip. Arbitrary program support, cold startup and recovery from a damaged resident loader were separate questions."
+      ]
+    },
+    {
+      "id": "preserve-the-live-link",
+      "title": "Avoid rebuilding a working connection during admission",
+      "short": "One endpoint",
+      "paragraphs": [
+        "Earlier R35 and R36 attempts changed live USB and UART setup while entering the test mode and did not complete the intended transition. R37 kept the existing endpoint and board receiver. Admission changed software routing rather than stopping and rebuilding those live services.",
+        "The staging buffer had one owner at a time. Once RAM mode was admitted, ordinary writer commands could not use that memory, and the writer would reject the RAM status format. The program could be launched only after its bounded validation and sealing checks. A fault or cancellation kept the route closed until restart, avoiding an improvised return to a writer that might inherit uncertain buffer state. The successful revision did not, by itself, identify the exact underlying cause of the earlier transition failures."
+      ],
+      "checkpoint": "A shared memory region needs explicit ownership. Two individually correct services can still corrupt each other when they use the same buffer concurrently."
+    },
+    {
+      "id": "separate-admission-and-launch",
+      "title": "Read each state before taking the next step",
+      "short": "Admission checks",
+      "paragraphs": [
+        "After the owner confirmed LOADER LAB R37, a fresh USB read identified the expected application in idle state. RAM admission returned its own status format on the same connection. The entry error count matched the current count, so a historical UART error was not misclassified as a new failure during admission.",
+        "The upload then reached sealed state with the complete 4,304-byte payload. A separate status read matched that result. These checks established that the intended program was admitted and ready; they did not establish execution. We kept the launch record distinct from the later return record so the host could not report success merely because the request was sent."
+      ],
+      "steps": ["Identify the fresh original application.", "Confirm exclusive admission to its bounded RAM test mode.", "Check the sealed result independently of the transfer request.", "Evaluate execution from the post-return evidence, not the launch acknowledgment."]
+    },
+    {
+      "id": "verify-returned-state",
+      "title": "Check both the program result and the updater",
+      "short": "Return evidence",
+      "paragraphs": [
+        "The physical execution record found R37 back in fresh normal state with the exact retained result expected from the fixed program. The reset status changed from its initial value of 1 to 17, consistent with the intended normal watchdog reset. No owner power cycle occurred during this test, which separated the automatic return from a manual recovery.",
+        "A further read-only check confirmed the normal updater and its passing chip/profile preflight after return. No flash command was sent by that check. Together, the matching payload result, fresh application state and functioning updater established more than a surviving USB connection. The test also left the resident loader, APP0 and boot fuses unchanged."
+      ]
+    },
+    {
+      "id": "exercise-ownership",
+      "title": "Reproduce admission and cancellation without a device",
+      "short": "Try the model",
+      "paragraphs": [
+        "The model below names the current memory owner and permits one transition at a time. It rejects a writer request while RAM mode owns the buffer. A second run demonstrates cancellation: a cancelled session cannot silently fall back into writer ownership without a reset. Try removing that restriction to see which assertion stops protecting the shared state.",
+        "This ownership exercise contains no program loader or execution operation. The hardware result remains one successful warm path using the pinned original payload. Repeated-run endurance, interrupted admission, compatibility with other payloads and every power-management case need their own physical evidence before they can become supported behavior."
+      ]
+    }
+  ],
+  "exercise": {
+    "title": "Give a shared buffer one owner",
+    "intro": "This standalone Python 3 state model uses invented mode names and no hardware, network, program input or file output.",
+    "code": "owner = 'writer'\n\ndef move(expected, next_owner):\n    global owner\n    assert owner == expected, 'wrong owner'\n    owner = next_owner\n\nmove('writer', 'ram')\nprint(f'admitted: {owner}')\ntry:\n    move('writer', 'writing')\nexcept AssertionError:\n    print('concurrent writer: rejected')\nmove('ram', 'sealed')\nmove('sealed', 'returned')\nprint(f'fixed test: {owner}')\nowner = 'writer'  # modeled fresh reset\nprint(f'after reset: {owner}')\nmove('writer', 'ram')\nmove('ram', 'cancelled')\ntry:\n    move('writer', 'writing')\nexcept AssertionError:\n    print('cancelled session: reset required')\n",
+    "expected": "admitted: ram\nconcurrent writer: rejected\nfixed test: returned\nafter reset: writer\ncancelled session: reset required",
+    "explanation": "The model checks ownership and transition order only. Real execution also depends on bounded validation, controller shutdown, memory publication and a qualified return path."
+  },
+  "sources": [
+    {"title": "R37 physical round trip", "path": "analysis/hardware/loader_r37/README.md", "evidence": "Retained project record, not a public download: fixed-payload sealing, retained execution result, automatic reset, fresh return identity and post-return writer preflight."},
+    {"title": "R37 endpoint and ownership design", "path": "sdk/examples/original_r37/README.md", "evidence": "Retained design and compiled-test report: one endpoint, exclusive buffer ownership, cancellation and preserved earlier failed candidates."}
+  ],
+  "limits": ["One fixed original payload completed one physical warm round trip.", "The test did not establish arbitrary payload support, endurance or every failure path.", "This was a purpose-built original application, not a stock-firmware USB loading route.", "Cold resident replacement and independent recovery remained unverified."]
+}

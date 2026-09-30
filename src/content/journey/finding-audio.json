@@ -1,0 +1,87 @@
+{
+  "slug": "finding-audio",
+  "title": "When moving counters were not sound",
+  "description": "How frozen receive windows, corrected comparisons and a known input separated bus activity from changing audio.",
+  "order": 120,
+  "category": "Audio",
+  "period": "September 22 to 24, 2026",
+  "evidenceLabel": "Captured windows and owner-reported correlation",
+  "summary": "The receiver counted roughly 768,000 words per second. Its first frozen windows still contained a fixed pattern. We had to compare matching positions and account for dropped words before assigning any audio meaning.",
+  "timeline": {
+    "kind": "sequence",
+    "title": "From traffic to signal evidence",
+    "caption": "Schematic receive investigation. Values illustrate the documented checks; the animated display is not a recording or a measured audio waveform.",
+    "duration": 15000,
+    "steps": [
+      {"title": "Count activity", "body": "R14's traffic rate fit a 16-word stream near 48,000 frames per second, but did not identify signal content.", "display": ["RX ACTIVITY", "768K WORDS / S", "16 POSITIONS", "SIGNAL UNKNOWN"]},
+      {"title": "Freeze windows", "body": "R15 found no same-position changes across 192 comparisons in its first twelve windows.", "display": ["FROZEN WINDOWS", "192 COMPARES", "0 CHANGES", "FIXED PATTERN"]},
+      {"title": "Reject lost phase", "body": "A later comparison crossed a FIFO-overrun change. Its apparent differences were invalid as signal evidence.", "display": ["ERROR COUNT UP", "PHASE UNCERTAIN", "REJECT COMPARE", "NO AUDIO CLAIM"]},
+      {"title": "Check the source", "body": "The first tone used the front jack. A corrected rear-input test still left R15's pattern unchanged.", "display": ["KNOWN TONE", "JACK CORRECTED", "R15 UNCHANGED", "ROUTING OPEN"]},
+      {"title": "Observe stock routing", "body": "With B1-wrapped A1, the owner reported raw positions responding to the audible rear-input source.", "display": ["AUDIO TAP A1", "TONE ON / OFF", "00 / 01 RESPOND", "OWNER REPORT"]}
+    ]
+  },
+  "sections": [
+    {
+      "id": "question-the-counter",
+      "title": "A busy receiver can carry a fixed pattern",
+      "short": "Traffic",
+      "paragraphs": [
+        "R14's counters were consistent with about 768,000 receive words and 48,000 word-start observations per second. Sixteen words per frame fit those rates. The measurements established activity under the test conditions, but they did not identify physical input slots or prove that samples changed with sound.",
+        "An adjacent-word change counter also rose as the receiver progressed. R15 added frozen windows so we could inspect that interpretation. Its first twelve windows each contained two groups of sixteen words. Comparing each position with the matching position in the next group gave zero changes across 192 comparisons. A repeating pattern can change between adjacent positions while staying identical from frame to frame."
+      ]
+    },
+    {
+      "id": "preserve-comparison-phase",
+      "title": "Reject comparisons whose position reference has moved",
+      "short": "Valid comparison",
+      "paragraphs": [
+        "The windows contained zeros and a repeated pair of 0000FFFF values. Their positions lined up using the receiver's software count modulo sixteen. That count was an arbitrary reference, so we did not label it a physical channel number.",
+        "A later tone capture appeared to contain 512 values outside the idle baseline. It also had two FIFO overruns where the earlier baseline had none. Lost words were not included in the software count, so its phase could shift relative to the incoming stream. The comparison was invalid. We preserved the original result and made the corrected tool reject that pair. Subsequent same-session comparisons with stable error counters found the pattern unchanged."
+      ],
+      "checkpoint": "Compare the same positions only when their alignment is trustworthy. Error counters belong to the evidence, not just the diagnostics footer."
+    },
+    {
+      "id": "verify-physical-routing",
+      "title": "Correct the input setup before blaming the hardware",
+      "short": "Known input",
+      "paragraphs": [
+        "The owner initially supplied a 440 Hz tone through the front input, then clarified the connector. The intended comparison used rear LINE IN. After moving the source to rear L/MONO without restarting, another valid comparison still found no values outside the baseline.",
+        "R15 had no stock EXT SOURCE routing action, transmitter setup or codec initialization. Its unchanged receive pattern therefore could not diagnose a failed rear jack or a silent converter. We returned to the stock-based R3 sampler to establish an audible source path. The first rear-input attempt was silent; the owner later heard the tone through SP headphones after raising the source interface's rear MONITOR control, with SP input LEVEL reported as 127."
+      ]
+    },
+    {
+      "id": "observe-a-working-path",
+      "title": "Inspect the stream while the existing audio route runs",
+      "short": "A1 observation",
+      "paragraphs": [
+        "A1 added a passive receive-peak display to the stock-based application. The original unwrapped package remained build-only. The actual device observation used B1-wrapped A1, whose installation and subsequent AUDIO TAP A1 title were separately confirmed.",
+        "With the audible source connected to rear L/MONO, the owner reported positions 00 and 01 changing rapidly when the tone played and settling near small values when it stopped. Moving the same cable to rear R made only position 00 respond while 01 stayed near its baseline. This was signal-correlated owner evidence. Exact peaks, physical channel names and rear-R audibility were not independently measured, so those details remained unresolved."
+      ],
+      "steps": ["Establish an audible source and record the actual connector.", "Capture a stable baseline before changing the source.", "Compare corresponding positions while checking error counts.", "Keep raw positions separate from physical channel names until isolated tests justify the mapping."]
+    },
+    {
+      "id": "try-the-comparison",
+      "title": "Reproduce the counter mistake with a tiny frame",
+      "short": "Try the model",
+      "paragraphs": [
+        "The exercise builds an invented four-position frame that repeats unchanged. An adjacent comparison finds differences; a frame-to-frame comparison finds none. It then refuses a comparison after an error-count change. The smaller frame makes the same reasoning visible without using captured firmware data.",
+        "A good next audio test needs both a known signal and a qualified capture path. The original application's traffic counters and the stock-based diagnostic answered different questions. Keeping both results, including the mistaken phase comparison and the corrected connector report, explains why we did not move directly from a busy receiver to named audio channels."
+      ]
+    }
+  ],
+  "exercise": {
+    "title": "Compare frames, not neighboring positions",
+    "intro": "This Python 3 model uses invented sample values in memory. It reads no recording, connects to no device and writes no files.",
+    "code": "frame = [0, 7, 7, 0]\nstream = frame * 2\nadjacent = sum(a != b for a, b in zip(stream, stream[1:]))\nsame_position = sum(a != b for a, b in zip(stream[:4], stream[4:]))\nprint(f'adjacent changes: {adjacent}')\nprint(f'same-position changes: {same_position}')\n\ndef compare(before, after, errors_before, errors_after):\n    if errors_before != errors_after:\n        return 'rejected: position reference may have shifted'\n    return str(sum(a != b for a, b in zip(before, after)))\n\nshifted = frame[1:] + frame[:1]\nprint(compare(frame, shifted, 0, 1))\nprint(f'stable comparison: {compare(frame, frame, 1, 1)}')\n",
+    "expected": "adjacent changes: 4\nsame-position changes: 0\nrejected: position reference may have shifted\nstable comparison: 0",
+    "explanation": "Stable error counters are one prerequisite, not a complete audio qualification. The real investigation also needed matching sessions, a known source and evidence about the configured receive route."
+  },
+  "sources": [
+    {"title": "R14 receive activity", "path": "custom_firmware/original_r14/HARDWARE_RESULT.md", "evidence": "Retained project record: roughly 768,000 receive words and 48,000 word-start observations per nominal second, without established slot identity or changing audio content."},
+    {"title": "R15 frozen idle windows", "path": "analysis/hardware/audio_r15_20260922T225945Z/README.md", "evidence": "Retained project record, not a public download: twelve windows, 192 same-position comparisons and no changes."},
+    {"title": "Tone comparisons and corrected phase", "path": "analysis/hardware/audio_r15_20260924T012323Z/README.md", "evidence": "Retained project record: invalid overrun-crossing comparison, corrected connector and unchanged valid rear-input windows."},
+    {"title": "Stock-based input listening", "path": "analysis/hardware/usb_r16b_full_20260924/README.md", "evidence": "Retained owner reports: initially silent rear input and later audible L/MONO tone after the source monitor control changed."},
+    {"title": "B1-wrapped A1 signal observation", "path": "custom_firmware/audio_tap_a1/HARDWARE_RESULT.md", "evidence": "Retained owner-reported signal correlation for raw positions, explicitly separated from the uninstalled unwrapped package."}
+  ],
+  "limits": ["Software-count positions were not independently established physical channel names.", "A1's signal correlation was reported by the owner; exact on-signal peaks were not captured.", "The invalid phase comparison remains preserved as a failed approach.", "R15's unchanged stream did not establish a hardware input fault."]
+}

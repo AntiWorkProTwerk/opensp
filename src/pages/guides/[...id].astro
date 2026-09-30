@@ -4,31 +4,42 @@ import Base from '../../layouts/Base.astro';
 import SiteHeader from '../../components/SiteHeader.astro';
 import SiteFooter from '../../components/SiteFooter.astro';
 import article from '../../content/first-change.json';
+import {journeyChapter,chapterContents} from '../../lib/journey';
 import '../../styles/guide.css';
+import '../../styles/journey.css';
 export async function getStaticPaths(){return (await getCollection('guides',g=>!g.data.draft)).map(guide=>({params:{id:guide.id},props:{guide}}));}
 interface Props {guide:CollectionEntry<'guides'>;}
 const {guide}=Astro.props;
 const {Content}=await render(guide);
 const first=guide.id==='first-change';
-const contents=first?article.sections:[];
+const chapter=journeyChapter(guide.id);
+const contents=first?article.sections:chapter?chapterContents(chapter):[];
+const guides=(await getCollection('guides',g=>!g.data.draft)).sort((a,b)=>a.data.order-b.data.order);
+const position=guides.findIndex(entry=>entry.id===guide.id);
+const previous=guides[position-1],next=guides[position+1];
+const titleParts=guide.data.title.split('AntiWorkProTwerk');
 ---
 <Base title={`${guide.data.title} / OpenSP`} description={guide.data.description}>
   <SiteHeader/>
   <main id="main" class="guide-layout">
     <aside class="guide-rail" aria-label="Guide navigation">
-      <a class="all-guides" href="/#guides">All guides</a>
+      <a class="all-guides" href="/guides/">All guides</a>
       {contents.length>0&&<details class="guide-contents" open>
         <summary>On this page <svg class="contents-toggle" width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M1 7h12M7 1v12" stroke="currentColor" stroke-width="1"/></svg></summary>
         <nav aria-label="Table of contents">{contents.map(s=><a href={`#${s.id}`}>{s.short}</a>)}</nav>
-        <p class="rail-evidence">Owner-reported result<br/>22 September 2026</p>
+        <p class="rail-evidence">{chapter?chapter.evidenceLabel:'Owner-reported result'}<br/>{chapter?chapter.period:'22 September 2026'}</p>
       </details>}
       {contents.length>0&&<script is:inline>
         (()=>{const index=document.currentScript.previousElementSibling;if(index instanceof HTMLDetailsElement)index.open=!matchMedia('(max-width: 900px)').matches;})();
       </script>}
     </aside>
-    <article class="guide-article">
-      <header class="guide-introduction"><h1>{guide.data.title}</h1><p>{first?article.description:guide.data.description}</p>{first&&<p class="guide-period"><time datetime="2026-09-15">15</time>–<time datetime="2026-09-22">22 September 2026</time> <span>/ Project journal</span></p>}</header>
+    <article class:list={['guide-article',{'journey-article':!!chapter}]}>
+      <header class="guide-introduction"><h1>{titleParts.map((text,index)=><>{index>0&&<>AntiWork<wbr/>ProTwerk</>}{text}</>)}</h1><p>{first?article.description:guide.data.description}</p>{first?<p class="guide-period"><time datetime="2026-09-15">15</time>–<time datetime="2026-09-22">22 September 2026</time> <span>/ Project journal</span></p>:chapter&&<p class="guide-period journey-period">{chapter.period} <span>/ {chapter.category==='Research'?'Research in progress':chapter.category}</span></p>}</header>
       <Content/>
+      {(previous||next)&&<nav class="guide-series-navigation" aria-label="Continue the guide series">
+        {previous&&<a href={`/guides/${previous.id}/`} rel="prev" data-astro-prefetch="hover"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M18 10H2m6-6-6 6 6 6"/></svg><span><small>Previous guide</small><strong>{previous.data.title}</strong></span></a>}
+        {next&&<a href={`/guides/${next.id}/`} rel="next" data-astro-prefetch="hover"><span><small>Next guide</small><strong>{next.data.title}</strong></span><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M2 10h16m-6-6 6 6-6 6"/></svg></a>}
+      </nav>}
     </article>
   </main>
   <SiteFooter page="GUIDE"/>

@@ -1,8 +1,15 @@
 # Penpot connection
 
 Use the official hosted MCP connection. The owner approved switching on
-September 28, 2026. The OpenSP file is connected through the existing Canary tab;
-the old local plugin is closed and its server has been stopped.
+September 28, 2026. The old local plugin is closed and its server has been stopped.
+The owner requested a separate window because other agents use Canary too.
+Use a new window in the main Canary profile, preserving its existing sign-in;
+leave other agents' tabs alone. The separate automated-profile attempt produced
+an owner-reported insecure-browser login refusal. A normal new window opened
+OpenSP already signed in, and the hosted connector passed a read-only check.
+Do not copy cookies between profiles. Leave login and permission prompts to
+the owner. If a shell launch is blocked, use the existing browser's New Window
+command through desktop input rather than retrying the launch with other flags.
 
 The connection URL is stored outside git at
 `%LOCALAPPDATA%/OpenSP/penpot-mcp.xml`, encrypted with Windows DPAPI for the current
@@ -23,6 +30,23 @@ disconnected, use the editor's MCP server menu to reconnect. Read-only inspectio
 must confirm the file and page before edits. A page switch is asynchronous;
 confirm the new current page in the next call. Helper `storage` is session-local
 and must be reloaded after reconnecting. Never rerun creation steps blindly.
+Opening the sixty-four-board Guide series page took most of a minute and still
+completed. Poll the existing operation instead of starting it again. A later PNG
+export timed out and was followed by a missing heartbeat; reloading the owned
+tab restored read-only calls. The cause is not established. Preserve unsaved
+work before reloading, and do not assume the exported image exists after a timeout.
+The subsequent mobile index SVG export also timed out. Use direct canvas
+inspection for the next visual check; do not keep repeating full-board exports.
+
+For the guide series, `node tools/design-journey.mjs load` sends the helper body
+and chapter data in separate bounded requests. Passing the entire series as a
+Windows command-line argument exceeded the argument limit; sending it in one
+HTTP body exceeded the hosted service's request limit. `penpot-call.mjs
+execute_code -` accepts code on standard input, and the authoring tool loads one
+chapter per call. After reconnecting, inspect for partially created mains before
+running `prepare`. Page switches and their guarded edits use separate calls.
+`node tools/pull-journey-design.mjs --components-only` can export verified mains
+before the longer layout snapshot, allowing code integration to proceed.
 
 The guide refinement encountered another stale heartbeat despite a connected
 toolbar indicator; reconnecting did not immediately resolve it. A later call

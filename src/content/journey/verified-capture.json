@@ -1,0 +1,96 @@
+{
+  "slug": "verified-capture",
+  "title": "Building a diagnostic capture we could trust",
+  "description": "A failed task, a corrected stack and the checks behind our first useful boot-region capture.",
+  "order": 40,
+  "category": "SDK",
+  "period": "September 22, 2026",
+  "evidenceLabel": "Owner report + verified capture",
+  "summary": "Before we could build an original application, we needed to understand the program that starts it. R5 produced the first validated resident capture after R4 failed before it read any boot memory.",
+  "timeline": {
+    "kind": "sequence",
+    "title": "From a failed task to checked bytes",
+    "caption": "Schematic stages of the R4/R5 investigation. These screen labels explain the evidence; they are not a device recording or a copy of the diagnostic UI.",
+    "duration": 12000,
+    "steps": [
+      {"title": "Task creation fails", "body": "R4 reports E7 -33 before storage access or boot-memory reads.", "display": ["R4 TASK", "E7 -33", "NO CAPTURE", "ALLOC FAILED"]},
+      {"title": "Supply the stack", "body": "R5 gives the task its own aligned stack and retains ownership until reboot.", "display": ["R5 TASK", "OWNED STACK", "ALIGNED", "START"]},
+      {"title": "Check the file", "body": "The supplied 524,880-byte file passes structure, length, pattern and CRC checks.", "display": ["CAPTURE", "524880 BYTES", "LENGTH PASS", "CRC PASS"]},
+      {"title": "Compare known content", "body": "All 256 bytes in the known APP1 slice match stock v5.52.", "display": ["KNOWN SLICE", "256 BYTES", "MATCH", "CONTENT CHECK"]},
+      {"title": "Keep provenance separate", "body": "The session identifies R5. The shared file format cannot identify the producing build by itself.", "display": ["RESIDENT", "512 KIB", "R5 SESSION", "BUILD EXTERNAL"]}
+    ]
+  },
+  "sections": [
+    {
+      "id": "why-a-capture",
+      "title": "Find the program before the application",
+      "short": "The missing program",
+      "paragraphs": [
+        "The application download told us a great deal about the sampler, but it did not contain the resident program responsible for starting and updating that application. We needed evidence from the running instrument to investigate that boundary. The diagnostic was limited to a fixed read of the resident window and a file that a PC could check afterward.",
+        "A useful capture needed more than a plausible filename. The diagnostic first exercised storage with a known pattern, checked a known application slice, copied the resident window and read the completed file back. Those checks gave us ways to reject a partial file or an obvious mismatch before treating its contents as evidence. This chapter explains those checks without distributing the captured firmware."
+      ]
+    },
+    {
+      "id": "task-failure",
+      "title": "R4 stopped before the read",
+      "short": "The failed task",
+      "paragraphs": [
+        "The owner reached the diagnostic start path and reported FAILED, E7 -33. That error came from task creation: the kernel's automatic stack allocator had returned no usable block for the requested 8 KiB stack. The worker never started, so the attempt had not reached storage access or boot-memory reads. There was no capture to inspect.",
+        "Our original tests had intercepted task creation. They could exercise the worker while overlooking whether the real task allocator could launch it. The correction was to test the actual creation instructions with an empty automatic allocator and preserve the failed R4 build. The failure did not tell us how much total RAM was free or establish an SD-card problem."
+      ],
+      "checkpoint": "Identify the first failed stage before investigating later ones. A task-creation error cannot establish a file-write failure."
+    },
+    {
+      "id": "owned-stack",
+      "title": "Make stack ownership explicit",
+      "short": "The stack correction",
+      "paragraphs": [
+        "R5 obtained memory from the application's variable memory pool and supplied an aligned 8 KiB span to task creation. It did not choose an apparently unused address. Tests covered all eight starting alignments, allocation failures and cleanup failures, then repeated task creation without using the allocator that had rejected R4.",
+        "The allocation stayed owned until reboot after a successful start. A worker cannot free the stack it is still executing on, and the displayed DONE state comes before the task has finished exiting. Limiting the diagnostic to one attempt per boot bounded that retained allocation. Failure cleanup also had to respect whether a dormant task still owned the stack. The capture worker itself kept the R4 format and behavior."
+      ]
+    },
+    {
+      "id": "validate-capture",
+      "title": "Check the supplied file in layers",
+      "short": "The checked capture",
+      "paragraphs": [
+        "After the R5 instructions, the owner supplied a 524,880-byte file. Its header, footer, expected length, deterministic storage pattern and complete-body CRC passed the PC verifier. The 256-byte known application slice also matched stock v5.52 byte for byte. The file differed from the synthetic test fixture and contained a full 524,288-byte resident window.",
+        "Readable startup structures, updater strings and code made the result useful for further analysis. Strings alone did not establish which paths actually ran. One header field declared a 4 MiB image length; that was neither the amount captured nor a measurement of the flash chip's physical capacity. We kept the original file, its hashes and the validation report together so later interpretations could return to the same bytes."
+      ],
+      "steps": [
+        "Reject a wrong total length or missing structural marker.",
+        "Verify the known pattern and checksum coverage.",
+        "Compare the known application bytes against the expected version.",
+        "Preserve the original file and record how it was obtained before interpreting unknown content."
+      ]
+    },
+    {
+      "id": "provenance",
+      "title": "A valid file still needs a history",
+      "short": "What it established",
+      "paragraphs": [
+        "R4 and R5 shared the same capture format, which had no unique build ID, device serial or timestamp. The file's integrity checks therefore could not identify the installed revision. R5 attribution came from the installation conversation and the location where the owner supplied the file. Keeping that distinction explicit prevented a checksum pass from becoming an unsupported claim about origin.",
+        "Together, the owner report and valid file supported one successful R5 task, storage and boot-read run. They did not test every cancellation path, repeated boots, audio behavior or failed-image recovery. The resident content then gave us a basis for studying application startup. Installing a replacement resident program remained outside what this capture had established."
+      ]
+    }
+  ],
+  "exercise": {
+    "title": "Separate integrity from provenance",
+    "intro": "Run this standalone Python 3 example. It creates an invented note format entirely in memory, then checks a truncation, a changed byte and a newly checksummed replacement. It reads no firmware and writes no files.",
+    "code": "import struct\nimport zlib\n\ndef pack(payload):\n    header = struct.pack('<4sI', b'NOTE', len(payload))\n    return header + payload + struct.pack('<I', zlib.crc32(payload))\n\ndef check(blob):\n    if len(blob) < 12:\n        return 'length mismatch'\n    magic, size = struct.unpack('<4sI', blob[:8])\n    if magic != b'NOTE':\n        return 'wrong format'\n    if size > 64 or len(blob) != 12 + size:\n        return 'length mismatch'\n    payload = blob[8:-4]\n    expected, = struct.unpack('<I', blob[-4:])\n    return 'valid' if zlib.crc32(payload) == expected else 'CRC mismatch'\n\noriginal = pack(bytes(range(32)))\nchanged = bytearray(original)\nchanged[12] ^= 1\nreplacement = pack(b'a different invented note')\nresults = [check(original), check(original[:-1]),\n           check(changed), check(replacement)]\nassert results == ['valid', 'length mismatch', 'CRC mismatch', 'valid']\nfor name, result in zip(['original', 'truncated', 'changed', 'replacement'], results):\n    print(f'{name}: {result}')\nprint('producing build: unknown')",
+    "expected": "original: valid\ntruncated: length mismatch\nchanged: CRC mismatch\nreplacement: valid\nproducing build: unknown",
+    "explanation": "The replacement passes because its checksum agrees with its own bytes. Neither valid result identifies who produced the note or which program made it. The real diagnostic format and checks were more extensive; this small fixture reproduces only that distinction."
+  },
+  "sources": [
+    {"title": "R4 hardware result", "path": "custom_firmware/diag_r4/HARDWARE_RESULT.md", "evidence": "Owner-reported E7 -33 and the pre-I/O task-allocation failure. Retained project record; the underlying record is not published with this guide."},
+    {"title": "R5 task-stack correction", "path": "custom_firmware/diag_r5/README.md", "evidence": "Stack ownership, alignment and cleanup model; CPU-test coverage and its limitations. Retained project record; the underlying record is not published with this guide."},
+    {"title": "R5 hardware result", "path": "custom_firmware/diag_r5/HARDWARE_RESULT.md", "evidence": "Owner completion report, capture size, hashes and one-run scope. Retained project record; the underlying record is not published with this guide."},
+    {"title": "First verified capture record", "path": "analysis/hardware/boot_r5_7f91251c2edd/README.md", "evidence": "Capture validation, known-slice comparison and format/provenance limits. Captured firmware and its underlying analysis are not published with this guide."}
+  ],
+  "limits": [
+    "One successful capture does not establish repeated-run reliability, cancellation behavior or audio stability.",
+    "The shared R4/R5 format cannot independently identify the producing revision.",
+    "A readable resident capture does not establish independent recovery or permission to replace resident, APP0 or security settings.",
+    "The exercise validates an invented in-memory format; it does not reproduce the physical capture or authorize a device operation."
+  ]
+}

@@ -1,0 +1,23 @@
+---
+import {getCollection} from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import SiteHeader from '../../components/SiteHeader.astro';
+import SiteFooter from '../../components/SiteFooter.astro';
+import GuideRow from '../../components/GuideRow.astro';
+import copy from '../../content/guide-index.json';
+import '../../styles/guide.css';
+import '../../styles/journey.css';
+const guides = (await getCollection('guides', guide => !guide.data.draft)).sort((a, b) => a.data.order - b.data.order);
+---
+<Base title={`${copy.title} / OpenSP`} description={copy.metadataDescription}>
+  <SiteHeader/>
+  <main id="main" class="guide-layout guide-index-layout">
+    <aside class="guide-rail"><a class="all-guides" href="/">Back to OpenSP</a><p class="rail-evidence">{copy.rail.split('\n').map((line,index)=><>{index>0&&<br/>}{line}</>)}</p></aside>
+    <div class="guide-article">
+      <header class="guide-introduction"><h1>{copy.title}</h1><p>{copy.description}</p></header>
+      <ol class="guide-series-index" aria-label="Guide series">{guides.map((guide, index) => <li><GuideRow title={guide.data.title} description={guide.data.description} index={index} href={`/guides/${guide.id}/`}/></li>)}</ol>
+      <p class="guide-index-note">{copy.note}</p>
+    </div>
+  </main>
+  <SiteFooter page="GUIDES"/>
+</Base>

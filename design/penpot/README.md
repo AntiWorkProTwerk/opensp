@@ -30,6 +30,32 @@ finished light layouts. Final PNG exports were reviewed alongside the browser.
 Always check rendered output after component propagation; bounds alone did
 not catch this mismatch.
 
+## Later guide series
+
+`journey-components.json` exports five mains from **Guide components**:
+Journey screen, Journey sequence, Journey sequence mobile, Journey contents and
+Journey navigation. The sequence mains reuse the native Instrument and Animation
+timeline. `JourneyTimeline.astro` renders the exported screen inside the same SP
+geometry; `journey-motion.ts` provides browser playback.
+
+`journey-layouts.json` contains sixty-four article boards on **Guide series**,
+four responsive/theme views of each later chapter. `journey-index-layouts.json`
+contains the four **Guide index** boards, each with seventeen linked Guide rows.
+Both exports retain text bounds and component IDs. These are API snapshots,
+not a new importable archive. Full-board PNG/SVG exports timed out during this
+work; direct canvas captures supply the native visual checks.
+
+Use `npm run design:pull-journey` to refresh the set. The
+[authoring contract](../../docs/journey-authoring.md) describes bounded creation,
+guarded continuation and index-only refresh. `align-mobile-guide-index.js`
+preserves component links while matching the browser's mobile row layout.
+Native tests cover shared copy, linked components and reading-text bounds;
+visual review is separate. The series passed its independent finish review for
+local handoff; see [the review and limits](../../docs/reports/journey-design-review.md).
+It has not been committed or deployed.
+
+## Historical archives
+
 `opensp-desktop.penpot` is the native export downloaded from the OpenSP file
 on 2026-09-28 before mobile/dark studies. It contains the five desktop/vector
 study sheets. ZIP integrity was checked; no linked libraries are required.

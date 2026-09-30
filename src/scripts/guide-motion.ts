@@ -52,7 +52,8 @@ class GuideMotion extends HTMLElement {
   }
   private tick=(now:number)=>{
     this.frame=0;
-    this.progress=Math.min(1,this.progress+(now-this.previousTime)/(this.scene.duration*1000));
+    const elapsed=Math.max(0,now-this.previousTime);
+    this.progress=Math.max(0,Math.min(1,this.progress+elapsed/(this.scene.duration*1000)));
     this.previousTime=now;this.render();
     if(this.progress>=1){this.intent=false;this.stop('false');}
     else this.frame=requestAnimationFrame(this.tick);
@@ -60,7 +61,7 @@ class GuideMotion extends HTMLElement {
   private stop(state:string){cancelAnimationFrame(this.frame);this.frame=0;this.dataset.playing=state;this.updateButton();}
   private updateButton(){this.dataset.intent=String(this.intent);this.button?.setAttribute('aria-label',`${this.intent?'Pause':'Play'} ${this.scene.label}`);}
   private render(){
-    const phase=Math.min(this.scene.steps.length-1,Math.floor(this.progress*this.scene.steps.length));
+    const phase=Math.max(0,Math.min(this.scene.steps.length-1,Math.floor(this.progress*this.scene.steps.length)));
     this.style.setProperty('--progress',String(this.progress));
     if(this.seek)this.seek.value=String(Math.round(this.progress*1000));
     const output=this.querySelector('[data-time]');

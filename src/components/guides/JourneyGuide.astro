@@ -1,0 +1,42 @@
+---
+import {journeyChapter} from '../../lib/journey';
+import JourneyTimeline from './JourneyTimeline.astro';
+interface Props {slug: string;}
+const chapter = journeyChapter(Astro.props.slug);
+if (!chapter) throw new Error(`Missing guide chapter: ${Astro.props.slug}`);
+---
+<div class="journey-guide" data-chapter={chapter.slug}>
+  <JourneyTimeline chapter={chapter}/>
+  <p class="journey-summary">{chapter.summary}</p>
+  {chapter.sections.map(section => <section class="guide-section" id={section.id} aria-labelledby={`${section.id}-heading`}>
+    <h2 id={`${section.id}-heading`}>{section.title}</h2>
+    {section.paragraphs.map(paragraph => <p>{paragraph}</p>)}
+    {!!(section.steps?.length || section.checkpoint) && <div class="reader-checkpoint">
+      {!!section.steps?.length && <><h3>Follow the reasoning</h3><ol>{section.steps!.map(step => <li>{step}</li>)}</ol></>}
+      {section.checkpoint && <p>{section.checkpoint}</p>}
+    </div>}
+  </section>)}
+  <section class="guide-section journey-exercise" id="exercise" aria-labelledby="exercise-heading">
+    <h2 id="exercise-heading">{chapter.exercise.title}</h2>
+    <p>{chapter.exercise.intro}</p>
+    <p class="exercise-scope">Python 3 / invented in-memory data / no device connection</p>
+    <details class="journey-code">
+      <summary>Python example <svg viewBox="0 0 14 14" width="14" height="14" aria-hidden="true"><path d="M1 7h12M7 1v12"/></svg></summary>
+      <pre tabindex="0" aria-label={`${chapter.exercise.title}: Python example`}><code>{chapter.exercise.code}</code></pre>
+    </details>
+    <a class="example-download" href={`/examples/${chapter.slug}.py`} download>Download the Python example</a>
+    <p class="exercise-command">Run locally: <code>{`python ${chapter.slug}.py`}</code></p>
+    <h3>Expected output</h3>
+    <pre class="journey-output" tabindex="0" aria-label="Expected example output"><code>{chapter.exercise.expected}</code></pre>
+    <p>{chapter.exercise.explanation}</p>
+  </section>
+  <section class="guide-section guide-evidence journey-evidence" id="evidence" aria-labelledby="evidence-heading">
+    <h2 id="evidence-heading">Evidence and limits</h2>
+    <p>{chapter.evidenceLabel}. The reports below are retained project records; their underlying files are not published here. <a href={`/evidence/${chapter.slug}.json`}>Read the curated evidence record</a>.</p>
+    <ul class="journey-limits">{chapter.limits.map(limit => <li>{limit}</li>)}</ul>
+    <details class="journey-sources">
+      <summary>Source reports <svg viewBox="0 0 14 14" width="14" height="14" aria-hidden="true"><path d="M1 7h12M7 1v12"/></svg></summary>
+      <dl>{chapter.sources.map(source => <div><dt>{source.title}</dt><dd>{source.evidence}</dd></div>)}</dl>
+    </details>
+  </section>
+</div>
