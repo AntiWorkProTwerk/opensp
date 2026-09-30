@@ -15,7 +15,7 @@ const mask=node.maskId?node.children?.find(child=>child.id===node.maskId):undefi
 if(node.maskId&&!mask)throw new Error(`Missing native mask in ${node.name}`);
 const clipId=mask?`sp-clip-${randomUUID()}`:undefined;
 ---
-{!hidden&&<g transform={transform} data-part={node.name} data-component={node.componentName}>
+{!hidden&&<g transform={transform} opacity={node.opacity} data-part={node.name} data-component={node.componentName}>
   {mask&&<defs><clipPath id={clipId} clipPathUnits="userSpaceOnUse"><Astro.self node={mask}/></clipPath></defs>}
   {node.type==='rectangle'&&<rect width={node.width} height={node.height} {...style}/>}
   {node.type==='ellipse'&&<ellipse cx={node.width/2} cy={node.height/2} rx={node.width/2} ry={node.height/2} {...style}/>}

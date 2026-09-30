@@ -62,3 +62,21 @@ they are not measurements of this larger guide.
 The release uses the existing Pages workflow. The live build record identifies
 the published commit and design hashes; publication is verified after that
 workflow completes, not inferred from a local build.
+
+## September 30 chapter demonstrations
+
+Each of the seventeen guides now has a distinct interactive teaching model.
+The release includes seventeen native Penpot diagram mains, thirty-four linked
+responsive figure mains and all sixty-eight article layouts. Controls and
+playback retain keyboard access, reduced motion and readable static fallbacks.
+
+Local verification passes type checking across thirty-nine files, the twenty-page
+build and all 133 tests. Maximum initial scripts are 7,257 bytes gzip; the
+conservative active-page bound is 13,463 bytes and the whole-site inventory is
+27,737 bytes. These measurements use the per-page definitions in
+[development.md](development.md#checks-and-deployment), not the historical
+whole-site budget.
+
+The owner requested publication after reviewing the completed work. Use the
+existing Pages workflow and confirm the deployed revision and design hashes in
+`/build-info.json`, then verify the demonstrations on the public domain.

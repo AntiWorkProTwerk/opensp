@@ -66,14 +66,25 @@ offscreen or hidden playback. Do not connect the public site to the physical SP.
   [source ledger](docs/journey-sources.md). Keep MDX wrappers in agreement with
   that source and run `npm run test:journey`. Exercises must remain original,
   offline and independent of firmware files or a connected SP.
+- Chapter demonstrations share deterministic models in `src/lib/demos/`, linked
+  native Penpot diagram/figure mains and `ChapterDemo.astro`. Preserve stable
+  mark IDs and types, semantic controls, readable static posters and evidence
+  limits. Export with `node tools/design-demos.mjs export` and
+  `node tools/design-demos.mjs export-figures`, then run
+  `npm run test:demos`; a model-only pass does not verify native page delivery.
+  Keep browser imports split by model group so a chapter never loads all demos.
 - Use the shared Astro components under `src/components/`. `SPPart` renders
   native exported geometry; `SPDisplay` owns playback. Extend the shared shape
   renderer and test new Penpot shape types before using them in production.
 - Keep content in the shared homepage JSON and draft-first MDX collection.
   Never publish design-study links as finished guides or invent release claims.
 - Run `npm run check`, `npm run build` and `npm test`; inspect mobile/desktop in
-  both themes. Honor the 15 KiB gzip script budget and all playback/accessibility
-  checks. Report lab measurements separately from physical-device/field evidence.
+  both themes. The 15 KiB gzip script ceiling applies to each complete page:
+  inline scripts, static dependency closure and the conservative largest lazy
+  model group. Report initial, active-page and whole-site totals separately;
+  do not compare the former all-site budget directly with a per-page result.
+  Preserve playback/accessibility checks and distinguish lab measurements from
+  physical-device/field evidence.
 - Deployment is GitHub Actions to GitHub Pages, with Cloudflare DNS-only and
   enforced HTTPS. Only `dist/` is public output. Do not move hosting, add an app
   server or expose a design credential as an incidental change.

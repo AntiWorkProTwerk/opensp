@@ -1,11 +1,13 @@
 ---
 import article from '../../content/first-change.json';
 import GuideFigure from './GuideFigure.astro';
+import ChapterDemo from './ChapterDemo.astro';
 ---
 <GuideFigure kind="hero"/>
 {article.sections.map(section=><section class="guide-section" id={section.id} aria-labelledby={`${section.id}-heading`}>
   <h2 id={`${section.id}-heading`}>{section.title}</h2>
   {section.paragraphs.map(p=><p>{p}</p>)}
+  {section === article.sections[4] && <ChapterDemo slug="first-change" inline/>}
   <div class="reader-checkpoint">
     <h3>Follow the reasoning</h3>
     <ol>{section.steps.map(step=><li>{step}</li>)}</ol>

@@ -8,6 +8,8 @@ const hosted=args[0]==='--hosted'||(args[0]!=='--local'&&fs.existsSync(credentia
 if(['--hosted','--local'].includes(args[0]))args.shift();
 let endpoint = 'http://localhost:4401/mcp';
 const headers = {'Content-Type':'application/json', Accept:'application/json, text/event-stream'};
+const timeoutMs=Number(process.env.OPENSP_PENPOT_TIMEOUT_MS||60000);
+if(!Number.isInteger(timeoutMs)||timeoutMs<5000||timeoutMs>180000)throw Error('Penpot timeout must be 5000..180000 ms.');
 async function connectHosted(){
   if(!fs.existsSync(credentialPath))throw Error('Hosted connection is not configured.');
   const url=execFileSync('pwsh',['-NoProfile','-Command',"$s=Import-Clixml -LiteralPath (Join-Path $env:LOCALAPPDATA 'OpenSP/penpot-mcp.xml'); [System.Net.NetworkCredential]::new('', $s).Password"],{encoding:'utf8',windowsHide:true}).trim();
@@ -16,7 +18,7 @@ async function connectHosted(){
   endpoint=url;
 }
 async function rpc(method, params, id) {
-  const r = await fetch(endpoint, {method:'POST', headers, body:JSON.stringify({jsonrpc:'2.0',id,method,params}),signal:AbortSignal.timeout(60000)});
+  const r = await fetch(endpoint, {method:'POST', headers, body:JSON.stringify({jsonrpc:'2.0',id,method,params}),signal:AbortSignal.timeout(timeoutMs)});
   if (r.headers.get('mcp-session-id')) headers['Mcp-Session-Id'] = r.headers.get('mcp-session-id');
   const body = await r.text();
   if (!r.ok) throw new Error(`MCP returned HTTP ${r.status}`);

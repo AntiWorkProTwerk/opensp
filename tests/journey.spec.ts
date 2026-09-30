@@ -1,8 +1,9 @@
-import {test, expect} from '@playwright/test';
+import {test, expect, type Page} from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 import {readFileSync, readdirSync} from 'node:fs';
 import first from '../src/content/first-change.json' with {type: 'json'};
 import indexCopy from '../src/content/guide-index.json' with {type: 'json'};
+import {demoFor} from '../src/lib/demos';
 
 type Chapter = {
   slug: string; title: string; description: string; order: number;
@@ -20,6 +21,114 @@ const routes = [{slug: 'first-change', title: first.title}, ...chapters];
 const firstIndexDescription = readFileSync(new URL('../src/content/guides/first-change.mdx', import.meta.url), 'utf8').match(/^description: (.+)$/m)![1].trim();
 const sample = chapters.reduce((longest, chapter) => JSON.stringify(chapter).length > JSON.stringify(longest).length ? chapter : longest);
 const route = (slug: string) => `/guides/${slug}/`;
+const normalize = (text: string) => text.replace(/[\u200b\u00ad]/g, '').replace(/\s+/g, ' ').trim();
+type NativeBox = {x: number; y: number; width: number; height: number};
+type NativeText = NativeBox & {name: string; text: string; size: string | number; ink?: {width: number; height: number}};
+type NativeLink = NativeBox & {name: string; component: string; componentId: string};
+type NativeBoard = {
+  id: string; name: string; width: number; height: number; slug?: string; mobile?: boolean; dark?: boolean; source?: string;
+  linkedComponents: NativeLink[]; text: NativeText[];
+};
+const nativeDemos = JSON.parse(readFileSync(new URL('../design/penpot/demo-components.json', import.meta.url), 'utf8')) as {
+  components: {id: string; name: string}[];
+};
+const nativeFigures = JSON.parse(readFileSync(new URL('../design/penpot/demo-figures.json', import.meta.url), 'utf8')) as {
+  components: {id: string; name: string}[];
+};
+const originInside = (item: NativeBox, container: NativeBox) => item.x >= container.x - 1 && item.y >= container.y - 1
+  && item.x < container.x + container.width && item.y < container.y + container.height;
+
+function expectContained(item: NativeBox, container: NativeBox, message: string) {
+  expect(item.x, `${message}: left edge`).toBeGreaterThanOrEqual(container.x - 1);
+  expect(item.y, `${message}: top edge`).toBeGreaterThanOrEqual(container.y - 1);
+  expect(item.x + item.width, `${message}: right edge`).toBeLessThanOrEqual(container.x + container.width + 1);
+  expect(item.y + item.height, `${message}: bottom edge`).toBeLessThanOrEqual(container.y + container.height + 1);
+}
+
+function expectReadingBounds(board: NativeBoard, texts: NativeText[]) {
+  for (const text of texts) {
+    expect(text.ink, `${board.name}: ${text.name} needs native text bounds`).toBeTruthy();
+    expect(text.ink!.width, `${board.name}: ${text.name} overflows horizontally`).toBeLessThanOrEqual(text.width + 2);
+    expect(text.ink!.height, `${board.name}: ${text.name} overflows vertically`).toBeLessThanOrEqual(text.height + 2);
+  }
+}
+
+function expectNativeDemonstration(board: NativeBoard, slug: string, mobile: boolean) {
+  const demo = demoFor(slug)!;
+  expect(demo, `${slug}: missing shared demonstration`).toBeTruthy();
+  const variantName = `Demo figure: ${slug} (${mobile ? 'Mobile' : 'Desktop'})`;
+  const figures = board.linkedComponents.filter(link => link.name === 'Chapter demonstration' && link.component === variantName);
+  expect(figures, `${board.name}: linked demonstration figure`).toHaveLength(1);
+  const figure = figures[0];
+  expect(nativeFigures.components).toHaveLength(34);
+  const exportedFigure = nativeFigures.components.find(component => component.name === variantName);
+  expect(exportedFigure, `${board.name}: exported responsive figure main`).toBeTruthy();
+  expect(figure.componentId).toBe(exportedFigure!.id);
+  expect(figure.width).toBeCloseTo(mobile ? 342 : 992);
+  expectContained(figure, {x: 0, y: 0, width: board.width, height: board.height}, `${board.name}: demonstration figure`);
+  const diagrams = board.linkedComponents.filter(link => link.component === `Demo: ${slug}`);
+  expect(diagrams, `${board.name}: linked demonstration main`).toHaveLength(1);
+  const diagram = diagrams[0];
+  const main = nativeDemos.components.find(component => component.name === `Demo: ${slug}`)!;
+  expect(main, `${slug}: exported demonstration main`).toBeTruthy();
+  expect(diagram.componentId).toBe(main.id);
+  expect(diagram.width).toBeCloseTo(mobile ? 342 : 552);
+  expect(diagram.height / diagram.width).toBeCloseTo(320 / 480);
+  expectContained(diagram, figure, `${board.name}: demonstration diagram`);
+  const timelines = board.linkedComponents.filter(link => link.component === 'Animation timeline' && originInside(link, figure));
+  expect(timelines, `${board.name}: demonstration playback component`).toHaveLength(1);
+  expect(timelines[0].componentId).toBeTruthy();
+  expectContained(timelines[0], figure, `${board.name}: demonstration playback`);
+
+  const figureText = board.text.filter(text => originInside(text, figure));
+  const diagramText = figureText.filter(text => originInside(text, diagram));
+  const poster = demo.frame(demo.initial, 1);
+  for (const [name, value] of [['Demo title', demo.title], ['Demo prompt', demo.prompt], ['Demo caption', demo.caption], ['Demo fallback', demo.fallback], ['Demo result', poster.readout]]) {
+    const matches = figureText.filter(text => text.name === name);
+    expect(matches, `${board.name}: ${name}`).toHaveLength(1);
+    expect(normalize(matches[0].text), `${board.name}: shared ${name}`).toBe(normalize(value));
+  }
+  for (const control of demo.controls) {
+    const labels = figureText.filter(text => text.name === `Control / ${control.id}`);
+    expect(labels, `${board.name}: control label ${control.id}`).toHaveLength(1);
+    expect(normalize(labels[0].text)).toBe(normalize(control.label));
+    if (control.kind === 'choice') {
+      const options = figureText.filter(text => text.name === `Option / ${control.id}`);
+      expect(options.map(text => normalize(text.text))).toEqual(control.options!.map(option => normalize(option.label)));
+    } else if (control.kind === 'range') {
+      const values = figureText.filter(text => text.name === `Value / ${control.id}`);
+      expect(values).toHaveLength(1);
+      expect(normalize(values[0].text)).toBe(String(demo.initial[control.id]));
+    }
+  }
+  const scale = diagram.width / 480;
+  for (const mark of poster.marks.filter(mark => mark.type === 'text')) {
+    const matches = diagramText.filter(text => text.name === mark.id);
+    expect(matches, `${board.name}: diagram label ${mark.id}`).toHaveLength(1);
+    expect(normalize(matches[0].text), `${board.name}: diagram label ${mark.id}`).toBe(normalize(mark.text!));
+    expect(Number(matches[0].size), `${board.name}: scaled diagram type ${mark.id}`).toBeCloseTo(mark.size! * scale, 3);
+    expectContained(matches[0], diagram, `${board.name}: diagram label ${mark.id}`);
+  }
+  // Include every diagram label, even when a mobile scale takes its original
+  // type size below the article's 11px reading-text threshold.
+  expectReadingBounds(board, figureText.filter(text => Number(text.size) >= 11 || diagramText.includes(text)));
+  return {figure, diagram};
+}
+
+async function openMilestoneSequence(page: Page) {
+  const record = page.locator('details.journey-record');
+  const pathname = new URL(page.url()).pathname;
+  if (pathname === route('first-animation') || pathname === route('first-change')) {
+    await expect(record).toHaveCount(0); // These original figures stay inline.
+    return;
+  }
+  await expect(record).toHaveCount(1);
+  await expect(record).not.toHaveAttribute('open', '');
+  await expect(record.locator('journey-motion')).not.toBeVisible();
+  await record.locator(':scope > summary').click();
+  await expect(record).toHaveAttribute('open', '');
+  await expect(record.locator('journey-motion')).toBeVisible();
+}
 
 test('all four native index layouts retain the full linked guide list', () => {
   const native = JSON.parse(readFileSync(new URL('../design/penpot/journey-index-layouts.json', import.meta.url), 'utf8')) as {
@@ -53,10 +162,7 @@ test('all four native index layouts retain the full linked guide list', () => {
 });
 
 test('all 64 native layouts keep shared chapter copy and linked components', () => {
-  const native = JSON.parse(readFileSync(new URL('../design/penpot/journey-layouts.json', import.meta.url), 'utf8')) as {
-    boards: {id: string; name: string; width: number; height: number; slug: string; mobile: boolean; dark: boolean; source: string;
-      linkedComponents: {component: string; componentId: string}[]; text: {name: string; text: string; width: number; height: number; size: string; ink: {width: number; height: number}}[]}[];
-  };
+  const native = JSON.parse(readFileSync(new URL('../design/penpot/journey-layouts.json', import.meta.url), 'utf8')) as {boards: NativeBoard[]};
   expect(native.boards).toHaveLength(64);
   expect(new Set(native.boards.map(board => board.id)).size).toBe(64);
   for (const chapter of chapters) {
@@ -67,18 +173,12 @@ test('all 64 native layouts keep shared chapter copy and linked components', () 
       expect(board.width < 900).toBe(board.mobile);
       expect(board.height).toBeGreaterThan(0);
       expect(board.source).toContain(`${chapter.slug}.json`);
-      const normalize = (text: string) => text.replace(/[\u200b\u00ad]/g, '').replace(/\s+/g, ' ').trim();
       const copy = board.text.map(item => normalize(item.text));
       expect(copy).not.toContain('Shared article reading text.');
-      for (const text of board.text.filter(text => Number(text.size) >= 11)) {
-        expect(text.ink, `${board.name}: ${text.name} needs native text bounds`).toBeTruthy();
-        expect(text.ink.width, `${board.name}: ${text.name} overflows horizontally`).toBeLessThanOrEqual(text.width + 2);
-        expect(text.ink.height, `${board.name}: ${text.name} overflows vertically`).toBeLessThanOrEqual(text.height + 2);
-      }
-      const finalStep = chapter.timeline.steps.at(-1)!;
-      const required = [chapter.title, chapter.description, chapter.summary, chapter.timeline.title,
-        finalStep.title, finalStep.body, chapter.exercise.title, chapter.exercise.intro,
+      expectReadingBounds(board, board.text.filter(text => Number(text.size) >= 11));
+      const required = [chapter.title, chapter.description, chapter.summary, chapter.exercise.title, chapter.exercise.intro,
         chapter.exercise.expected, chapter.exercise.explanation];
+      for (const value of [chapter.period, chapter.evidenceLabel]) expect(copy.some(text => text.includes(normalize(value)))).toBe(true);
       for (const limit of chapter.limits) expect(copy.some(text => text.includes(normalize(limit)))).toBe(true);
       for (const section of chapter.sections) {
         required.push(section.title, ...section.paragraphs);
@@ -88,10 +188,44 @@ test('all 64 native layouts keep shared chapter copy and linked components', () 
       for (const text of required) expect(copy).toContain(normalize(text));
       for (const link of board.linkedComponents) expect(link.componentId).toBeTruthy();
       const components = board.linkedComponents.map(link => link.component);
-      expect(components).toContain('Instrument');
-      expect(components).toContain('Animation timeline');
-      expect(components).toContain(chapter.timeline.kind === 'r3' ? 'AntiWorkProTwerk R3' : 'Journey screen');
+      const {figure} = expectNativeDemonstration(board, chapter.slug, board.mobile!);
+      if (chapter.timeline.kind === 'r3') {
+        const finalStep = chapter.timeline.steps.at(-1)!;
+        for (const value of [chapter.timeline.title, chapter.timeline.caption, finalStep.title, finalStep.body]) expect(copy).toContain(normalize(value));
+        expect(components).toContain('Instrument');
+        expect(components).toContain('AntiWorkProTwerk R3');
+        const sectionParagraphs = board.linkedComponents.filter(link => link.name.startsWith(`${chapter.sections[1].id} / paragraph`));
+        expect(sectionParagraphs).toHaveLength(chapter.sections[1].paragraphs.length);
+        expect(figure.y).toBeGreaterThanOrEqual(Math.max(...sectionParagraphs.map(link => link.y + link.height)));
+      } else {
+        expect(copy).toContain('READ THE MILESTONE SEQUENCE +');
+        expect(components).not.toContain('Journey screen');
+        expect(board.linkedComponents.some(link => link.name.startsWith('Archive'))).toBe(false);
+      }
     }
+    for (const mobile of [false, true]) {
+      const figureIds = variants.filter(board => board.mobile === mobile).map(board => board.linkedComponents.find(link => link.name === 'Chapter demonstration')!.componentId);
+      expect(new Set(figureIds).size, `${chapter.slug}: both themes must reuse the same ${mobile ? 'mobile' : 'desktop'} figure main`).toBe(1);
+    }
+  }
+});
+
+test('all four first-guide native layouts link the record demonstration inside its section', () => {
+  const native = JSON.parse(readFileSync(new URL('../design/penpot/first-guide-layouts.json', import.meta.url), 'utf8')) as {boards: NativeBoard[]};
+  expect(native.boards).toHaveLength(4);
+  expect(new Set(native.boards.map(board => `${board.name.includes('Mobile')}/${board.name.endsWith('Dark')}`)).size).toBe(4);
+  for (const board of native.boards) {
+    const {figure} = expectNativeDemonstration(board, 'first-change', board.name.includes('Mobile'));
+    const section = board.linkedComponents.filter(link => link.component === 'twelve-characters');
+    expect(section).toHaveLength(1);
+    expectContained(figure, section[0], `${board.name}: demonstration inside twelve-characters`);
+    const checkpoints = board.linkedComponents.filter(link => link.component === 'Reader checkpoint' && originInside(link, section[0]));
+    expect(checkpoints).toHaveLength(1);
+    expect(figure.y + figure.height).toBeLessThanOrEqual(checkpoints[0].y);
+  }
+  for (const mobile of [false, true]) {
+    const ids = native.boards.filter(board => board.name.includes('Mobile') === mobile).map(board => board.linkedComponents.find(link => link.name === 'Chapter demonstration')!.componentId);
+    expect(new Set(ids).size, 'Both first-guide themes must share their responsive figure main').toBe(1);
   }
 });
 
@@ -111,7 +245,7 @@ for (const [index, chapter] of chapters.entries()) {
     await expect(page.locator('.journey-guide')).toContainText(chapter.summary);
     await expect(page.locator('.guide-section')).toHaveCount(chapter.sections.length + 2);
     for (const section of chapter.sections) {
-      await expect(page.locator(`#${section.id} h2`)).toHaveText(section.title);
+      await expect(page.locator(`#${section.id} > h2`)).toHaveText(section.title);
       for (const paragraph of section.paragraphs) await expect(page.locator(`#${section.id}`)).toContainText(paragraph);
       if (section.checkpoint) await expect(page.locator(`#${section.id}`)).toContainText(section.checkpoint);
     }
@@ -128,6 +262,7 @@ for (const [index, chapter] of chapters.entries()) {
     else await expect(page.locator('.guide-series-navigation [rel="next"]')).toHaveCount(0);
     await expect(page.locator('astro-island,a[href*="penpot"],a[href*="design/studies"]')).toHaveCount(0);
     if (chapter.timeline.kind !== 'r3') {
+      await openMilestoneSequence(page);
       const fields = ['Journey title', 'Journey line 1', 'Journey line 2', 'Journey footer'];
       for (const [fieldIndex, field] of fields.entries()) await expect(page.locator(`[data-menu-screen] [data-part="${field}"] text`)).toHaveText(chapter.timeline.steps.at(-1)!.display[fieldIndex]);
     }
@@ -162,6 +297,7 @@ for (const width of [320, 390, 1440]) for (const theme of ['light', 'dark']) {
     const overflow = await page.evaluate(() => ({width: innerWidth, scrollWidth: document.documentElement.scrollWidth,
       elements: [...document.querySelectorAll('main *')].filter(element => element.getBoundingClientRect().right > innerWidth + 1).slice(0, 12).map(element => ({tag: element.tagName, class: element.className, right: element.getBoundingClientRect().right}))}));
     expect(overflow.scrollWidth, `${sample.slug}: ${JSON.stringify(overflow)}`).toBeLessThanOrEqual(overflow.width);
+    await openMilestoneSequence(page);
     await expect(page.locator('journey-motion')).toHaveAttribute('data-ready', 'true');
     await expect(page.locator('journey-motion [data-seek]')).toHaveValue('1000');
     await page.locator('.journey-code summary').click();
@@ -195,6 +331,7 @@ test('all chapter text and exercises work without JavaScript', async ({browser})
     await expect(page.locator('h1')).toHaveText(chapter.title);
     await expect(page.locator('.guide-contents')).toHaveAttribute('open', '');
     await expect(page.locator('[data-timeline]:visible')).toHaveCount(0);
+    await openMilestoneSequence(page);
     await page.locator('.journey-step-log summary').click();
     for (const step of chapter.timeline.steps) await expect(page.locator('.journey-step-log')).toContainText(step.body);
     await page.locator('.journey-code summary').click();
@@ -212,6 +349,7 @@ test('journey timeline supports keyboard seeking and explicit reduced-motion pla
   await page.setViewportSize({width: 390, height: 844});
   await page.emulateMedia({reducedMotion: 'reduce'});
   await page.goto(route('usb-updates'));
+  await openMilestoneSequence(page);
   const motion = page.locator('journey-motion');
   const seek = motion.locator('[data-seek]');
   await motion.scrollIntoViewIfNeeded();
@@ -244,6 +382,7 @@ test('journey autoplay pauses offscreen, when hidden and after a reader pause', 
   await page.setViewportSize({width: 1440, height: 900});
   await page.emulateMedia({reducedMotion: 'no-preference'});
   await page.goto(route('usb-updates'));
+  await openMilestoneSequence(page);
   const motion = page.locator('journey-motion');
   const seek = motion.locator('[data-seek]');
   await motion.scrollIntoViewIfNeeded();
@@ -343,6 +482,7 @@ test('slow renderer media does not consume the animation before it loads', async
 test('a reconnected timeline honors a reduced-motion change while detached', async ({page}) => {
   await page.emulateMedia({reducedMotion: 'no-preference'});
   await page.goto(route('usb-updates'));
+  await openMilestoneSequence(page);
   const motion = page.locator('journey-motion');
   await motion.scrollIntoViewIfNeeded();
   await expect(motion).toHaveAttribute('data-playing', 'true');
@@ -386,6 +526,7 @@ test('an early animation-frame timestamp cannot produce a negative phase', async
   await page.emulateMedia({reducedMotion: 'no-preference'});
   for (const [slug, selector] of [['usb-updates', 'journey-motion'], ['first-change', 'guide-motion[data-mode="memory"]']]) {
     await page.goto(route(slug));
+    await openMilestoneSequence(page);
     const motion = page.locator(selector);
     await motion.scrollIntoViewIfNeeded();
     await expect(motion).toHaveAttribute('data-playing', 'true');

@@ -7,14 +7,13 @@ related_targets: []
 
 # OpenSP project guides
 
-Status: first guide published; sixteen-chapter extension and index reviewed and complete locally, not deployed.
+Status: chapter demonstrations complete, with 68 verified native layouts and 133 passing tests. The owner requested publication after verification. The preceding seventeen-guide release is `f50e5e4`; check the Pages workflow and live build record for the active revision.
 Routes: `/guides/` and `/guides/<chapter>/`. Mode: Read.
 
-Extension in progress: the later display, controls, USB, audio and original-SDK
-milestones, followed by clearly labeled recovery and DSP research. Reuse the
-first guide's reading column, native component mains and thin animation timeline.
-Each chapter needs an independently useful explanation and an offline exercise.
-The existing first guide and homepage wording stay intact.
+The current extension gives every chapter a distinct interactive demonstration.
+Reuse the reading column, native component mains and thin animation timeline.
+Readers should change an input and see its consequence in the diagram. Preserve
+the published account, evidence limits, offline exercises and homepage wording.
 
 The owner chose the existing side-contents layout and requested a complete
 Penpot design before publication. Extend the field-manual study and the current
@@ -23,8 +22,8 @@ raster mockups would not replace the requested editable source.
 
 ## Direction contract
 
-THESIS: Follow each experiment from its question through the test and the result.
-Every section explains a decision that changed the next experiment.
+THESIS: Let the reader test the decision that changed each experiment. A route,
+comparison, state transition or numerical result should respond to their choice.
 
 OWN-WORLD: Existing monochrome OpenSP system, regular Arimo, Cousine navigation,
 thin rules and linked SP parts. No new palette or decorative card system.
@@ -40,9 +39,11 @@ stacks figures. A compact series index and previous/next links connect chapters.
 
 FORM: Owner-selected field-manual study A, extended with meaningful interactive
 figures. No concept seed: the source layout and direction were explicitly chosen.
-The first guide compares titles and highlights instrument controls. Later chapters
-pair a chapter-specific screen sequence with the explanation and shared seek
-controls; R3 replays its preserved renderer trace. No page communicates with hardware.
+The first guide compares titles and highlights instrument controls. Seventeen
+distinct teaching models now cover routing, byte comparisons, event filtering,
+timing, ownership and musical selection. The former milestone sequences remain
+available in disclosures; R3 keeps its preserved renderer replay. No page
+communicates with hardware, accepts firmware input or generates audio.
 
 FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, DESIGN.md, and every shipping raster carrying its provenance
 

@@ -1,0 +1,45 @@
+---
+import {demoFor} from '../../lib/demos';
+import SPPart from '../SPPart.astro';
+import type {Shape} from '../../lib/penpot';
+import snapshot from '../../../design/penpot/demo-components.json';
+import '../../styles/demos.css';
+const {slug, inline = false} = Astro.props;
+const Heading = inline ? 'h3' : 'h2';
+const demo = demoFor(slug);
+if (!demo) throw Error(`Missing demonstration ${slug}`);
+const native = snapshot.components.find(component => component.name === `Demo: ${slug}`);
+if (!native) throw Error(`Export the native demonstration ${slug} before building.`);
+const initial = demo.frame(demo.initial, 1);
+---
+<figure class="chapter-demonstration" aria-labelledby={`${slug}-demo-heading`}>
+  <Heading id={`${slug}-demo-heading`}>{demo.title}</Heading>
+  <p class="demo-prompt">{demo.prompt}</p>
+  <chapter-demo data-demo={slug} data-native-component={native.id}>
+    <div class="demo-workbench">
+      <svg data-demo-graphic viewBox="0 0 480 320" role="img" aria-label={demo.title}>
+        <SPPart node={native.shape as Shape}/>
+      </svg>
+      <div class="demo-controls" hidden>
+        {demo.controls.map(control => control.kind === 'range' ? <label class="demo-range">
+          <span>{control.label} <output data-control-output={control.id}>{demo.initial[control.id]}</output></span>
+          <input type="range" data-control={control.id} aria-label={control.label} min={control.min} max={control.max} step={control.step || 1} value={demo.initial[control.id]}/>
+        </label> : control.kind === 'choice' ? <fieldset>
+          <legend>{control.label}</legend><div class="demo-choices">{control.options!.map(option => <button type="button" data-control={control.id} data-value={option.value} aria-pressed={demo.initial[control.id] === option.value}>{option.label}</button>)}</div>
+        </fieldset> : <button type="button" class="demo-action" data-action={control.id} disabled={demo.disabled?.(demo.initial, control.id)}>{control.label}</button>)}
+      </div>
+    </div>
+    <p class="demo-result" data-demo-result role="status" aria-live="polite" aria-atomic="true">{initial.readout}</p>
+    <div class="demo-transport" hidden>
+      <button type="button" data-demo-play aria-label={`Play ${demo.title}`}>
+        <svg class="demo-play-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M5 3l8 5-8 5z"/></svg>
+        <svg class="demo-pause-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 3h3v10H4zm5 0h3v10H9z"/></svg>
+      </button>
+      <input type="range" data-demo-seek min="0" max="1000" value="1000" aria-label={`Animation progress: ${demo.title}`}/>
+      <span class="demo-motion-label">Model sequence</span>
+    </div>
+  </chapter-demo>
+  <figcaption>{demo.caption}</figcaption>
+  <p class="demo-fallback">{demo.fallback}</p>
+</figure>
+<script>import '../../scripts/chapter-demo';</script>

@@ -7,7 +7,8 @@ const route='/guides/first-change/';
 test('all four native layouts retain shared walkthrough copy and component links',()=>{
   expect(nativeLayouts.boards).toHaveLength(4);
   for(const board of nativeLayouts.boards){
-    expect(board.linkedComponents.filter(c=>c.component==='Animation timeline')).toHaveLength(5);
+    // Five retained walkthrough figures plus the new record-comparison model.
+    expect(board.linkedComponents.filter(c=>c.component==='Animation timeline')).toHaveLength(6);
     expect(board.linkedComponents.filter(c=>c.component==='Reader checkpoint')).toHaveLength(7);
     expect(board.linkedComponents.filter(c=>c.component==='Figure control')).toHaveLength(0);
     const copy=board.text.map(t=>t.text);expect(copy).toContain(article.description);

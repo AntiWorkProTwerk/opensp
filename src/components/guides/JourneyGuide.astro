@@ -1,16 +1,19 @@
 ---
 import {journeyChapter} from '../../lib/journey';
 import JourneyTimeline from './JourneyTimeline.astro';
+import ChapterDemo from './ChapterDemo.astro';
 interface Props {slug: string;}
 const chapter = journeyChapter(Astro.props.slug);
 if (!chapter) throw new Error(`Missing guide chapter: ${Astro.props.slug}`);
 ---
 <div class="journey-guide" data-chapter={chapter.slug}>
-  <JourneyTimeline chapter={chapter}/>
+  {chapter.timeline.kind === 'r3' ? <JourneyTimeline chapter={chapter}/> : <ChapterDemo slug={chapter.slug}/>}
   <p class="journey-summary">{chapter.summary}</p>
+  {chapter.timeline.kind !== 'r3' && <details class="journey-record"><summary>Read the milestone sequence</summary><JourneyTimeline chapter={chapter}/></details>}
   {chapter.sections.map(section => <section class="guide-section" id={section.id} aria-labelledby={`${section.id}-heading`}>
     <h2 id={`${section.id}-heading`}>{section.title}</h2>
     {section.paragraphs.map(paragraph => <p>{paragraph}</p>)}
+    {chapter.timeline.kind === 'r3' && section.id === chapter.sections[1].id && <ChapterDemo slug={chapter.slug} inline/>}
     {!!(section.steps?.length || section.checkpoint) && <div class="reader-checkpoint">
       {!!section.steps?.length && <><h3>Follow the reasoning</h3><ol>{section.steps!.map(step => <li>{step}</li>)}</ol></>}
       {section.checkpoint && <p>{section.checkpoint}</p>}

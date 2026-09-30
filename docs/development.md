@@ -14,7 +14,7 @@ npm run dev
 ```
 
 The development server listens on localhost. `npm run build` creates `dist/`
-and checks the initial JavaScript budget. `npm run preview` serves that built
+and checks the complete-page JavaScript budget. `npm run preview` serves that built
 output. Only `dist/` is deployed; the research tools, design archives and local
 connector credentials are not website assets. `site/` is the historical blank
 site and is no longer the deployment source.
@@ -55,6 +55,8 @@ connection key belongs in git or GitHub Actions secrets for this static build.
 | Screen content slot and R3 poster | `SPDisplay.astro` and the shared frame player |
 | Guide introduction, paragraph, heading, contents and caption mains | Shared guide template and `guide.css` |
 | Guide figure mains and Menu title screen | `GuideFigure.astro`, `guide-components.json` and `guide-motion.ts` |
+| Journey screen and sequence mains | `JourneyTimeline.astro`, `journey-components.json` and `journey-motion.ts` |
+| Demo diagram mains and Desktop/Mobile figure mains | `ChapterDemo.astro`, `demo-components.json`, `src/lib/demos/` and `chapter-demo.ts` |
 
 Page text is semantic HTML with responsive CSS. The instrument is inline SVG
 rendered from exported native geometry, with named `data-part` and
@@ -72,8 +74,8 @@ each pull. Native interactions still need semantic browser implementations.
 
 ## Content and interaction
 
-The homepage preserves the owner's wording. Its guide rows are explicitly
-unpublished previews until an approved MDX guide is available. Add guides under
+The homepage preserves the owner's wording and links the seventeen published
+guides. Add new guides under
 `src/content/guides/`; their schema defaults to `draft: true`. Published guides
 get static routes, shared typography and homepage links. Never populate a
 release download with an unverified firmware artifact.
@@ -103,13 +105,16 @@ The [display contract](sp-display.md) covers source fidelity, swapping sequences
 pause/seek and reduced motion. The homepage replay uses the preserved R3 trace,
 with its original omissions and timing uncertainty. No browser talks to the SP.
 
-## Guide series local handoff
+## Published guide series
 
-Sixteen later chapters are implemented locally, alongside the existing first
-guide. They share `src/content/journey/<slug>.json`, the `JourneyGuide` template,
-one responsive timeline and the `/guides/` index. MDX wrappers carry route
-metadata; validation checks it against the JSON. Curated evidence and Python
-example endpoints are generated from that same source.
+Commit `f50e5e4` published sixteen later chapters and the `/guides/` index,
+bringing the series to seventeen guides. The live build record and all 88
+tests were verified for that release. The chapter demonstrations described below
+extend that release with a separate interactive explanation for each guide.
+
+Later chapters share `src/content/journey/<slug>.json` and the `JourneyGuide`
+template. MDX wrappers carry route metadata; validation checks it against the
+JSON. Curated evidence and Python example endpoints use that same source.
 
 [The source ledger](journey-sources.md) maps the coverage and evidence limits.
 [The authoring contract](journey-authoring.md) defines the schema and exercise
@@ -117,40 +122,47 @@ restrictions. `npm run test:journey` checks all sixteen chapters and runs every
 in-memory Python example against its exact expected output. Add
 `-- --local-sources` to check the retained reports in the adjacent workspaces.
 
-Five native Journey components are exported in `journey-components.json`,
-including the four-line screen required by the browser template. All sixty-four
-responsive/theme article layouts are exported in `journey-layouts.json`.
-`journey-index-layouts.json` holds four index layouts, each with seventeen linked
-guide rows. A fresh main-profile window confirmed the saved article boards and
-corrected timeline mains. Native tests pass for shared copy, component links and
-reading-text bounds across all sixty-eight layouts. The independent finish review
-returned ship for local handoff, with no material findings; see the
-[design review](reports/journey-design-review.md).
-`tools/design-journey.mjs` contains bounded
-authoring stages; inspect the live canvas before using a creation stage.
-`tools/pull-journey-design.mjs` refreshes the live main and layout snapshots.
-A passing local build alone is not a completed Penpot handoff.
-The deployed site is unchanged.
+The release includes five native Journey mains, sixty-four article layouts and
+four index layouts. Each index contains seventeen linked guide rows. The native
+copy, component-link and reading-text bounds checks passed; the
+[design review](reports/journey-design-review.md) records the visual sample and
+its limits. That release's 7,274-byte JavaScript result used the former
+whole-site accounting and is not directly comparable with the per-page figures
+defined below.
 
-With the complete native snapshots exported, the local run passes all 88 checks,
-including all 54 prior checks, the sixteen chapters' screen text and the native
-article/index checks.
-Type checking reports no errors, warnings or hints across 31 files. All sixteen
-chapter/exercise checks pass. Earlier checks corrected mobile title overflow,
-delayed sprite loading, reduced-motion reconnect behavior and a negative first
-animation interval. The build and publication checks pass; these remain local
-results. The latest build passes the publication checks with 7,274 bytes gzip of
-JavaScript. The final regenerated build passes all 88 tests in 1.3 minutes.
-Desktop/mobile captures in both themes were refreshed and inspected against that
-build. Direct native canvas captures check the index opening and article timeline
-in both sizes and themes, not every full native page.
-The browser capture batch is in `.impeccable/review/journey/`, with build
-identity in `captures.json`. The native mobile index now hides its numbers,
-uses the wider reading column and includes the home link. The first guide's
-index description is read from its existing MDX metadata, preserving its distinct
-article introduction. Updated native tests verify that copy and mobile geometry.
-The design detector found no primary issues and four font-size advisories (28px,
-26px and 12px figure overrides); those findings are included in the finish review.
+## Chapter-specific demonstrations
+
+Seventeen native diagram mains use a 480 × 320 canvas under
+`OpenSP / Demonstrations`. Thirty-four linked figure mains provide Desktop and
+Mobile compositions under `OpenSP / Demo figures`. Their editable posters use
+the shared colors and typography; the browser supplies semantic controls and
+playback. `node tools/design-demos.mjs export` reads the real diagram mains into
+`design/penpot/demo-components.json`.
+
+`src/lib/demos/` contains the deterministic models, controls and explanatory
+copy. `ChapterDemo.astro` renders the exported native poster through `SPPart`.
+`chapter-demo.ts` paints the same named marks, handles input and loads only the
+current chapter's `early`, `systems` or `audio` model group. The poster remains
+readable while that import loads or if it fails. Controls appear only after
+initialization. No framework runtime or device interface is added.
+
+Most later guides lead with their demonstration. Their original screen sequence
+remains in a closed "Read the milestone sequence" disclosure. The R3 replay
+stays inline with its original provenance; its new mechanism demonstration
+appears later in the article. Models use invented data or explicitly identified
+recorded facts and never imply additional hardware success.
+
+`npm run test:demos` checks all models and their exported native posters.
+`npm test` runs that check and the chapter exercises before Playwright. The
+`--models-only` option is a diagnostic subset, not proof of native delivery.
+All 68 article layouts now use linked demo figures. The September 30 local
+verification passes type checking, the 20-page build and all 133 tests, including
+native component/copy/text-bound checks and 44 demonstration tests. Desktop and
+mobile browser views were reviewed in both themes. Maximum initial scripts are
+7,257 bytes gzip; the conservative active-page bound is 13,463 bytes and the
+whole-site inventory is 27,737 bytes. The owner requested publication after that
+verification. See
+[the review and verification record](reports/chapter-demonstrations.md).
 
 ## Checks and deployment
 
@@ -164,20 +176,32 @@ npm test
 Playwright checks eight widths in both themes, the native component structure,
 keyboard navigation, disclosures, theme persistence, playback lifecycle,
 JavaScript-disabled and failed-media fallbacks. Axe checks desktop/mobile in
-both themes. Build checks reject private design references and unexpected
-source artifacts, verify asset paths, and cap generated JavaScript plus inline
-scripts from the largest page at 15 KiB gzip. This conservative budget includes
-all generated scripts, even those not used by that page. The first guide build
-measured 3,518 bytes gzip of JavaScript and about 10.8 KiB gzip of guide HTML.
-The expanded guide currently passes 54 tests locally in headless Canary, including shared surround
-geometry, circular screen clipping, actual instrument
-highlights, five keyboard-scrubbable timelines and desktop/mobile contents behavior.
-The native-layout regression checks shared copy and seven checkpoint/five
-timeline links in each of the four Penpot snapshots.
-Its current conservative JavaScript total is 5,415 bytes gzip. The earlier
-Lighthouse measurements below apply to the first-guide launch, not this revision.
-These are lab results, not
-physical-device measurements or real-user Core Web Vitals.
+both themes. Build checks reject private design references and unexpected source
+artifacts and verify asset paths. `tools/check-build.mjs` enforces a 15 KiB gzip
+ceiling for each complete page, including its active demonstration.
+
+The build record keeps three measurements distinct:
+
+- `initialJavascriptGzipBytes`: inline scripts plus each page's static script
+  dependency closure, deduplicated by file.
+- `activeJavascriptGzipBytes`: that initial graph plus the largest of the three
+  lazy model groups and its static dependencies, again deduplicated. This is a
+  conservative bound; the browser selects only one group. The maximum across
+  pages is reported as `javascriptGzipBytes` and must stay within 15 KiB.
+- `totalJavascriptGzipBytes`: every generated script plus the largest page's
+  inline total. This whole-site inventory is reported separately from the
+  enforced page budget.
+
+"Initial" names the static dependency graph, not a promise that the dynamic
+import waits for reader input or first paint. Check the actual browser requests
+as well as the build graph when changing loading behavior.
+
+Historical first-guide builds measured 3,518 bytes gzip of JavaScript and about
+10.8 KiB gzip of guide HTML at launch, then 5,415 bytes under the old whole-site
+script accounting after the seven-step expansion. That expansion passed 54
+tests. These figures and the Lighthouse results below describe those earlier
+revisions, not the current demonstrations. They are lab results, not physical
+phone measurements or real-user Core Web Vitals.
 
 `public/examples/menu-title-check.py` is an intentional, narrowly allowlisted
 download. It is an original, in-memory reading exercise, not imported research

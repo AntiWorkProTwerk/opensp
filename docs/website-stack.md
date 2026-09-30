@@ -2,7 +2,7 @@
 
 Approved by the owner September 28, 2026. Use Astro static output for OpenSP, with
 shared content/components and JavaScript only for features that need it.
-No application server or database is needed for the proposed informational site.
+No application server or database is needed for the informational site.
 The production stack is now implemented. Follow [the build and deployment
 workflow](development.md) and [deployment record](deployment.md).
 
@@ -33,10 +33,10 @@ for this page. No matched OpenSP framework benchmark was run.
 [HTTP Archive methodology](https://discuss.httparchive.org/t/new-dashboard-the-core-web-vitals-technology-report/2178),
 [rendering tradeoffs](https://web.dev/articles/rendering-on-the-web).
 
-The current release index lists Astro 7.3, published September 3, 2026. Astro 7's
-Rust compiler and Vite 8 improve builds; those results are not visitor load-time
-measurements. Pin a stable patch and compatible integrations when implementing.
-Avoid experimental features without a measured need.
+The September 28 decision considered Astro 7.3, published September 3, 2026.
+The implementation pins Astro 7.3.5 and compatible integrations in `package.json`.
+Astro 7's Rust compiler and Vite 8 affect builds; their results are not visitor
+load-time measurements. Avoid experimental features without a measured need.
 [7.3 release](https://astro.build/blog/astro-730/),
 [7.0 release](https://astro.build/blog/astro-7/).
 
@@ -44,7 +44,7 @@ Avoid experimental features without a measured need.
 
 Use shared homepage data and Markdown/MDX content collections. One homepage
 template adapts through CSS; light/dark themes change semantic variables. The
-current review prototype reads owner-supplied wording from
+production homepage reads owner-supplied wording from
 `design/studies/home-copy.json`. This is not automatic Penpot synchronization.
 [Astro content collections](https://docs.astro.build/en/guides/content-collections/).
 
@@ -90,8 +90,22 @@ framework-independent player, now composed in `SPDisplay.astro` without
 hydrating the homepage. Native Penpot geometry feeds `SPPart.astro` and the
 shared Instrument wrapper.
 
-Proposed budgets, not achieved results: homepage JavaScript at most 15 KiB gzip,
-no content-fetch request before first paint, and no animation-induced layout
+The chapter demonstrations follow the same static-first design. Penpot holds
+seventeen diagram mains and thirty-four Desktop/Mobile figure mains.
+`ChapterDemo.astro` renders the native posters; deterministic models in
+`src/lib/demos/` supply states, controls and explanatory text. The browser runtime
+loads only the chapter's model group. All 68 native article layouts are linked
+and exported; type checking, the build and all 133 tests pass locally. The owner
+requested publication after verification. The earlier seventeen-guide release,
+`f50e5e4`, is published and verified.
+
+The build enforces a 15 KiB gzip JavaScript ceiling per complete page. Count
+inline scripts, static dependencies and the conservative largest lazy model
+group with its dependencies. Report the initial static graph, active-page bound
+and whole-site script inventory separately; see [budget definitions](development.md#checks-and-deployment).
+The old whole-site aggregate and the new per-page figure measure different scopes.
+
+Keep article content available before scripts and avoid animation-induced layout
 shift. Test cold/warm navigation, keyboard focus, history restoration, touch
 and animation frame timing on real mobile hardware. Standard good Core Web
 Vitals thresholds at the 75th percentile are LCP 2.5s, INP 200ms and CLS 0.1;
